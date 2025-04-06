@@ -1,49 +1,101 @@
-# **Gender-Specific Symptom Clustering for Mental Health Disorders**
 
-## **Project Overview**
+# TrendSage – Social Media Trend Discovery for Publishing
 
-This project aims to develop a machine learning model that identifies gender-specific symptom patterns in mental health disorders such as Attention Deficit Hyperactivity Disorder (ADHD), Autism Spectrum Disorder (ASD), and other conditions. By analyzing publicly available datasets, the model seeks to assist healthcare professionals in making early, accurate, and explainable diagnoses, thereby supporting both patients and doctors in making informed decisions.
+**TrendSage** is an open-source machine learning project designed to automatically discover trending topics and sentiments from social media platforms such as Twitter and Reddit. This tool is intended for publishers, authors, content creators, and media professionals who want to identify emerging trends before they go mainstream.
 
-A key objective is to investigate and address the gender gap in mental health diagnoses. Historically, certain disorders have been underdiagnosed or misdiagnosed in specific genders due to differing symptom presentations. For instance, ADHD often manifests differently in women, leading to underdiagnosis. Similarly, ASD symptoms can vary between genders, affecting diagnosis rates. By identifying and clustering gender-specific symptom patterns, this project aims to provide insights that contribute to closing the gender gap in mental health diagnoses.
+The project focuses on unsupervised topic modeling, sentiment analysis, and intuitive data visualization – all using free, open-source Python tools.
 
-## **Datasets**
+---
 
-The following publicly available datasets will be utilized in this project:
+## Project Goals
 
-1. [Mental Disorders Dataset](https://www.kaggle.com/datasets/cid007/mental-disorder-classification?utm_source=chatgpt.com)
-   This dataset contains 17 essential symptoms used by psychiatrists to diagnose various mental disorders, including ADHD, OCD, and PTSD. It provides a comprehensive overview of symptomatology across different disorders.
+- Extract fresh social media data on a daily basis
+- Identify and group emerging topics (topic modeling)
+- Analyze the sentiment of users around each topic
+- Visualize trends and sentiment evolution in a clean dashboard
+- Stay lean and implementable by a single developer in 4–6 weeks
 
-2. [Autism Screening Adult Dataset](https://archive.ics.uci.edu/dataset/426/autism+screening+adult) 
-   Provided by the UCI Machine Learning Repository, this dataset includes screening data for ASD in adults, featuring 704 instances with 21 variables. It encompasses both numerical and categorical data, including gender, age, and responses to screening questions. 
+---
 
-3. [Autism Screening Adolescent Dataset](https://archive.ics.uci.edu/dataset/420/autistic+spectrum+disorder+screening+data+for+adolescent) 
-   This dataset provides ASD screening data for adolescents, with 104 instances and 21 variables, facilitating the exploration of gender-specific symptom patterns in this demographic. 
+##  Project Structure
 
-5. [EEG Psychiatric Disorders Dataset](https://www.kaggle.com/datasets/shashwatwork/eeg-psychiatric-disorders-dataset)
-   This dataset includes EEG data associated with various psychiatric disorders, such as depression, anxiety, schizophrenia, and eating disorders. It offers a unique perspective on how these conditions manifest neurologically, with potential gender differences. 
+```text
+trendsage/
+│
+├── data/                 # Raw and processed data (CSV, JSON, etc.)
+│   ├── raw/
+│   └── processed/
+│
+├── notebooks/            # Jupyter Notebooks for development & testing
+│   ├── 01_data_collection.ipynb
+│   ├── 02_preprocessing.ipynb
+│   ├── 03_topic_modeling.ipynb
+│   ├── 04_sentiment_analysis.ipynb
+│   └── 05_visualization.ipynb
+│
+├── app/                  # Streamlit dashboard application
+│   ├── dashboard.py
+│   └── utils.py
+│
+├── models/               # Saved models (if any fine-tuning occurs)
+│
+├── requirements.txt      # Python dependencies
+├── README.md             # This file
+└── config.yaml           # Configuration for API keys, settings etc.
+```
 
-Additional sources might be added on the fly.
+---
 
-## **Methodology**
+##  Methodology
 
-1. **Data Preprocessing**:  
-   Data from the aforementioned datasets will be cleaned and preprocessed to standardize formats, handle missing values, and ensure compatibility for analysis. This step includes feature extraction based on symptom severity, behavioral data, and demographic variables such as gender and age.
+### 1. **Data Collection**
+- Twitter data collected via `snscrape` or Twitter API
+- Reddit posts extracted using the `PRAW` API
+- Only textual content is extracted (tweets/posts), along with timestamps and metadata
 
-2. **Feature Engineering**:  
-   Meaningful features will be extracted, including behavioral symptom scores (e.g., inattention, social withdrawal, impulsivity), emotional and cognitive symptoms (e.g., anxiety, mood swings, concentration issues), aggregated scores for symptom clusters (e.g., social anxiety, repetitive behaviors), and gender as a key feature to differentiate symptom presentations. Handling missing data through imputation techniques and normalizing features with different scales will also be part of this phase.
+### 2. **Text Preprocessing**
+- Lowercasing, removing stopwords, emojis, links, and mentions
+- Tokenization using `spaCy` or `NLTK`
+- Prepared for embedding and modeling
 
-3. **Clustering**:  
-   Unsupervised learning techniques, such as K-Means or DBSCAN, will be applied to cluster patients based on their symptom profiles. The number of clusters will be determined using methods like the elbow method and silhouette scores. Gender differences in clustering will be explicitly considered to identify gender-specific symptom patterns.
+### 3. **Topic Modeling**
+- Sentence embeddings generated via `sentence-transformers` (`MiniLM` model)
+- Dimensionality reduced using `UMAP`
+- Clustering with `HDBSCAN`
+- Topic generation with `BERTopic`
 
-4. **Model Development**:  
-   An explainable classification model, such as decision trees or random forests, will be developed to predict likely disorders based on clustered symptom patterns. Techniques like SHAP (Shapley Additive Explanations) and LIME (Local Interpretable Model-agnostic Explanations) will be employed to ensure transparency in the model's decision-making process.
+### 4. **Sentiment Analysis**
+- Pre-trained transformer model from HuggingFace (`cardiffnlp/twitter-roberta-base-sentiment`)
+- Each tweet/post classified as Positive / Neutral / Negative
+- Sentiment trends tracked over time and per topic
 
-5. **Testing and Evaluation**:  
-   The model's performance will be evaluated using metrics like accuracy, precision, recall, and F1-score. Additionally, the model's ability to generalize across different gender-specific symptom patterns will be assessed, along with clustering evaluation metrics such as the Silhouette Score.
+### 5. **Visualization**
+- Interactive dashboard built using `Streamlit`
+- Key views:
+  - Trending topics (word clouds, topic labels)
+  - Sentiment timeline
+  - Top keywords and posts per topic
+  - Searchable trend explorer
 
-6. **Deployment**:  
-   The model will be deployed as a web-based tool or API, allowing healthcare professionals to input patient symptoms and receive diagnostic suggestions along with explanations. A user-friendly web interface will be developed for both doctors and patients, facilitating early self-assessment and informed discussions.
+---
 
-## **Conclusion**
+##  Technologies Used
 
-By focusing on gender-specific symptom patterns, this project aims to enhance the accuracy and fairness of mental health diagnoses. Addressing the gender gap in diagnosis rates, particularly for conditions like ADHD and ASD, will lead to more equitable healthcare delivery and improved patient outcomes.
+| Task | Tools |
+|------|-------|
+| Data Collection | `snscrape`, `PRAW`, `pandas` |
+| NLP | `spaCy`, `re`, `NLTK`, `transformers` |
+| Topic Modeling | `sentence-transformers`, `BERTopic`, `HDBSCAN`, `UMAP` |
+| Sentiment | HuggingFace Transformers |
+| Visualization | `Streamlit`, `Plotly`, `Altair` |
+| Storage | CSV, JSON, SQLite (optional) |
+
+---
+
+##  Status
+
+- [x] Project initialized
+- [ ] Twitter/Reddit data collection implemented
+- [ ] Topic modeling pipeline complete
+- [ ] Sentiment analysis integrated
+- [ ] Streamlit dashboard MVP live
