@@ -1,0 +1,22 @@
+notizen.
+
+erstmal: welches thema
+
+dann wie bekomme ich daten???
+
+instagram
+verschiedene bibliotheken insta scrape insta download probiert immer probenme mit zugriff. letzte lösung selenium
+ich will nicht auf instagram verzichten
+wollte:
+
+Spalte	Beschreibung	Pflicht?
+url	Link zum Beitrag	✅ Ja
+timestamp	Zeitpunkt des Scrapings (jetzt)	✅ Ja
+datum	Veröffentlichungsdatum des Beitrags	✅ Ja
+inhalt	Bildbeschreibung (ALT-Text aus <img alt="...")	✅ Ja
+username	Accountname	✅ Ja
+caption	Die echte Bildunterschrift (nicht ALT, nicht Name)	✅ Ja
+likes	Anzahl der Likes (wenn sichtbar ohne Login)
+
+bekommen,
+url und datum inhalt
