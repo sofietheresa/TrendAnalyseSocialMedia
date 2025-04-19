@@ -99,3 +99,11 @@ trendsage/
 - [ ] Topic modeling pipeline complete
 - [ ] Sentiment analysis integrated
 - [ ] Streamlit dashboard MVP live
+
+
+Run tiktok:
+
+podman run --rm `
+  --env-file .env `
+  -v "${PWD}: /app/src" `
+  tiktokapi:latest

@@ -1,0 +1,1 @@
+* * * * * root python3 /app/reddit_scraper.py >> /app/logs/cron.log 2>&1

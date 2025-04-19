@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./app/src:/app
+      - ./logs:/app/logs
+    env_file:
+      - .env
+    container_name: trend_scheduler
+
