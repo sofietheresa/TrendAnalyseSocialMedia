@@ -9,9 +9,13 @@ import logging
 #  .env einladen
 load_dotenv()
 
-#  Logging
-log_path = Path("../../logs/reddit.log")
+BASE_DIR = Path(__file__).resolve().parent
+csv_path = (BASE_DIR / "../data/raw/reddit_data.csv").resolve()
+
+# Logging
+log_path = (BASE_DIR / "../../logs/reddit.log").resolve()
 log_path.parent.mkdir(parents=True, exist_ok=True)
+
 logging.basicConfig(
     filename=log_path,
     level=logging.INFO,
@@ -50,7 +54,6 @@ def scrape_reddit():
                     })
 
         df = pd.DataFrame(all_posts)
-        csv_path = Path("../data/raw/reddit_data.csv")
         csv_path.parent.mkdir(parents=True, exist_ok=True)
 
         if csv_path.exists():

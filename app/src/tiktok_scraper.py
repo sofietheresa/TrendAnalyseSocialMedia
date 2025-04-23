@@ -1,29 +1,51 @@
-from TikTokApi import TikTokApi
 import asyncio
 import os
 import csv
+import logging
+from TikTokApi import TikTokApi
 from dotenv import load_dotenv
+from pathlib import Path
 
-# Load .env values
+
+# .env laden
 load_dotenv()
 
 ms_token = os.getenv("MS_TOKEN")
-csv_path = os.getenv("OUTPUT_PATH", "trending_videos.csv")
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+csv_path = os.path.join(BASE_DIR, "../data/raw/tiktok_data.csv")
+csv_path = os.path.normpath(csv_path)
+
+log_path =  Path(os.path.join(BASE_DIR,"../../logs/tiktok.log"))
+log_path.parent.mkdir(parents=True, exist_ok=True)
+logging.basicConfig(
+    filename=log_path,
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
 
 
 async def trending_videos():
+    if not ms_token:
+        logging.error("MS_TOKEN fehlt. Bitte prüfe deine .env-Datei.")
+        return
+
     async with TikTokApi() as api:
         await api.create_sessions(
             ms_tokens=[ms_token],
             num_sessions=1,
             sleep_after=3,
-            browser=os.getenv("TIKTOK_BROWSER", "chromium")
+            browser=os.getenv("TIKTOK_BROWSER", "chromium"),
+            headless=False 
         )
 
         data = []
 
+        logging.info(" Lade Trending-Videos von TikTok ...")
+
         async for video in api.trending.videos(count=30):
             info = video.as_dict
+            logging.debug(f"Video gefunden: {info.get('id')}")
             data.append({
                 "id": info.get("id"),
                 "description": info.get("desc"),
@@ -37,6 +59,10 @@ async def trending_videos():
                 "created_time": info.get("createTime"),
             })
 
+        if not data:
+            logging.warning("⚠️ Keine Videos gefunden.")
+            return
+
         os.makedirs(os.path.dirname(csv_path), exist_ok=True)
 
         file_exists = os.path.isfile(csv_path)
@@ -46,7 +72,7 @@ async def trending_videos():
                 writer.writeheader()
             writer.writerows(data)
 
-        print(f"\n✅ Erfolgreich {len(data)} Videos in '{csv_path}' gespeichert.")
+        logging.info(f"✅ Erfolgreich {len(data)} Videos in '{csv_path}' gespeichert.")
 
 
 if __name__ == "__main__":

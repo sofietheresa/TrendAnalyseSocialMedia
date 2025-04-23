@@ -52,3 +52,18 @@ Stacktrace:
 	RtlInitializeExceptionChain [0x77C9CF0B+107]
 	RtlGetAppContainerNamedObjectPath [0x77C9CE91+561]
 
+2025-04-22 22:06:11,973 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-04-22 22:06:11,997 - INFO - Starte YouTube-Scraping...
+2025-04-22 22:06:12,307 - INFO - 50 Videos gespeichert unter ..\data\raw\youtube_trending.csv
+2025-04-22 22:07:04,741 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-04-22 22:07:04,746 - INFO - Starte YouTube-Scraping...
+2025-04-22 22:07:05,072 - INFO - 50 Videos gespeichert unter ..\data\raw\youtube_trending.csv
+2025-04-22 22:09:33,378 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-04-22 22:09:33,387 - INFO - Starte YouTube-Scraping...
+2025-04-22 22:09:33,612 - INFO - 50 Videos gespeichert unter ..\app\data\raw\youtube_data.csv
+2025-04-22 22:10:28,708 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-04-22 22:10:28,719 - INFO - Starte YouTube-Scraping...
+2025-04-22 22:10:28,959 - INFO - 50 Videos gespeichert unter ..\app\data\raw\youtube_data.csv
+2025-04-22 22:11:43,236 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-04-22 22:11:43,247 - INFO - Starte YouTube-Scraping...
+2025-04-22 22:11:43,471 - INFO - 50 Videos gespeichert unter ..\app\data\raw\youtube_data.csv
