@@ -25,7 +25,7 @@ logging.basicConfig(
 # scrape Reddit
 def scrape_reddit():
     try:
-        logging.info("🔍 Starte Reddit-Scraping...")
+        logging.info(" Starte Reddit-Scraping...")
 
         reddit = praw.Reddit(
             client_id=os.getenv("REDDIT_ID"),

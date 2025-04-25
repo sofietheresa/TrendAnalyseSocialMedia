@@ -36,7 +36,7 @@ async def trending_videos():
             num_sessions=1,
             sleep_after=3,
             browser=os.getenv("TIKTOK_BROWSER", "chromium"),
-            headless=False 
+            headless=True
         )
 
         data = []
@@ -60,7 +60,7 @@ async def trending_videos():
             })
 
         if not data:
-            logging.warning("⚠️ Keine Videos gefunden.")
+            logging.warning(" Keine Videos gefunden.")
             return
 
         os.makedirs(os.path.dirname(csv_path), exist_ok=True)
@@ -72,7 +72,7 @@ async def trending_videos():
                 writer.writeheader()
             writer.writerows(data)
 
-        logging.info(f"✅ Erfolgreich {len(data)} Videos in '{csv_path}' gespeichert.")
+        logging.info(f" Erfolgreich {len(data)} Videos in '{csv_path}' gespeichert.")
 
 
 if __name__ == "__main__":

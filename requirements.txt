@@ -1,0 +1,6 @@
+TikTokApi
+google-api-python-client
+pandas
+praw
+python-dotenv
+playwright

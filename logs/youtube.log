@@ -1,3 +1,9 @@
 2025-04-23 12:59:12,580 - INFO - file_cache is only supported with oauth2client<4.0.0
 2025-04-23 12:59:12,620 - INFO - \U0001f50d Starte YouTube-Scraping...
 2025-04-23 12:59:12,903 - INFO - \u2705 61 Videos gespeichert unter: C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyse Social Media\app\data\raw\youtube_data.csv
+2025-04-25 11:53:27,239 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-04-25 11:53:27,242 - INFO - 🔍 Starte YouTube-Scraping...
+2025-04-25 11:53:27,423 - INFO - ✅ 102 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-04-25 14:45:45,687 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-04-25 14:45:45,741 - INFO - \U0001f50d Starte YouTube-Scraping...
+2025-04-25 14:45:45,934 - INFO - \u2705 102 Videos gespeichert unter: C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyse Social Media\app\data\raw\youtube_data.csv
