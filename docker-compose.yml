@@ -6,9 +6,12 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./app/src:/app
+      - ./api:/app/api
+      - ./scheduler:/app/scheduler
       - ./logs:/app/logs
     env_file:
       - .env
+    ports:
+      - "8080:10000"  # Falls du FastAPI lokal testen willst
     container_name: trend_scheduler
-
+    restart: unless-stopped

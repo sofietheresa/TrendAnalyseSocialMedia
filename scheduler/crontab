@@ -1,3 +1,0 @@
-*/15 * * * * cd /app/src && python tiktok_scraper.py >> /logs/tiktok_cron.log 2>&1
-*/15 * * * * cd /app/src && python youtube_scraper.py >> /logs/youtube_cron.log 2>&1
-*/15 * * * * cd /app/src && python reddit_scraper.py >> /logs/reddit_cron.log 2>&1

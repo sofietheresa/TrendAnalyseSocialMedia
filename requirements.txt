@@ -4,3 +4,5 @@ pandas
 praw
 python-dotenv
 playwright
+fastapi
+uvicorn

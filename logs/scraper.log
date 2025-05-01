@@ -1,0 +1,84 @@
+2025-05-01 14:11:19,937 [INFO]  Sammle Social Media Trends...
+2025-05-01 14:11:19,938 [INFO]  Starte reddit_scraper.py
+2025-05-01 14:11:19,952 [ERROR]  Fehler beim Ausführen von reddit_scraper.py
+2025-05-01 14:11:19,953 [ERROR] python: can't open file '/app/app/src/reddit_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:11:19,953 [INFO]  Starte tiktok_scraper.py
+2025-05-01 14:11:19,966 [ERROR]  Fehler beim Ausführen von tiktok_scraper.py
+2025-05-01 14:11:19,967 [ERROR] python: can't open file '/app/app/src/tiktok_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:11:19,967 [INFO]  Starte youtube_scraper.py
+2025-05-01 14:11:19,981 [ERROR]  Fehler beim Ausführen von youtube_scraper.py
+2025-05-01 14:11:19,982 [ERROR] python: can't open file '/app/app/src/youtube_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:11:19,982 [INFO]  Alle Scraper abgeschlossen.
+2025-05-01 14:30:53,767 [INFO]  Sammle Social Media Trends...
+2025-05-01 14:30:53,767 [INFO]  Starte reddit_scraper.py
+2025-05-01 14:30:53,784 [ERROR]  Fehler beim Ausführen von reddit_scraper.py
+2025-05-01 14:30:53,785 [ERROR] python: can't open file '/app/app/src/reddit_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:30:53,785 [INFO]  Starte tiktok_scraper.py
+2025-05-01 14:30:53,800 [ERROR]  Fehler beim Ausführen von tiktok_scraper.py
+2025-05-01 14:30:53,800 [ERROR] python: can't open file '/app/app/src/tiktok_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:30:53,801 [INFO]  Starte youtube_scraper.py
+2025-05-01 14:30:53,817 [ERROR]  Fehler beim Ausführen von youtube_scraper.py
+2025-05-01 14:30:53,817 [ERROR] python: can't open file '/app/app/src/youtube_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:30:53,818 [INFO]  Alle Scraper abgeschlossen.
+2025-05-01 14:32:03,329 [INFO]  Sammle Social Media Trends...
+2025-05-01 14:32:03,330 [INFO]  Starte reddit_scraper.py
+2025-05-01 14:32:03,345 [ERROR]  Fehler beim Ausführen von reddit_scraper.py
+2025-05-01 14:32:03,346 [ERROR] python: can't open file '/app/app/src/reddit_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:32:03,346 [INFO]  Starte tiktok_scraper.py
+2025-05-01 14:32:03,361 [ERROR]  Fehler beim Ausführen von tiktok_scraper.py
+2025-05-01 14:32:03,362 [ERROR] python: can't open file '/app/app/src/tiktok_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:32:03,362 [INFO]  Starte youtube_scraper.py
+2025-05-01 14:32:03,377 [ERROR]  Fehler beim Ausführen von youtube_scraper.py
+2025-05-01 14:32:03,377 [ERROR] python: can't open file '/app/app/src/youtube_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:32:03,378 [INFO]  Alle Scraper abgeschlossen.
+2025-05-01 14:32:36,671 [INFO]  Sammle Social Media Trends...
+2025-05-01 14:32:36,671 [INFO]  Starte reddit_scraper.py
+2025-05-01 14:32:36,687 [ERROR]  Fehler beim Ausführen von reddit_scraper.py
+2025-05-01 14:32:36,688 [ERROR] python: can't open file '/app/app/src/reddit_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:32:36,688 [INFO]  Starte tiktok_scraper.py
+2025-05-01 14:32:36,703 [ERROR]  Fehler beim Ausführen von tiktok_scraper.py
+2025-05-01 14:32:36,704 [ERROR] python: can't open file '/app/app/src/tiktok_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:32:36,704 [INFO]  Starte youtube_scraper.py
+2025-05-01 14:32:36,718 [ERROR]  Fehler beim Ausführen von youtube_scraper.py
+2025-05-01 14:32:36,719 [ERROR] python: can't open file '/app/app/src/youtube_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:32:36,719 [INFO]  Alle Scraper abgeschlossen.
+2025-05-01 14:34:20,159 [INFO]  Sammle Social Media Trends...
+2025-05-01 14:34:20,160 [INFO]  Starte reddit_scraper.py
+2025-05-01 14:34:20,176 [ERROR]  Fehler beim Ausführen von reddit_scraper.py
+2025-05-01 14:34:20,176 [ERROR] python: can't open file '/app/app/src/reddit_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:34:20,177 [INFO]  Starte tiktok_scraper.py
+2025-05-01 14:34:20,192 [ERROR]  Fehler beim Ausführen von tiktok_scraper.py
+2025-05-01 14:34:20,193 [ERROR] python: can't open file '/app/app/src/tiktok_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:34:20,194 [INFO]  Starte youtube_scraper.py
+2025-05-01 14:34:20,209 [ERROR]  Fehler beim Ausführen von youtube_scraper.py
+2025-05-01 14:34:20,209 [ERROR] python: can't open file '/app/app/src/youtube_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:34:20,210 [INFO]  Alle Scraper abgeschlossen.
+2025-05-01 14:36:01,962 [INFO]  Sammle Social Media Trends...
+2025-05-01 14:36:01,962 [INFO]  Starte reddit_scraper.py
+2025-05-01 14:36:01,981 [ERROR]  Fehler beim Ausführen von reddit_scraper.py
+2025-05-01 14:36:01,982 [ERROR] python: can't open file '/app/app/src/reddit_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:36:01,983 [INFO]  Starte tiktok_scraper.py
+2025-05-01 14:36:02,001 [ERROR]  Fehler beim Ausführen von tiktok_scraper.py
+2025-05-01 14:36:02,001 [ERROR] python: can't open file '/app/app/src/tiktok_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:36:02,002 [INFO]  Starte youtube_scraper.py
+2025-05-01 14:36:02,017 [ERROR]  Fehler beim Ausführen von youtube_scraper.py
+2025-05-01 14:36:02,018 [ERROR] python: can't open file '/app/app/src/youtube_scraper.py': [Errno 2] No such file or directory
+
+2025-05-01 14:36:02,019 [INFO]  Alle Scraper abgeschlossen.

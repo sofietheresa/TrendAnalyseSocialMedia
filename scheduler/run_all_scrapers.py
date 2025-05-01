@@ -1,43 +1,50 @@
 import subprocess
 import logging
 from datetime import datetime
+from pathlib import Path
 
-# Logging einrichten
-logfile = "logs/scraper.log"
-logging.basicConfig(
-    filename=logfile,
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s"
-)
+# Eigener Logger für den Scheduler
+logger = logging.getLogger("trendsage.scheduler")
+logger.setLevel(logging.INFO)
+
+# Optional: Stelle sicher, dass ein Handler existiert
+if not logger.hasHandlers():
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+# Alternativ: Datei zusätzlich
+Path("logs").mkdir(parents=True, exist_ok=True)
+file_handler = logging.FileHandler("logs/scraper.log")
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
 
 SCRAPER_SCRIPTS = [
-    "reddit_scraper.py",
-    "tiktok_scraper.py",
-    "youtube_scraper.py"
+    "scheduler/jobs/reddit_scraper.py",
+    "scheduler/jobs/tiktok_scraper.py",
+    "scheduler/jobs/youtube_scraper.py"
 ]
 
 def run_script(script):
-    logging.info(f" Starte {script}")
+    logger.info(f"Starte {script}")
     try:
         start = datetime.now()
         result = subprocess.run(
-            ["python", f"app/src/{script}"],
+            ["python", script],
             capture_output=True,
             text=True,
             check=True
         )
         duration = (datetime.now() - start).seconds
-        logging.info(f" {script} erfolgreich in {duration} Sekunden.")
-        logging.debug(result.stdout)
+        logger.info(f"{script} erfolgreich in {duration} Sekunden.")
+        logger.debug(result.stdout)
     except subprocess.CalledProcessError as e:
-        logging.error(f" Fehler beim Ausführen von {script}")
-        logging.error(e.stderr)
+        logger.error(f"Fehler beim Ausführen von {script}")
+        logger.error(e.stderr)
 
 def run_all():
-    logging.info(" Sammle Social Media Trends...")
+    logger.info("Starte alle Scraper...")
     for script in SCRAPER_SCRIPTS:
         run_script(script)
-    logging.info(" Alle Scraper abgeschlossen.")
-
-if __name__ == "__main__":
-    run_all()
+    logger.info("Alle Scraper abgeschlossen.")
