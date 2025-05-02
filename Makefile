@@ -13,10 +13,17 @@ sync:
 	curl -X POST $(API_URL)/run-scrapers \
 		-H "Authorization: $(TOKEN)"
 
-	@echo "\n⬇️  Lade Daten herunter ..."
+	@echo "\n⬇️  Lade Daten herunter & hänge sie an bestehende Dateien an ..."
 	@mkdir -p data/raw
 	@for file in $(FILES); do \
-		curl -s $(API_URL)/data/download/$$file -H "Authorization: $(TOKEN)" -o data/raw/$$file; \
+		tmp="data/raw/tmp_$$file"; \
+		curl -s $(API_URL)/data/download/$$file -H "Authorization: $(TOKEN)" -o $$tmp; \
+		if [ -f data/raw/$$file ]; then \
+			tail -n +2 $$tmp >> data/raw/$$file; \
+		else \
+			mv $$tmp data/raw/$$file; \
+		fi; \
+		rm -f $$tmp; \
 	done
 
 	@echo "\n⬇️  Lade Logs herunter ..."
@@ -26,6 +33,7 @@ sync:
 	done
 
 	@echo "\n✅ Alle Dateien synchronisiert."
+
 
 # Variablen
 IMAGE_NAME=trendsage
