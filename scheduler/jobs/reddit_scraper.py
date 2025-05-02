@@ -1,72 +1,81 @@
+import asyncio
 import os
-import praw
-import pandas as pd
-from datetime import datetime
+import csv
+import logging
+from TikTokApi import TikTokApi
 from dotenv import load_dotenv
 from pathlib import Path
-import logging
 
-#  .env einladen
 load_dotenv()
 
+ms_token = os.getenv("MS_TOKEN")
+csv_path = Path("/app/data/raw/tiktok_data.csv")
+log_path = Path("/app/logs/tiktok.log")
 
-csv_path = Path("/app/data/raw/reddit_data.csv")
-
-# Logging
-log_path = Path("/app/logs/reddit.log")
 log_path.parent.mkdir(parents=True, exist_ok=True)
-
 logging.basicConfig(
     filename=log_path,
     level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
+    format="%(asctime)s [%(levelname)s] %(message)s",
 )
 
-# scrape Reddit
-def scrape_reddit():
-    try:
-        logging.info(" Starte Reddit-Scraping...")
+logging.info(f"DATA_PATH = {csv_path}")
+logging.info(f"LOG_PATH  = {log_path}")
 
-        reddit = praw.Reddit(
-            client_id=os.getenv("REDDIT_ID"),
-            client_secret=os.getenv("REDDIT_SECRET"),
-            user_agent=os.getenv("USER_AGENT")
+async def trending_videos():
+    if not ms_token:
+        logging.error("MS_TOKEN fehlt. Bitte prüfe deine .env-Datei.")
+        return
+
+    api = TikTokApi()
+    try:
+        await api.create_sessions(
+            ms_tokens=[ms_token],
+            num_sessions=1,
+            sleep_after=3,
+            browser=os.getenv("TIKTOK_BROWSER", "chromium"),
+            headless=True
         )
 
-        subreddits = ["all", "popular", "trendingreddits", "trendingsubreddits"]
-        post_limit = 100
-        all_posts = []
-        scrape_time = datetime.now()
+        data = []
+        logging.info(" Lade Trending-Videos von TikTok ...")
 
-        for sub in subreddits:
-            subreddit = reddit.subreddit(sub)
-            for post in subreddit.hot(limit=post_limit):
-                if post.is_self:
-                    all_posts.append({
-                        "subreddit": sub,
-                        "title": post.title,
-                        "text": post.selftext,
-                        "score": post.score,
-                        "comments": post.num_comments,
-                        "created": datetime.fromtimestamp(post.created),
-                        "url": post.url,
-                        "scraped_at": scrape_time
-                    })
+        async for video in api.trending.videos(count=30):
+            info = video.as_dict
+            data.append({
+                "id": info.get("id"),
+                "description": info.get("desc"),
+                "author_username": info.get("author", {}).get("uniqueId"),
+                "author_id": info.get("author", {}).get("id"),
+                "likes": info.get("stats", {}).get("diggCount"),
+                "shares": info.get("stats", {}).get("shareCount"),
+                "comments": info.get("stats", {}).get("commentCount"),
+                "plays": info.get("stats", {}).get("playCount"),
+                "video_url": info.get("video", {}).get("downloadAddr"),
+                "created_time": info.get("createTime"),
+            })
 
-        df = pd.DataFrame(all_posts)
-        csv_path.parent.mkdir(parents=True, exist_ok=True)
+        if not data:
+            logging.warning(" Keine Videos gefunden.")
+            return
 
-        if csv_path.exists():
-            df_existing = pd.read_csv(csv_path)
-            df = pd.concat([df_existing, df], ignore_index=True)
+        os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+        file_exists = os.path.isfile(csv_path)
+        with open(csv_path, "a", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=data[0].keys())
+            if not file_exists:
+                writer.writeheader()
+            writer.writerows(data)
 
-        df.drop_duplicates(subset=["title", "text", "subreddit"], inplace=True)
-        df.to_csv(csv_path, index=False)
-
-        logging.info(f" {len(df)} Einträge gespeichert unter {csv_path}")
+        logging.info(f"✅ Erfolgreich {len(data)} Videos in '{csv_path}' gespeichert.")
 
     except Exception as e:
-        logging.error(f" Fehler beim Reddit-Scraping: {e}")
+        logging.error(f"❌ Fehler beim TikTok-Scraping: {type(e).__name__}: {e}")
+    finally:
+        try:
+            await api.stop_playwright()
+        except Exception:
+            pass  # fail silently
 
 if __name__ == "__main__":
-    scrape_reddit()
+    asyncio.run(trending_videos())

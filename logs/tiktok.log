@@ -1,1 +1,219 @@
-{"detail":"Not Found"}
+2025-05-02 11:17:29,855 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-02 11:17:29,855 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-02 11:18:44,441 - TikTokApi.tiktok - ERROR - Failed to create session: Timeout 30000ms exceeded.
+2025-05-02 11:18:44,441 [ERROR] Failed to create session: Timeout 30000ms exceeded.
+Traceback (most recent call last):
+  File "/app/scheduler/jobs/tiktok_scraper.py", line 83, in <module>
+    asyncio.run(trending_videos())
+  File "/usr/local/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/app/scheduler/jobs/tiktok_scraper.py", line 38, in trending_videos
+    await api.create_sessions(
+  File "/usr/local/lib/python3.11/site-packages/TikTokApi/tiktok.py", line 293, in create_sessions
+    await asyncio.gather(
+  File "/usr/local/lib/python3.11/site-packages/TikTokApi/tiktok.py", line 197, in __create_session
+    await page.wait_for_load_state("networkidle")
+  File "/usr/local/lib/python3.11/site-packages/playwright/async_api/_generated.py", line 9087, in wait_for_load_state
+    await self._impl_obj.wait_for_load_state(state=state, timeout=timeout)
+  File "/usr/local/lib/python3.11/site-packages/playwright/_impl/_page.py", line 568, in wait_for_load_state
+    return await self._main_frame.wait_for_load_state(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/playwright/_impl/_frame.py", line 243, in wait_for_load_state
+    return await self._wait_for_load_state_impl(state, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/playwright/_impl/_frame.py", line 271, in _wait_for_load_state_impl
+    await waiter.result()
+playwright._impl._errors.TimeoutError: Timeout 30000ms exceeded.
+2025-05-02 11:23:57,746 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-02 11:23:57,746 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-02 11:24:38,537 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-02 11:24:38,537 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+Traceback (most recent call last):
+  File "/app/scheduler/jobs/tiktok_scraper.py", line 83, in <module>
+    asyncio.run(trending_videos())
+  File "/usr/local/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/app/scheduler/jobs/tiktok_scraper.py", line 38, in trending_videos
+    await api.create_sessions(
+  File "/usr/local/lib/python3.11/site-packages/TikTokApi/tiktok.py", line 293, in create_sessions
+    await asyncio.gather(
+  File "/usr/local/lib/python3.11/site-packages/TikTokApi/tiktok.py", line 189, in __create_session
+    await page.goto(url)
+  File "/usr/local/lib/python3.11/site-packages/playwright/async_api/_generated.py", line 8991, in goto
+    await self._impl_obj.goto(
+  File "/usr/local/lib/python3.11/site-packages/playwright/_impl/_page.py", line 552, in goto
+    return await self._main_frame.goto(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/playwright/_impl/_frame.py", line 145, in goto
+    await self._channel.send("goto", locals_to_params(locals()))
+  File "/usr/local/lib/python3.11/site-packages/playwright/_impl/_connection.py", line 61, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/playwright/_impl/_connection.py", line 528, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TimeoutError: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-02 11:34:53,528 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-02 11:34:53,529 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-02 11:34:53,530 [ERROR] ❌ Fehler beim TikTok-Scraping: TikTokApi.__init__() got an unexpected keyword argument 'ms_token'
+2025-05-02 12:02:45,334 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-02 12:02:45,334 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-02 12:02:45,335 [ERROR] ❌ Fehler beim TikTok-Scraping: TikTokApi.__init__() got an unexpected keyword argument 'ms_token'
+2025-05-02 12:04:13,185 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-02 12:04:13,185 [INFO] LOG_PATH  = /app/logs/tiktok.log
+Traceback (most recent call last):
+  File "/app/scheduler/jobs/tiktok_scraper.py", line 38, in trending_videos
+    await api.create_sessions(
+  File "/usr/local/lib/python3.11/site-packages/TikTokApi/tiktok.py", line 279, in create_sessions
+    self.browser = await self.playwright.chromium.launch(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/playwright/async_api/_generated.py", line 14451, in launch
+    await self._impl_obj.launch(
+  File "/usr/local/lib/python3.11/site-packages/playwright/_impl/_browser_type.py", line 97, in launch
+    Browser, from_channel(await self._channel.send("launch", params))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/playwright/_impl/_connection.py", line 61, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/playwright/_impl/_connection.py", line 528, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TargetClosedError: BrowserType.launch: Target page, context or browser has been closed
+Browser logs:
+
+╔════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ Looks like you launched a headed browser without having a XServer running.                     ║
+║ Set either 'headless: true' or use 'xvfb-run <your-playwright-app>' before running Playwright. ║
+║                                                                                                ║
+║ <3 Playwright Team                                                                             ║
+╚════════════════════════════════════════════════════════════════════════════════════════════════╝
+Call log:
+  - <launching> /root/.cache/ms-playwright/chromium-1169/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-extensions --disable-features=AcceptCHFrame,AutoExpandDetailsElement,AvoidUnnecessaryBeforeUnloadCheckSync,CertificateTransparencyComponentUpdater,DeferRendererTasksAfterInput,DestroyProfileOnBrowserClose,DialMediaRouteProvider,ExtensionManifestV2Disabled,GlobalMediaControls,HttpsUpgrades,ImprovedCookieControls,LazyFrameLoading,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --enable-automation --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-GXFiJg --remote-debugging-pipe --no-startup-window
+  - <launched> pid=20
+  - [pid=20][err] [20:35:0502/120414.565363:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+  - [pid=20][err] [20:20:0502/120414.580083:ERROR:ui/ozone/platform/x11/ozone_platform_x11.cc:249] Missing X server or $DISPLAY
+  - [pid=20][err] [20:20:0502/120414.580128:ERROR:ui/aura/env.cc:257] The platform failed to initialize.  Exiting.
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/app/scheduler/jobs/tiktok_scraper.py", line 83, in <module>
+    asyncio.run(trending_videos())
+  File "/usr/local/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/app/scheduler/jobs/tiktok_scraper.py", line 37, in trending_videos
+    async with TikTokApi() as api:
+  File "/usr/local/lib/python3.11/site-packages/TikTokApi/tiktok.py", line 545, in __aexit__
+    await self.stop_playwright()
+  File "/usr/local/lib/python3.11/site-packages/TikTokApi/tiktok.py", line 532, in stop_playwright
+    await self.browser.close()
+          ^^^^^^^^^^^^
+AttributeError: 'TikTokApi' object has no attribute 'browser'
+2025-05-02 12:07:45,180 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-02 12:07:45,180 [INFO] LOG_PATH  = /app/logs/tiktok.log
+Traceback (most recent call last):
+  File "/app/scheduler/jobs/tiktok_scraper.py", line 38, in trending_videos
+    await api.create_sessions(
+  File "/usr/local/lib/python3.11/site-packages/TikTokApi/tiktok.py", line 279, in create_sessions
+    self.browser = await self.playwright.chromium.launch(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/playwright/async_api/_generated.py", line 14451, in launch
+    await self._impl_obj.launch(
+  File "/usr/local/lib/python3.11/site-packages/playwright/_impl/_browser_type.py", line 97, in launch
+    Browser, from_channel(await self._channel.send("launch", params))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/playwright/_impl/_connection.py", line 61, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/playwright/_impl/_connection.py", line 528, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TargetClosedError: BrowserType.launch: Target page, context or browser has been closed
+Browser logs:
+
+╔════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ Looks like you launched a headed browser without having a XServer running.                     ║
+║ Set either 'headless: true' or use 'xvfb-run <your-playwright-app>' before running Playwright. ║
+║                                                                                                ║
+║ <3 Playwright Team                                                                             ║
+╚════════════════════════════════════════════════════════════════════════════════════════════════╝
+Call log:
+  - <launching> /root/.cache/ms-playwright/chromium-1169/chrome-linux/chrome --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-extensions --disable-features=AcceptCHFrame,AutoExpandDetailsElement,AvoidUnnecessaryBeforeUnloadCheckSync,CertificateTransparencyComponentUpdater,DeferRendererTasksAfterInput,DestroyProfileOnBrowserClose,DialMediaRouteProvider,ExtensionManifestV2Disabled,GlobalMediaControls,HttpsUpgrades,ImprovedCookieControls,LazyFrameLoading,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --enable-automation --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --no-sandbox --user-data-dir=/tmp/playwright_chromiumdev_profile-qGOzfO --remote-debugging-pipe --no-startup-window
+  - <launched> pid=20
+  - [pid=20][err] [20:35:0502/120745.562289:ERROR:dbus/bus.cc:408] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
+  - [pid=20][err] [20:20:0502/120745.565966:ERROR:ui/ozone/platform/x11/ozone_platform_x11.cc:249] Missing X server or $DISPLAY
+  - [pid=20][err] [20:20:0502/120745.566008:ERROR:ui/aura/env.cc:257] The platform failed to initialize.  Exiting.
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/app/scheduler/jobs/tiktok_scraper.py", line 83, in <module>
+    asyncio.run(trending_videos())
+  File "/usr/local/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/app/scheduler/jobs/tiktok_scraper.py", line 37, in trending_videos
+    async with TikTokApi() as api:
+  File "/usr/local/lib/python3.11/site-packages/TikTokApi/tiktok.py", line 545, in __aexit__
+    await self.stop_playwright()
+  File "/usr/local/lib/python3.11/site-packages/TikTokApi/tiktok.py", line 532, in stop_playwright
+    await self.browser.close()
+          ^^^^^^^^^^^^
+AttributeError: 'TikTokApi' object has no attribute 'browser'
+2025-05-02 12:10:36,737 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-02 12:10:36,738 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-02 12:10:36,739 [ERROR] ❌ Fehler beim TikTok-Scraping: 'TikTokApi' object has no attribute 'browser'
+2025-05-02 12:12:25,840 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-02 12:12:25,840 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-02 12:12:38,127 [INFO]  Lade Trending-Videos von TikTok ...
+2025-05-02 12:12:41,079 [ERROR] Failed to create Sound with data: {'CategoryType': 120, 'containerType': 2, 'createTime': 0, 'desc': '', 'digged': False, 'forFriend': False, 'id': '', 'itemCommentStatus': 0, 'liveRoomInfo': {'coverUrl': 'https://p16-sign-sg.tiktokcdn.com/tos-alisg-avt-0068/1449854dbf86d5a804c20c77460fb43d~tplv-tiktokx-cropcenter:720:720.webp?dr=10399&refresh_token=9fbdae73&x-expires=1746356400&x-signature=cSNKQjK8kGJx1bDH5su%2BHBkz0rw%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=fdd36af4&idc=no1a', 'followStatus': 0, 'fypRoomTag': {'tag': [{'content': 'LIVE now', 'da_info': '', 'id': 4, 'recommond_info': '', 'style': 1}]}, 'landscape': 2, 'likeCount': 9522, 'liveRoomStats': {'userCount': 83}, 'liveSubOnly': 0, 'liveUrl': '', 'mode': 4, 'ownerInfo': {'avatarLarger': 'https://p16-sign-sg.tiktokcdn.com/tos-alisg-avt-0068/1449854dbf86d5a804c20c77460fb43d~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=10399&refresh_token=64b743ba&x-expires=1746360000&x-signature=PYygWqsxXwC5QA%2FkZVRRb5ywm3o%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'avatarMedium': 'https://p16-sign-sg.tiktokcdn.com/tos-alisg-avt-0068/1449854dbf86d5a804c20c77460fb43d~tplv-tiktokx-cropcenter:720:720.jpeg?dr=10399&refresh_token=8e2c2eab&x-expires=1746360000&x-signature=Esvnr87YMbBU%2FftZLPqjn3CxMRk%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'avatarThumb': 'https://p16-sign-sg.tiktokcdn.com/tos-alisg-avt-0068/1449854dbf86d5a804c20c77460fb43d~tplv-tiktokx-cropcenter:100:100.jpeg?dr=10399&refresh_token=c1a24285&x-expires=1746360000&x-signature=omOr33xixD5b%2BtfVMBOU7gaBobI%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'ftc': False, 'id': '6983228128366216193', 'nickname': 'MOCQY', 'openFavorite': False, 'privateAccount': False, 'relation': 0, 'secret': False, 'signature': '', 'uniqueId': 'mocky_44', 'verified': False}, 'roomID': '7499803438962625287', 'shareCount': 4, 'status': 2, 'streamData': '{"common":{"session_id":"000-2025050212123984CAD6D43321F28740D4","rule_ids":"{\\"ab_version_trace\\":null,\\"sched\\":\\"{\\\\\\"result\\\\\\":{\\\\\\"hit\\\\\\":\\\\\\"default\\\\\\",\\\\\\"cdn\\\\\\":1849}}\\"}","user_count":78,"peer_anchor_level":3},"data":{"hd":{"main":{"flv":"https://pull-q5-sg01.fcdn.eu.tiktokcdn.com/game/stream-2134797062670385256_hd.flv?expire=1747397560\\u0026sign=f6e93ff503071a36ab7dfc5203ce22a9","hls":"","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"stream_suffix\\":\\"hd\\",\\"VCodec\\":\\"h264\\",\\"resolution\\":\\"576x1280\\",\\"gop\\":4,\\"v_rtpsnr\\":0,\\"v_rtbitrate_vpaas_timestamp\\":1746187960516,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"vbitrate\\":1800000,\\"v_rtbitrate\\":577800,\\"v_rtbitrate_timestamp\\":1746187945007}"}},"sd":{"main":{"flv":"https://pull-q5-sg01.fcdn.eu.tiktokcdn.com/game/stream-2134797062670385256_sd.flv?expire=1747397560\\u0026sign=72dd3282c45bc48a49870e352c81850e","hls":"","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"VCodec\\":\\"h264\\",\\"gop\\":4,\\"v_rtbitrate\\":532000,\\"v_rtbitrate_timestamp\\":1746187678006,\\"v_rtbitrate_vpaas_timestamp\\":1746187960516,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"resolution\\":\\"540x1200\\",\\"v_rtpsnr\\":0,\\"stream_suffix\\":\\"sd\\",\\"vbitrate\\":1200000}"}},"ld":{"main":{"flv":"https://pull-q5-sg01.fcdn.eu.tiktokcdn.com/game/stream-2134797062670385256_ld.flv?expire=1747397560\\u0026sign=41773cd0ae271014c36a35f81503c7fc","hls":"","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"VCodec\\":\\"h264\\",\\"v_rtpsnr\\":0,\\"v_rtbitrate_timestamp\\":1746186759001,\\"v_rtbitrate_vpaas_timestamp\\":1746187960516,\\"vbitrate\\":600000,\\"Auto\\":{\\"Enable\\":1,\\"Demotion\\":{\\"StallCount\\":4}},\\"gop\\":4,\\"v_rtbitrate\\":367800,\\"stream_suffix\\":\\"ld\\",\\"resolution\\":\\"360x800\\"}"}},"origin":{"main":{"flv":"https://pull-q5-sg01.fcdn.eu.tiktokcdn.com/game/stream-2134797062670385256_or4.flv?expire=1747397560\\u0026sign=e5d10f124ffdb8c39321fe532dd0826b","hls":"","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"v_rtbitrate_timestamp\\":1746187454005,\\"vbitrate\\":1000000,\\"gop\\":4,\\"resolution\\":\\"576x1280\\",\\"Auto\\":{\\"Enable\\":1,\\"Demotion\\":{\\"StallCount\\":4}},\\"VCodec\\":\\"h264\\",\\"v_rtbitrate\\":309000,\\"v_rtpsnr\\":0,\\"v_rtbitrate_vpaas_timestamp\\":1746187960516,\\"stream_suffix\\":\\"or4\\"}"}},"ao":{"main":{"flv":"https://pull-q5-sg01.fcdn.eu.tiktokcdn.com/game/stream-2134797062670385256.flv?expire=1747397560\\u0026sign=1146dab46a552962280142d4b97a372f\\u0026only_audio=1","hls":"","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"resolution\\":\\"\\",\\"gop\\":4,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"vbitrate\\":0}"}}}}', 'title': 'hai roblox'}, 'officalItem': False, 'originalItem': False, 'privateItem': False, 'secret': False}
+
+2025-05-02 12:12:41,083 [INFO] ✅ Erfolgreich 59 Videos in '/app/data/raw/tiktok_data.csv' gespeichert.
+2025-05-02 12:12:41,458 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-02 12:12:41,459 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-02 12:12:41,460 [ERROR] ❌ Fehler beim TikTok-Scraping: 'TikTokApi' object has no attribute 'browser'
+2025-05-02 12:13:51,115 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-02 12:13:51,116 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-02 12:14:00,544 [INFO]  Lade Trending-Videos von TikTok ...
+2025-05-02 12:14:03,493 [ERROR] Failed to create Sound with data: {'CategoryType': 120, 'containerType': 2, 'createTime': 0, 'desc': '', 'digged': False, 'forFriend': False, 'id': '', 'itemCommentStatus': 0, 'liveRoomInfo': {'coverUrl': 'https://p16-sign-useast2a.tiktokcdn.com/tos-useast2a-avt-0068-euttp/7315851865306955808~tplv-tiktokx-cropcenter:720:720.webp?dr=10399&refresh_token=8bb11dde&x-expires=1746356400&x-signature=UeK21q9pyJ04IXYdudy3B0Gqhxg%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=fdd36af4&idc=no1a', 'followStatus': 0, 'fypRoomTag': {'tag': [{'content': 'LIVE now', 'da_info': '', 'id': 4, 'recommond_info': '', 'style': 1}]}, 'landscape': 2, 'likeCount': 353362, 'liveRoomStats': {'userCount': 320}, 'liveSubOnly': 0, 'liveUrl': '', 'mode': 1, 'ownerInfo': {'avatarLarger': 'https://p16-sign-useast2a.tiktokcdn.com/tos-useast2a-avt-0068-euttp/7315851865306955808~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=10399&refresh_token=f9598478&x-expires=1746360000&x-signature=QWwI6Y3VR3gLi4txmo%2B32C4tZps%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'avatarMedium': 'https://p16-sign-useast2a.tiktokcdn.com/tos-useast2a-avt-0068-euttp/7315851865306955808~tplv-tiktokx-cropcenter:720:720.jpeg?dr=10399&refresh_token=2b862fea&x-expires=1746360000&x-signature=%2FuLHi7BhlyfET3rFRa2YowR5JnE%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'avatarThumb': 'https://p16-sign-useast2a.tiktokcdn.com/tos-useast2a-avt-0068-euttp/7315851865306955808~tplv-tiktokx-cropcenter:100:100.jpeg?dr=10399&refresh_token=acf43543&x-expires=1746360000&x-signature=3N7aHZ8VV0Rq3N5iA23FmCvHBBI%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'ftc': False, 'id': '6770596926914315269', 'nickname': 'DaveNite', 'openFavorite': False, 'privateAccount': False, 'relation': 0, 'secret': False, 'signature': '', 'uniqueId': 'davenite', 'verified': False}, 'roomID': '7499661160405355296', 'shareCount': 373, 'status': 2, 'streamData': '{"common":{"session_id":"000-20250502121402DA4BB9D020E383874D22","rule_ids":"{\\"ab_version_trace\\":null,\\"sched\\":\\"{\\\\\\"result\\\\\\":{\\\\\\"hit\\\\\\":\\\\\\"default\\\\\\",\\\\\\"cdn\\\\\\":1545}}\\"}","user_count":319,"peer_anchor_level":32},"data":{"uhd_60":{"main":{"flv":"https://pull-f5-tt03.fcdn.eu.tiktokcdn.com/game/stream-3287717310731125637_uhd60.flv?expire=1747397642\\u0026sign=c9dda77f5825c8e08afa96de3e06c48a","hls":"https://pull-hls-f16-tt03.fcdn.eu.tiktokcdn.com/game/stream-3287717310731125637_uhd60/index.m3u8?expire=1747397642\\u0026sign=53add9382ce43b7976091aaaffba6ca4","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"resolution\\":\\"1080x1920\\",\\"gop\\":4,\\"v_rtbitrate\\":4973150,\\"v_rtpsnr\\":0,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"v_rtbitrate_timestamp\\":1746188023200,\\"v_rtbitrate_vpaas_timestamp\\":1746188035998,\\"stream_suffix\\":\\"uhd60\\",\\"vbitrate\\":5000000}"}},"hd_60":{"main":{"flv":"https://pull-f5-tt03.fcdn.eu.tiktokcdn.com/game/stream-3287717310731125637_hd60.flv?expire=1747397642\\u0026sign=3c3df9179d6501a390cad0d9e825a7ee","hls":"https://pull-hls-f16-tt03.fcdn.eu.tiktokcdn.com/game/stream-3287717310731125637_hd60/index.m3u8?expire=1747397642\\u0026sign=287f6d3e4da3db62adc6eed8b6f1ea8b","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"v_rtbitrate_timestamp\\":1746187706940,\\"stream_suffix\\":\\"hd60\\",\\"vbitrate\\":3000000,\\"v_rtpsnr\\":0,\\"VCodec\\":\\"h264\\",\\"v_rtbitrate_vpaas_timestamp\\":1746188035998,\\"resolution\\":\\"720x1280\\",\\"gop\\":4,\\"v_rtbitrate\\":3035100,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1}}"}},"ao":{"main":{"flv":"https://pull-f5-tt03.fcdn.eu.tiktokcdn.com/game/stream-3287717310731125637.flv?expire=1747397642\\u0026sign=00b9ef7848a59c8d10a0e65ee7b5018a\\u0026only_audio=1","hls":"","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"VCodec\\":\\"h264\\",\\"vbitrate\\":0,\\"resolution\\":\\"\\",\\"gop\\":4,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1}}"}},"origin":{"main":{"flv":"https://pull-f5-tt03.fcdn.eu.tiktokcdn.com/game/stream-3287717310731125637.flv?expire=1747397642\\u0026sign=00b9ef7848a59c8d10a0e65ee7b5018a","hls":"https://pull-hls-f16-tt03.fcdn.eu.tiktokcdn.com/game/stream-3287717310731125637/index.m3u8?expire=1747397642\\u0026sign=f8fb9588333995e1dfc35aad5e021d3c","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"Auto\\":{\\"Enable\\":1,\\"Demotion\\":{\\"StallCount\\":4}},\\"VCodec\\":\\"h264\\",\\"gop\\":4,\\"vbitrate\\":6231000,\\"resolution\\":\\"1080x1920\\"}"}},"hd":{"main":{"flv":"https://pull-f5-tt03.fcdn.eu.tiktokcdn.com/game/stream-3287717310731125637_hd.flv?expire=1747397642\\u0026sign=a3f93de0e3d8d705dd1e5285faea36fe","hls":"https://pull-hls-f16-tt03.fcdn.eu.tiktokcdn.com/game/stream-3287717310731125637_hd/index.m3u8?expire=1747397642\\u0026sign=054f57796ec38df42699cdbffef6ac97","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"VCodec\\":\\"h264\\",\\"stream_suffix\\":\\"hd\\",\\"vbitrate\\":1800000,\\"resolution\\":\\"720x1280\\",\\"gop\\":4,\\"v_rtbitrate\\":1810740,\\"v_rtbitrate_timestamp\\":1746187714480,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"v_rtpsnr\\":0,\\"v_rtbitrate_vpaas_timestamp\\":1746188035998}"}},"sd":{"main":{"flv":"https://pull-f5-tt03.fcdn.eu.tiktokcdn.com/game/stream-3287717310731125637_sd.flv?expire=1747397642\\u0026sign=c91dd1e3bacd39c4d229ac3c6424b489","hls":"https://pull-hls-f16-tt03.fcdn.eu.tiktokcdn.com/game/stream-3287717310731125637_sd/index.m3u8?expire=1747397642\\u0026sign=98980aa6f0dc016b493a76f7f46d988f","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"vbitrate\\":1200000,\\"resolution\\":\\"540x960\\",\\"v_rtpsnr\\":0,\\"v_rtbitrate_timestamp\\":1746187674599,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"v_rtbitrate_vpaas_timestamp\\":1746188035998,\\"stream_suffix\\":\\"sd\\",\\"gop\\":4,\\"v_rtbitrate\\":1333060}"}},"ld":{"main":{"flv":"https://pull-f5-tt03.fcdn.eu.tiktokcdn.com/game/stream-3287717310731125637_ld.flv?expire=1747397642\\u0026sign=787fa518c0cb5b1e5855245a0a164b92","hls":"https://pull-hls-f16-tt03.fcdn.eu.tiktokcdn.com/game/stream-3287717310731125637_ld/index.m3u8?expire=1747397642\\u0026sign=586a595b25db5287e1c95d2d88b0063f","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"resolution\\":\\"360x640\\",\\"v_rtbitrate\\":599820,\\"v_rtbitrate_timestamp\\":1746187758935,\\"gop\\":4,\\"v_rtpsnr\\":0,\\"v_rtbitrate_vpaas_timestamp\\":1746188035998,\\"stream_suffix\\":\\"ld\\",\\"vbitrate\\":600000}"}}}}', 'title': 'Fortnite Chapter 6'}, 'officalItem': False, 'originalItem': False, 'privateItem': False, 'secret': False}
+
+2025-05-02 12:14:03,499 [INFO] ✅ Erfolgreich 59 Videos in '/app/data/raw/tiktok_data.csv' gespeichert.
+2025-05-02 12:14:03,864 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-02 12:14:03,865 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-02 12:14:14,710 [INFO]  Lade Trending-Videos von TikTok ...
+2025-05-02 12:14:17,787 [INFO] ✅ Erfolgreich 58 Videos in '/app/data/raw/tiktok_data.csv' gespeichert.
