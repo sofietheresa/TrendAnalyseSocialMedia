@@ -1,7 +1,8 @@
 include .env
 export
+
 API_URL=https://trendanalysesocialmedia.onrender.com
-TOKEN=$(RENDER_API_SECRET)
+TOKEN= Bearer $(API_SECRET) 
 
 FILES=reddit_data.csv tiktok_data.csv youtube_data.csv
 LOGS=reddit.log tiktok.log youtube.log
