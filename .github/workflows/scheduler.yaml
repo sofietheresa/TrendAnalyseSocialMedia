@@ -1,8 +1,8 @@
-name: Trigger Scraper Every 15 Minutes
+name: Trigger Scraper Every 5 Minutes
 
 on:
   schedule:
-    - cron: "*/5 * * * *" # Alle 15 Minuten (UTC)
+    - cron: "*/5 * * * *" # Alle 5 Minuten (UTC)
   workflow_dispatch: # Manuell triggerbar über GitHub UI
 
 jobs:
