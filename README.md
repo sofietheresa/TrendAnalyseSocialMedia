@@ -1,109 +1,142 @@
+Here's an updated version of your `README.md` to reflect the current state of the project, including the TikTok integration and deployment via Render:
+
+---
 
 # TrendSage – Social Media Trend Discovery for Publishing
 
-**TrendSage** is an open-source machine learning project designed to automatically discover trending topics and sentiments from social media platforms such as Twitter and Reddit. This tool is intended for publishers, authors, content creators, and media professionals who want to identify emerging trends before they go mainstream.
+**TrendSage** is an open-source machine learning project designed to automatically discover trending topics and sentiments from social media platforms such as **Reddit**, **YouTube**, and **TikTok**. This tool is intended for publishers, authors, content creators, and media professionals who want to identify emerging trends before they go mainstream.
 
-The project focuses on unsupervised topic modeling, sentiment analysis, and intuitive data visualization – all using free, open-source Python tools.
-
----
-
-## Project Goals
-
-- Extract fresh social media data on a daily basis
-- Identify and group emerging topics (topic modeling)
-- Analyze the sentiment of users around each topic
-- Visualize trends and sentiment evolution in a clean dashboard
-- Stay lean and implementable by a single developer in 4–6 weeks
+The project includes scheduled scraping, unsupervised topic modeling, sentiment analysis, and intuitive dashboards – built using free, open-source Python tools and deployed via **Render** and **GitHub Actions**.
 
 ---
 
-##  Project Structure
+## ✅ Project Goals
+
+- Automatically extract trending social media data multiple times per day
+- Identify and group emerging topics using unsupervised topic modeling
+- Analyze sentiment around trending content
+- Visualize trends and evolution of topics and sentiment in a clean interface
+- Run reliably in a containerized environment like Render
+
+---
+
+## 📁 Project Structure
 
 ```text
 trendsage/
 │
-├── data/                 # Raw and processed data (CSV, JSON, etc.)
-│   ├── raw/
-│   └── processed/
+├── api/                  # FastAPI application
+│   └── main.py
 │
-├── notebooks/            # Jupyter Notebooks for development & testing
-│   ├── 01_data_collection.ipynb
-│   ├── 02_preprocessing.ipynb
-│   ├── 03_topic_modeling.ipynb
-│   ├── 04_sentiment_analysis.ipynb
-│   └── 05_visualization.ipynb
+├── scheduler/            # Scheduled scrapers and orchestration
+│   ├── run_all_scrapers.py
+│   └── jobs/
+│       ├── reddit_scraper.py
+│       ├── youtube_scraper.py
+│       └── tiktok_scraper.py
 │
-├── app/                  # Streamlit dashboard application
-│   ├── dashboard.py
-│   └── utils.py
+├── data/
+│   ├── raw/              # Scraped CSV files
+│   └── processed/        # Cleaned and enriched data
 │
-├── models/               # Saved models (if any fine-tuning occurs)
+├── logs/                 # Scraper logs
 │
+├── notebooks/            # Analysis and development
+│
+├── models/               # Saved models for topic/sentiment analysis
+│
+├── app/                  # Streamlit dashboard (WIP)
+│
+├── .env                  # Environment variables (not tracked)
+├── Dockerfile            # Container definition
+├── docker-compose.yml    # Local multi-service setup
 ├── requirements.txt      # Python dependencies
+├── Makefile              # Common commands
 ├── README.md             # This file
-└── config.yaml           # Configuration for API keys, settings etc.
+└── scheduler.yaml        # GitHub Actions workflow
 ```
 
 ---
 
-##  Methodology
+## ⚙️ How It Works
 
-### 1. **Data Collection**
-- Twitter data collected via `snscrape` or Twitter API
-- Reddit posts extracted using the `PRAW` API
-- Only textual content is extracted (tweets/posts), along with timestamps and metadata
+### 1. Data Collection
 
-### 2. **Text Preprocessing**
-- Lowercasing, removing stopwords, emojis, links, and mentions
-- Tokenization using `spaCy` or `NLTK`
-- Prepared for embedding and modeling
+- Reddit via `PRAW`
+- YouTube via YouTube Data API v3
+- TikTok via `TikTokApi` (browser automation with Playwright)
 
-### 3. **Topic Modeling**
-- Sentence embeddings generated via `sentence-transformers` (`MiniLM` model)
-- Dimensionality reduced using `UMAP`
-- Clustering with `HDBSCAN`
-- Topic generation with `BERTopic`
+### 2. Scraper Scheduling
 
-### 4. **Sentiment Analysis**
-- Pre-trained transformer model from HuggingFace (`cardiffnlp/twitter-roberta-base-sentiment`)
-- Each tweet/post classified as Positive / Neutral / Negative
-- Sentiment trends tracked over time and per topic
+- `/run-scrapers` endpoint triggers all scrapers
+- Automatically scheduled every 15 minutes via **GitHub Actions**
+- Secured with API token-based authentication
 
-### 5. **Visualization**
-- Interactive dashboard built using `Streamlit`
-- Key views:
-  - Trending topics (word clouds, topic labels)
-  - Sentiment timeline
-  - Top keywords and posts per topic
-  - Searchable trend explorer
+### 3. Logging and Storage
+
+- Logs for each platform are stored under `/app/logs/*.log`
+- Raw data saved in `/app/data/raw/*.csv`
+- Data and logs can be downloaded via HTTP endpoints or `make sync`
 
 ---
 
-##  Technologies Used
+## 🚀 Deployment (Render + GitHub Actions)
 
-| Task | Tools |
-|------|-------|
-| Data Collection | `snscrape`, `PRAW`, `pandas` |
-| NLP | `spaCy`, `re`, `NLTK`, `transformers` |
-| Topic Modeling | `sentence-transformers`, `BERTopic`, `HDBSCAN`, `UMAP` |
-| Sentiment | HuggingFace Transformers |
-| Visualization | `Streamlit`, `Plotly`, `Altair` |
-| Storage | CSV, JSON, SQLite (optional) |
+1. **Deploy backend to [Render.com](https://render.com/)**
+
+   - Use FastAPI + Uvicorn
+   - Set up `.env` variables in Render (e.g. `YT_KEY`, `REDDIT_ID`, `MS_TOKEN`, `API_SECRET`)
+
+2. **Trigger scrapers via GitHub Actions**
+
+   ```yaml
+   name: Trigger Scraper Every 15 Minutes
+
+   on:
+     schedule:
+       - cron: "*/15 * * * *"
+     workflow_dispatch:
+
+   jobs:
+     run-scraper:
+       runs-on: ubuntu-latest
+       steps:
+         - name: Trigger Render scraper endpoint
+           run: |
+             curl -X POST https://trendanalysesocialmedia.onrender.com/run-scrapers \
+                  -H "Authorization: Bearer ${{ secrets.API_SECRET }}"
+   ```
+
+3. **Secure sync to local machine**
+
+   ```bash
+   make sync
+   ```
 
 ---
 
-##  Status
+## 🧪 Run TikTok scraper (manual)
+
+```bash
+podman run --rm \
+  --env-file .env \
+  -v "${PWD}:/app/src" \
+  tiktokapi:latest
+```
+
+---
+
+## ✅ Status
 
 - [x] Project initialized
-- [ ] Twitter/Reddit data collection implemented
-- [ ] Topic modeling pipeline complete
-- [ ] Sentiment analysis integrated
-- [ ] Streamlit dashboard MVP live
+- [x] Scraper jobs implemented for Reddit, YouTube, TikTok
+- [x] Logging and persistent data storage working
+- [x] FastAPI deployed and secured
+- [x] GitHub Actions integration live
+- [ ] Topic modeling pipeline
+- [ ] Sentiment analysis pipeline
+- [ ] Streamlit dashboard
 
+---
 
-Run tiktok:
-
-podman run --rm `
-  --env-file .env `
-  -v "${PWD}: /app/src" `
-  tiktokapi:latest
+Let me know if you want this written directly to your `README.md` file.

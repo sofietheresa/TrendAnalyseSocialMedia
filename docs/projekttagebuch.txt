@@ -20,3 +20,25 @@ likes	Anzahl der Likes (wenn sichtbar ohne Login)
 
 bekommen,
 url und datum inhalt
+
+
+wie  datenscraping operationalisieren?? großer pain
+
+lösung mit render? 
+
+alles sauber containerisieren und 80 mal austesten  
+
+pfade funktionieren nicht??? 
+
+Scheuler mit github actions
+
+auf einmal funktioniert tiktok nicht mehr 
+
+reddit macht auch plötzlich probleme
+
+struktur geän dert zu oft
+
+wie daten abspeichern da raus??
+
+plan zeischendurch: erst gerüst --> alles deployen, dann modelle 
+große herausforderung dass alles laufen zu lassen

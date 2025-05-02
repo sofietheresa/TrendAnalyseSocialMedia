@@ -1,17 +1,42 @@
-name: Trigger Scraper Every 5 Minutes
+name: Scrape & Pull Data
 
 on:
   schedule:
-    - cron: "*/5 * * * *" # Alle 5 Minuten (UTC)
-  workflow_dispatch: # Manuell triggerbar über GitHub UI
+    - cron: "*/15 * * * *" # alle 15 Minuten
+  workflow_dispatch: # manuell starten möglich
 
 jobs:
-  run-scraper:
+  scrape-and-pull:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger /run-scrapers Endpoint on Render
-        env:
-          API_SECRET: ${{ secrets.API_SECRET }}
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Trigger Scraper on Render
         run: |
-          curl -X POST https://trendanalysesocialmedia.onrender.com/run-scrapers \
-            -H "Authorization: Bearer $API_SECRET"
+          curl -X POST ${{ secrets.RENDER_URL }}/run-scrapers \
+            -H "Authorization: Bearer ${{ secrets.API_SECRET }}"
+
+      - name: Download Scraped Data
+        run: |
+          mkdir -p data/raw logs
+
+          for file in reddit_data.csv youtube_data.csv tiktok_data.csv; do
+            curl -sS "${{ secrets.RENDER_URL }}/data/download/$file" \
+              -H "Authorization: Bearer ${{ secrets.API_SECRET }}" \
+              -o "data/raw/$file"
+          done
+
+          for log in reddit.log youtube.log tiktok.log; do
+            curl -sS "${{ secrets.RENDER_URL }}/logs/download/$log" \
+              -H "Authorization: Bearer ${{ secrets.API_SECRET }}" \
+              -o "logs/$log"
+          done
+
+      - name: Commit & Push Data
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add data/raw/*.csv logs/*.log
+          git commit -m "📊 Scraped data @ $(date -u +"%Y-%m-%d %H:%M:%S")" || echo "No changes"
+          git push
