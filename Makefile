@@ -1,4 +1,30 @@
-.PHONY: build run run-detached clean restart logs run-all-scrapers shell clean-all
+include .env
+export
+API_URL=https://trendanalysesocialmedia.onrender.com
+TOKEN=$(RENDER_API_SECRET)
+
+FILES=reddit_data.csv tiktok_data.csv youtube_data.csv
+LOGS=reddit.log tiktok.log youtube.log
+
+.PHONY: sync
+
+sync:
+	curl -X POST $(API_URL)/run-scrapers \
+		-H "Authorization: $(TOKEN)"
+
+	@echo "\n⬇️  Lade Daten herunter ..."
+	@mkdir -p data/raw
+	@for file in $(FILES); do \
+		curl -s $(API_URL)/data/download/$$file -H "Authorization: $(TOKEN)" -o data/raw/$$file; \
+	done
+
+	@echo "\n⬇️  Lade Logs herunter ..."
+	@mkdir -p logs
+	@for log in $(LOGS); do \
+		curl -s $(API_URL)/logs/download/$$log -H "Authorization: $(TOKEN)" -o logs/$$log; \
+	done
+
+	@echo "\n✅ Alle Dateien synchronisiert."
 
 # Variablen
 IMAGE_NAME=trendsage

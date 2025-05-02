@@ -1,6 +1,7 @@
 import logging
 import os
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 
 # .env laden (nur lokal relevant)
@@ -49,3 +50,25 @@ def run_scrapers(request: Request):
     except Exception as e:
         logging.exception("❌ Fehler beim Ausführen von run_all")
         return {"status": "error", "detail": str(e)}
+    
+@app.get("/data/download/{filename}")
+def download_data_file(filename: str, request: Request):
+    if request.headers.get("Authorization") != f"Bearer {API_SECRET}":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    path = f"/app/data/raw/{filename}"
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="Datei nicht gefunden")
+
+    return FileResponse(path=path, filename=filename)
+
+@app.get("/logs/download/{filename}")
+def download_log_file(filename: str, request: Request):
+    if request.headers.get("Authorization") != f"Bearer {API_SECRET}":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    path = f"/app/logs/{filename}"
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="Log nicht gefunden")
+
+    return FileResponse(path=path, filename=filename)
