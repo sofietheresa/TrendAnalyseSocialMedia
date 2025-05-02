@@ -253,3 +253,5 @@ AttributeError: 'TikTokApi' object has no attribute 'browser'
 2025-05-02 12:30:54,886 [INFO] ✅ Erfolgreich 30 Videos in '/app/data/raw/tiktok_data.csv' gespeichert.
 2025-05-02 12:30:55,267 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
 2025-05-02 12:30:55,267 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-02 12:31:07,043 [INFO]  Lade Trending-Videos von TikTok ...
+2025-05-02 12:31:08,533 [INFO] ✅ Erfolgreich 30 Videos in '/app/data/raw/tiktok_data.csv' gespeichert.
