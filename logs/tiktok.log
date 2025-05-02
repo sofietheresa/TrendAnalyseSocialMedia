@@ -1,56 +1,14 @@
-2025-05-02 14:30:35,896 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
-2025-05-02 14:30:35,897 [INFO] LOG_PATH  = /app/logs/tiktok.log
-2025-05-02 14:32:01,497 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
+2025-05-02 19:33:51,221 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-02 19:33:51,221 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-02 19:34:37,705 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
 Call log:
   - navigating to "https://www.tiktok.com/", waiting until "load"
 
-2025-05-02 14:32:01,497 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
+2025-05-02 19:34:37,705 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
 Call log:
   - navigating to "https://www.tiktok.com/", waiting until "load"
 
-2025-05-02 14:32:06,195 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
-Call log:
-  - navigating to "https://www.tiktok.com/", waiting until "load"
-
-2025-05-02 14:32:23,616 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
-2025-05-02 14:32:23,616 [INFO] LOG_PATH  = /app/logs/tiktok.log
-2025-05-02 14:33:16,896 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
-Call log:
-  - navigating to "https://www.tiktok.com/", waiting until "load"
-
-2025-05-02 14:33:16,896 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
-Call log:
-  - navigating to "https://www.tiktok.com/", waiting until "load"
-
-2025-05-02 14:33:19,798 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
-Call log:
-  - navigating to "https://www.tiktok.com/", waiting until "load"
-
-2025-05-02 14:44:00,000 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
-2025-05-02 14:44:00,000 [INFO] LOG_PATH  = /app/logs/tiktok.log
-2025-05-02 14:44:51,064 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
-Call log:
-  - navigating to "https://www.tiktok.com/", waiting until "load"
-
-2025-05-02 14:44:51,064 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
-Call log:
-  - navigating to "https://www.tiktok.com/", waiting until "load"
-
-2025-05-02 14:44:55,741 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
-Call log:
-  - navigating to "https://www.tiktok.com/", waiting until "load"
-
-2025-05-02 14:46:13,999 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
-2025-05-02 14:46:14,000 [INFO] LOG_PATH  = /app/logs/tiktok.log
-2025-05-02 14:46:54,194 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
-Call log:
-  - navigating to "https://www.tiktok.com/", waiting until "load"
-
-2025-05-02 14:46:54,194 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
-Call log:
-  - navigating to "https://www.tiktok.com/", waiting until "load"
-
-2025-05-02 14:46:55,896 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
+2025-05-02 19:34:40,802 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
 Call log:
   - navigating to "https://www.tiktok.com/", waiting until "load"
 
