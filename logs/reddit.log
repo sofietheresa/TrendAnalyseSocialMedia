@@ -1,24 +1,2 @@
-2025-05-02 13:37:46,996 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
-Call log:
-  - navigating to "https://www.tiktok.com/", waiting until "load"
-
-2025-05-02 13:38:38,099 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
-Call log:
-  - navigating to "https://www.tiktok.com/", waiting until "load"
-
-2025-05-02 13:47:17,002 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
-Call log:
-  - navigating to "https://www.tiktok.com/", waiting until "load"
-
-2025-05-02 13:48:40,900 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
-Call log:
-  - navigating to "https://www.tiktok.com/", waiting until "load"
-
-2025-05-02 13:51:41,103 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
-Call log:
-  - navigating to "https://www.tiktok.com/", waiting until "load"
-
-2025-05-02 13:53:00,295 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
-Call log:
-  - navigating to "https://www.tiktok.com/", waiting until "load"
-
+2025-05-02 14:01:12,936 - INFO -  Starte Reddit-Scraping...
+2025-05-02 14:01:19,318 - INFO -  130 Einträge gespeichert unter /app/data/raw/reddit_data.csv
