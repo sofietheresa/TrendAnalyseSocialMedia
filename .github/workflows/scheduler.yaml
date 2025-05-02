@@ -2,45 +2,46 @@ name: Scrape & Pull Data
 
 on:
   schedule:
-    - cron: "*/15 * * * *" # Every 15 minutes
-  workflow_dispatch:
+    - cron: "*/15 * * * *" # Alle 15 Minuten
+  workflow_dispatch: # Manuell ausführbar
 
 jobs:
   scrape-and-pull:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repo
+      - name: 📥 Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Trigger Scraper on Render
+      - name: 🚀 Trigger Scraper on Render
         run: |
           curl -X POST "${{ secrets.RENDER_URL }}/run-scrapers" \
             -H "Authorization: Bearer ${{ secrets.API_SECRET }}"
 
-      - name: Download Scraped Data
+      - name: ⬇️ Download Scraped Data
         run: |
           mkdir -p data/raw logs
 
           for file in reddit_data.csv youtube_data.csv tiktok_data.csv; do
-            curl -sS "${{ secrets.RENDER_URL }}/data/download/$file" \
+            curl -sSf "${{ secrets.RENDER_URL }}/data/download/$file" \
               -H "Authorization: Bearer ${{ secrets.API_SECRET }}" \
               -o "data/raw/$file"
           done
 
           for log in reddit.log youtube.log tiktok.log; do
-            curl -sS "${{ secrets.RENDER_URL }}/logs/download/$log" \
+            curl -sSf "${{ secrets.RENDER_URL }}/logs/download/$log" \
               -H "Authorization: Bearer ${{ secrets.API_SECRET }}" \
               -o "logs/$log"
           done
 
-      - name: Commit & Push Data
+      - name: ✅ Commit & Push Data
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git remote set-url origin https://x-access-token:${GH_PAT}@github.com/sofietheresa/TrendAnalyseSocialMedia.git
+
           git add data/raw/*.csv logs/*.log
-          git diff-index --quiet HEAD || git commit -m "📊 Scraped data @ $(date -u +"%Y-%m-%d %H:%M:%S")"
+          git diff --cached --quiet || git commit -m "📊 Scraped data @ $(date -u +'%Y-%m-%d %H:%M:%S')"
           git push
