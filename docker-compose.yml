@@ -9,6 +9,7 @@ services:
       - ./api:/app/api
       - ./scheduler:/app/scheduler
       - ./logs:/app/logs
+      - ./data:/app/data
     env_file:
       - .env
     ports:

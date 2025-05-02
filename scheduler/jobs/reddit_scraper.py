@@ -9,11 +9,11 @@ import logging
 #  .env einladen
 load_dotenv()
 
-BASE_DIR = Path(__file__).resolve().parent
-csv_path = (BASE_DIR / "../data/raw/reddit_data.csv").resolve()
+
+csv_path = Path("/app/data/raw/reddit_data.csv")
 
 # Logging
-log_path = (BASE_DIR / "../../logs/reddit.log").resolve()
+log_path = Path("/app/logs/reddit.log")
 log_path.parent.mkdir(parents=True, exist_ok=True)
 
 logging.basicConfig(

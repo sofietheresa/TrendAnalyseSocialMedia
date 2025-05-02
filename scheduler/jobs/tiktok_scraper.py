@@ -12,17 +12,21 @@ load_dotenv()
 
 ms_token = os.getenv("MS_TOKEN")
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-csv_path = os.path.join(BASE_DIR, "../data/raw/tiktok_data.csv")
-csv_path = os.path.normpath(csv_path)
 
-log_path =  Path(os.path.join(BASE_DIR,"../../logs/tiktok.log"))
+csv_path = Path("/app/data/raw/tiktok_data.csv")
+log_path =  Path("/app/logs/tiktok.log")
+
+# Logging initialisieren
 log_path.parent.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
     filename=log_path,
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
+
+
+logging.info(f"DATA_PATH = {csv_path}")
+logging.info(f"LOG_PATH  = {log_path}")
 
 
 async def trending_videos():

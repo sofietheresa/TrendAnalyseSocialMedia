@@ -21,7 +21,7 @@ def run_scrapers():
     try:
         run_all()
         logging.info("✅ run_all wurde ausgeführt")
-        return {"status": "scraping started"}
+        return {"status": " scraping started"}
     except Exception as e:
         logging.exception("❌ Fehler beim Ausführen von run_all")
         return {"status": "error", "detail": str(e)}

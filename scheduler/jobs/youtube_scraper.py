@@ -7,9 +7,8 @@ import os
 from datetime import datetime
 
 # === Setup ===
-BASE_DIR = Path(__file__).resolve().parent
-DATA_PATH = (BASE_DIR / "../data/raw/youtube_data.csv").resolve()
-LOG_PATH = (BASE_DIR / "../../logs/youtube.log").resolve()
+DATA_PATH = Path("/app/data/raw/youtube_data.csv")
+LOG_PATH = Path("/app/logs/youtube.log")
 
 # .env laden
 load_dotenv()
@@ -25,7 +24,7 @@ logging.basicConfig(
 # YouTube API
 API_KEY = os.getenv("YT_KEY")
 if not API_KEY:
-    logging.error("❌ Kein YT_KEY gefunden. Bitte .env prüfen.")
+    logging.error(" Kein YT_KEY gefunden. Bitte .env prüfen.")
     raise EnvironmentError("YT_KEY fehlt")
 
 youtube = build("youtube", "v3", developerKey=API_KEY)
