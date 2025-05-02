@@ -42,3 +42,5 @@ wie daten abspeichern da raus??
 
 plan zeischendurch: erst gerüst --> alles deployen, dann modelle 
 große herausforderung dass alles laufen zu lassen
+
+render ist zwar intuitiv aber braucht eine ewigkeit um zu starten

@@ -14,7 +14,7 @@ jobs:
 
       - name: Trigger Scraper on Render
         run: |
-          curl -X POST ${{ secrets.RENDER_URL }}/run-scrapers \
+          curl -X POST https://trendanalysesocialmedia.onrender.com/run-scrapers \
             -H "Authorization: Bearer ${{ secrets.API_SECRET }}"
 
       - name: Download Scraped Data
@@ -22,13 +22,13 @@ jobs:
           mkdir -p data/raw logs
 
           for file in reddit_data.csv youtube_data.csv tiktok_data.csv; do
-            curl -sS "${{ secrets.RENDER_URL }}/data/download/$file" \
+            curl -sS "https://trendanalysesocialmedia.onrender.com/data/download/$file" \
               -H "Authorization: Bearer ${{ secrets.API_SECRET }}" \
               -o "data/raw/$file"
           done
 
           for log in reddit.log youtube.log tiktok.log; do
-            curl -sS "${{ secrets.RENDER_URL }}/logs/download/$log" \
+            curl -sS "https://trendanalysesocialmedia.onrender.com/logs/download/$log" \
               -H "Authorization: Bearer ${{ secrets.API_SECRET }}" \
               -o "logs/$log"
           done
