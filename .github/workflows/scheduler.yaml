@@ -3,14 +3,14 @@ name: Scrape & Pull Data
 on:
   schedule:
     - cron: "*/15 * * * *" # Alle 15 Minuten
-  workflow_dispatch: # Manuell ausführbar
+  workflow_dispatch:
 
 jobs:
   scrape-and-pull:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout Repository
+      - name: 📦 Checkout Repository
         uses: actions/checkout@v3
 
       - name: 🚀 Trigger Scraper on Render
@@ -40,14 +40,13 @@ jobs:
             fi
           done
 
-      - name: ✅ Commit & Push Data
+      - name: 🔐 Configure Git & Push Changes
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git remote set-url origin https://x-access-token:${GH_PAT}@github.com/sofietheresa/TrendAnalyseSocialMedia.git
-
           git add data/raw/*.csv logs/*.log
-          git diff --cached --quiet || git commit -m "📊 Scraped data @ $(date -u +'%Y-%m-%d %H:%M:%S')"
+          git diff-index --quiet HEAD || git commit -m "📊 Scraped data @ $(date -u +"%Y-%m-%d %H:%M:%S")"
           git push
