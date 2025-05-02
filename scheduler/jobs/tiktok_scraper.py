@@ -5,6 +5,7 @@ import logging
 from TikTokApi import TikTokApi
 from dotenv import load_dotenv
 from pathlib import Path
+from typing import List
 
 load_dotenv()
 

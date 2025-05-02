@@ -18,7 +18,7 @@ LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
     filename=LOG_PATH,
     level=logging.INFO,
-    filemode="a" ,
+    filemode="a",
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
