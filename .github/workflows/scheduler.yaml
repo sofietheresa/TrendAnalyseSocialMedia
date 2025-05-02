@@ -15,7 +15,7 @@ jobs:
 
       - name: Trigger Scraper on Render
         run: |
-          curl -X POST ${{ secrets.RENDER_URL }}/run-scrapers \
+          curl -X POST "${{ secrets.RENDER_URL }}/run-scrapers" \
             -H "Authorization: Bearer ${{ secrets.API_SECRET }}"
 
       - name: Download Scraped Data
@@ -40,7 +40,7 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git remote set-url origin https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}
+          git remote set-url origin https://x-access-token:${GH_PAT}@github.com/sofietheresa/TrendAnalyseSocialMedia.git
           git add data/raw/*.csv logs/*.log
-          git commit -m "📊 Scraped data @ $(date -u +"%Y-%m-%d %H:%M:%S")" || echo "No changes"
+          git diff-index --quiet HEAD || git commit -m "📊 Scraped data @ $(date -u +"%Y-%m-%d %H:%M:%S")"
           git push
