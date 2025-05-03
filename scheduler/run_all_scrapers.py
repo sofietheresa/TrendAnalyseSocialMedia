@@ -41,6 +41,7 @@ def run_script(script):
 
 def run_all():
     for script in SCRAPER_SCRIPTS:
+        logging.info("Attemping to run script: %s", script)
         run_script(script)
 
 if __name__ == "__main__":

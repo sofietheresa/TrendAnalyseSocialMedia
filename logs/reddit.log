@@ -103,3 +103,12 @@ python: can't open file '/app/scheduler/scheduler/jobs/reddit_scraper.py': [Errn
 2025-05-03 13:44:15,116 - INFO -  147 Einträge gespeichert unter /app/data/raw/reddit_data.csv
 2025-05-03 13:56:30,408 - INFO -  Starte Reddit-Scraping...
 2025-05-03 13:56:37,256 - INFO -  148 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+python: can't open file '/app/scheduler/scheduler/jobs/reddit_scraper.py': [Errno 2] No such file or directory
+python: can't open file '/app/scheduler/scheduler/jobs/reddit_scraper.py': [Errno 2] No such file or directory
+python: can't open file '/app/scheduler/scheduler/jobs/reddit_scraper.py': [Errno 2] No such file or directory
+python: can't open file '/app/scheduler/scheduler/jobs/reddit_scraper.py': [Errno 2] No such file or directory
+2025-05-03 17:57:28,642 - INFO -  Starte Reddit-Scraping...
+2025-05-03 17:57:35,624 - ERROR -  Fehler beim Reddit-Scraping: Error tokenizing data. C error: Expected 16 fields in line 165, saw 18
+
+python: can't open file '/app/scheduler/scheduler/jobs/reddit_scraper.py': [Errno 2] No such file or directory
+python: can't open file '/app/scheduler/scheduler/jobs/reddit_scraper.py': [Errno 2] No such file or directory
