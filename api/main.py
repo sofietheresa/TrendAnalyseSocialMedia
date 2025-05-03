@@ -1,70 +1,88 @@
 import os
 import logging
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse
-from scheduler.run_all_scrapers import run_all
+from fastapi.responses import FileResponse, StreamingResponse
 from dotenv import load_dotenv
+from pathlib import Path
+import zipfile
+import io
 
-# .env laden
 load_dotenv()
-
 API_SECRET = os.getenv("API_SECRET")
+app = FastAPI()
 
-# Logging
 logging.basicConfig(
     level=logging.INFO,
-    filemode="a" ,
+    filemode="a",
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
-app = FastAPI()
+scraping_job_queue = []
 
-# Root Endpoint
+def authorize(request: Request):
+    token = request.headers.get("Authorization") or request.query_params.get("token")
+    if token != f"Bearer {API_SECRET}" and token != API_SECRET:
+        logging.warning("❌ Ungültiger oder fehlender Token")
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
 @app.get("/")
 def root():
     logging.info("GET / aufgerufen")
     return {"status": "ok"}
 
-# Trigger Scraper
 @app.post("/run-scrapers")
 def run_scrapers(request: Request):
     logging.info("POST /run-scrapers aufgerufen")
+    authorize(request)
+    scraping_job_queue.append({"job": "run_all"})
+    logging.info("✅ Scrape-Auftrag zur Warteschlange hinzugefügt")
+    return {"status": "scraping job queued"}
 
-    auth_header = request.headers.get("Authorization")
-    if auth_header != f"Bearer {API_SECRET}":
-        logging.warning("❌ Ungültiger oder fehlender Authorization-Header")
-        raise HTTPException(status_code=401, detail="Unauthorized")
+@app.get("/scrape-job")
+def get_scrape_job(request: Request):
+    authorize(request)
+    if scraping_job_queue:
+        job = scraping_job_queue.pop(0)
+        logging.info("🎯 Scrape-Auftrag an Client übergeben")
+        return {"job": job}
+    return {"job": None}
 
-    try:
-        run_all()
-        logging.info("✅ run_all wurde ausgeführt")
-        return {"status": "scraping started"}
-    except Exception as e:
-        logging.exception("❌ Fehler beim Ausführen von run_all")
-        raise HTTPException(status_code=500, detail=str(e))
-
-# CSV-Dateien herunterladen
 @app.get("/data/download/{filename}")
 def download_data(filename: str, request: Request):
-    auth_header = request.headers.get("Authorization")
-    if auth_header != f"Bearer {API_SECRET}":
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
+    authorize(request)
     filepath = f"/app/data/raw/{filename}"
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="Datei nicht gefunden")
-
     return FileResponse(path=filepath, filename=filename)
 
-# Log-Dateien herunterladen
 @app.get("/logs/download/{filename}")
 def download_log(filename: str, request: Request):
-    auth_header = request.headers.get("Authorization")
-    if auth_header != f"Bearer {API_SECRET}":
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
+    authorize(request)
     filepath = f"/app/logs/{filename}"
     if not os.path.exists(filepath):
         raise HTTPException(status_code=404, detail="Logdatei nicht gefunden")
-
     return FileResponse(path=filepath, filename=filename)
+
+@app.get("/data/download/all")
+def download_all_data(request: Request):
+    authorize(request)
+    data_dir = Path("/app/data/raw")
+    zip_stream = io.BytesIO()
+    with zipfile.ZipFile(zip_stream, mode="w") as zf:
+        for file in data_dir.glob("*.csv"):
+            zf.write(file, arcname=file.name)
+    zip_stream.seek(0)
+    return StreamingResponse(zip_stream, media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=data_all.zip"})
+
+@app.get("/logs/download/all")
+def download_all_logs(request: Request):
+    authorize(request)
+    log_dir = Path("/app/logs")
+    zip_stream = io.BytesIO()
+    with zipfile.ZipFile(zip_stream, mode="w") as zf:
+        for file in log_dir.glob("*.log"):
+            zf.write(file, arcname=file.name)
+    zip_stream.seek(0)
+    return StreamingResponse(zip_stream, media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=logs_all.zip"})

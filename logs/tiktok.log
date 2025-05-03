@@ -1,14 +1,180 @@
-2025-05-02 19:33:51,221 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
-2025-05-02 19:33:51,221 [INFO] LOG_PATH  = /app/logs/tiktok.log
-2025-05-02 19:34:37,705 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
+2025-05-03 08:43:52,185 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-03 08:43:52,185 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-03 08:44:30,476 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
 Call log:
   - navigating to "https://www.tiktok.com/", waiting until "load"
 
-2025-05-02 19:34:37,705 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
+2025-05-03 08:44:30,476 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
 Call log:
   - navigating to "https://www.tiktok.com/", waiting until "load"
 
-2025-05-02 19:34:40,802 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
+2025-05-03 08:44:31,776 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:45:03,188 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-03 08:45:03,188 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-03 08:45:42,589 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:45:42,589 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:45:43,976 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:43:52,185 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-03 08:43:52,185 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-03 08:44:30,476 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:44:30,476 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:44:31,776 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:45:03,188 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-03 08:45:03,188 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-03 08:45:42,589 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:45:42,589 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:45:43,976 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:48:12,291 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-03 08:48:12,292 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-03 08:48:50,676 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:48:50,676 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:48:53,376 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:51:29,680 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-03 08:51:29,680 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-03 08:52:09,576 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:52:09,576 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:52:11,579 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:58:22,872 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-03 08:58:22,873 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-03 08:58:36,367 [INFO]  Lade Trending-Videos von TikTok ...
+2025-05-03 08:58:37,896 - TikTokApi.tiktok - ERROR - Failed to create Sound with data: {'CategoryType': 120, 'containerType': 2, 'createTime': 0, 'desc': '', 'digged': False, 'forFriend': False, 'id': '', 'itemCommentStatus': 0, 'liveRoomInfo': {'coverUrl': 'https://p77-sign-va.tiktokcdn.com/tos-maliva-avt-0068/7331691381970042886~tplv-tiktokx-cropcenter:720:720.webp?dr=10399&refresh_token=26bc9696&x-expires=1746432000&x-signature=zhL%2FHHIch586CbOZrBgxik7s89o%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=fdd36af4&idc=no1a', 'followStatus': 0, 'fypRoomTag': {'tag': [{'content': 'LIVE now', 'da_info': '', 'id': 4, 'recommond_info': '', 'style': 1}]}, 'landscape': 2, 'likeCount': 5054, 'liveRoomStats': {'userCount': 199}, 'liveSubOnly': 0, 'liveUrl': '', 'mode': 0, 'ownerInfo': {'avatarLarger': 'https://p16-sign-va.tiktokcdn.com/tos-maliva-avt-0068/7331691381970042886~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=10399&refresh_token=e1cab17c&x-expires=1746432000&x-signature=prpiLkLE3dRksE81jJ%2BPSpnP%2FIg%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'avatarMedium': 'https://p77-sign-va.tiktokcdn.com/tos-maliva-avt-0068/7331691381970042886~tplv-tiktokx-cropcenter:720:720.jpeg?dr=10399&refresh_token=dc055596&x-expires=1746432000&x-signature=wML%2FUJ19YoJKUPPsKVdHpmkh6u4%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'avatarThumb': 'https://p16-sign-va.tiktokcdn.com/tos-maliva-avt-0068/7331691381970042886~tplv-tiktokx-cropcenter:100:100.jpeg?dr=10399&refresh_token=4801848a&x-expires=1746432000&x-signature=cob%2Bn42OgFQZBfJdsM%2Fr9SSaIzM%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'ftc': False, 'id': '6898700814198916101', 'nickname': 'crazymontiyt', 'openFavorite': False, 'privateAccount': False, 'relation': 0, 'secret': False, 'signature': '', 'uniqueId': 'crazymontiyt', 'verified': False}, 'roomID': '7500012619508632342', 'shareCount': 13, 'status': 2, 'streamData': '{"common":{"session_id":"000-2025050308583681FA52685E7B73407CBC","rule_ids":"{\\"ab_version_trace\\":null,\\"sched\\":\\"{\\\\\\"result\\\\\\":{\\\\\\"hit\\\\\\":\\\\\\"default\\\\\\",\\\\\\"cdn\\\\\\":4045}}\\"}","user_count":196,"peer_anchor_level":3},"data":{"hd_60":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_hd60.flv?expire=1747472317\\u0026sign=766e90207a4a0c546aff7b61cdd5f722","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_hd60/index.m3u8?expire=1747472317\\u0026sign=f8422ecd75db935663435bf22b26d433","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"vbitrate\\":3000000,\\"resolution\\":\\"720x1280\\",\\"gop\\":4,\\"stream_suffix\\":\\"hd60\\"}"}},"ao":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862.flv?expire=1747472317\\u0026sign=30b7e94c2ed32c872c1f8ff568b711fb\\u0026only_audio=1","hls":"","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"vbitrate\\":0,\\"resolution\\":\\"\\",\\"gop\\":4}"}},"origin":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862.flv?expire=1747472317\\u0026sign=30b7e94c2ed32c872c1f8ff568b711fb","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862/index.m3u8?expire=1747472317\\u0026sign=18e5a079630fbe06c7ebba163332dd3c","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"resolution\\":\\"1080x1920\\",\\"gop\\":4,\\"vbitrate\\":5376000}"}},"hd":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_hd.flv?expire=1747472317\\u0026sign=146075e3cbe4482ba43f906fdd6e639a","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_hd/index.m3u8?expire=1747472317\\u0026sign=20e5e8fbbd6d05965acd5fe1de46b030","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"stream_suffix\\":\\"hd\\",\\"v_rtbitrate\\":1642070,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"v_rtbitrate_timestamp\\":1746262072206,\\"v_rtbitrate_vpaas_timestamp\\":1746262713229,\\"v_rtpsnr\\":0,\\"vbitrate\\":1800000,\\"resolution\\":\\"720x1280\\",\\"gop\\":4}"}},"sd":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_sd.flv?expire=1747472317\\u0026sign=d6c2202528e5f3c1760205a862376e4f","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_sd/index.m3u8?expire=1747472317\\u0026sign=ad58a00e2d730a9e5f07e985b0e5129b","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"VCodec\\":\\"h264\\",\\"v_rtbitrate_vpaas_timestamp\\":1746262713229,\\"vbitrate\\":1200000,\\"v_rtbitrate\\":1192670,\\"v_rtpsnr\\":0,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"resolution\\":\\"540x960\\",\\"gop\\":4,\\"v_rtbitrate_timestamp\\":1746262665480,\\"stream_suffix\\":\\"sd\\"}"}},"ld":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_ld.flv?expire=1747472317\\u0026sign=80718a41615f89e45330af2d60c7a3d2","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_ld/index.m3u8?expire=1747472317\\u0026sign=5157534db1e307c82bb12af8297dde46","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"v_rtbitrate_vpaas_timestamp\\":1746262713229,\\"stream_suffix\\":\\"ld\\",\\"resolution\\":\\"360x640\\",\\"v_rtpsnr\\":0,\\"v_rtbitrate_timestamp\\":1746262171779,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"vbitrate\\":600000,\\"gop\\":4,\\"v_rtbitrate\\":583670}"}},"uhd_60":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_uhd60.flv?expire=1747472317\\u0026sign=8376a649418de7e34884ee1533f2da7e","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_uhd60/index.m3u8?expire=1747472317\\u0026sign=d50dced38f4d5a895f76aa22176d760c","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"v_rtpsnr\\":0,\\"v_rtbitrate_timestamp\\":1746262603546,\\"vbitrate\\":5000000,\\"resolution\\":\\"1080x1920\\",\\"stream_suffix\\":\\"uhd60\\",\\"gop\\":4,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"v_rtbitrate\\":4312170,\\"v_rtbitrate_vpaas_timestamp\\":1746262713229}"}}}}', 'title': 'Ich Spiele mit meinem CRUSH Braw'}, 'officalItem': False, 'originalItem': False, 'privateItem': False, 'secret': False}
+
+2025-05-03 08:58:37,896 [ERROR] Failed to create Sound with data: {'CategoryType': 120, 'containerType': 2, 'createTime': 0, 'desc': '', 'digged': False, 'forFriend': False, 'id': '', 'itemCommentStatus': 0, 'liveRoomInfo': {'coverUrl': 'https://p77-sign-va.tiktokcdn.com/tos-maliva-avt-0068/7331691381970042886~tplv-tiktokx-cropcenter:720:720.webp?dr=10399&refresh_token=26bc9696&x-expires=1746432000&x-signature=zhL%2FHHIch586CbOZrBgxik7s89o%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=fdd36af4&idc=no1a', 'followStatus': 0, 'fypRoomTag': {'tag': [{'content': 'LIVE now', 'da_info': '', 'id': 4, 'recommond_info': '', 'style': 1}]}, 'landscape': 2, 'likeCount': 5054, 'liveRoomStats': {'userCount': 199}, 'liveSubOnly': 0, 'liveUrl': '', 'mode': 0, 'ownerInfo': {'avatarLarger': 'https://p16-sign-va.tiktokcdn.com/tos-maliva-avt-0068/7331691381970042886~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=10399&refresh_token=e1cab17c&x-expires=1746432000&x-signature=prpiLkLE3dRksE81jJ%2BPSpnP%2FIg%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'avatarMedium': 'https://p77-sign-va.tiktokcdn.com/tos-maliva-avt-0068/7331691381970042886~tplv-tiktokx-cropcenter:720:720.jpeg?dr=10399&refresh_token=dc055596&x-expires=1746432000&x-signature=wML%2FUJ19YoJKUPPsKVdHpmkh6u4%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'avatarThumb': 'https://p16-sign-va.tiktokcdn.com/tos-maliva-avt-0068/7331691381970042886~tplv-tiktokx-cropcenter:100:100.jpeg?dr=10399&refresh_token=4801848a&x-expires=1746432000&x-signature=cob%2Bn42OgFQZBfJdsM%2Fr9SSaIzM%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'ftc': False, 'id': '6898700814198916101', 'nickname': 'crazymontiyt', 'openFavorite': False, 'privateAccount': False, 'relation': 0, 'secret': False, 'signature': '', 'uniqueId': 'crazymontiyt', 'verified': False}, 'roomID': '7500012619508632342', 'shareCount': 13, 'status': 2, 'streamData': '{"common":{"session_id":"000-2025050308583681FA52685E7B73407CBC","rule_ids":"{\\"ab_version_trace\\":null,\\"sched\\":\\"{\\\\\\"result\\\\\\":{\\\\\\"hit\\\\\\":\\\\\\"default\\\\\\",\\\\\\"cdn\\\\\\":4045}}\\"}","user_count":196,"peer_anchor_level":3},"data":{"hd_60":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_hd60.flv?expire=1747472317\\u0026sign=766e90207a4a0c546aff7b61cdd5f722","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_hd60/index.m3u8?expire=1747472317\\u0026sign=f8422ecd75db935663435bf22b26d433","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"vbitrate\\":3000000,\\"resolution\\":\\"720x1280\\",\\"gop\\":4,\\"stream_suffix\\":\\"hd60\\"}"}},"ao":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862.flv?expire=1747472317\\u0026sign=30b7e94c2ed32c872c1f8ff568b711fb\\u0026only_audio=1","hls":"","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"vbitrate\\":0,\\"resolution\\":\\"\\",\\"gop\\":4}"}},"origin":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862.flv?expire=1747472317\\u0026sign=30b7e94c2ed32c872c1f8ff568b711fb","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862/index.m3u8?expire=1747472317\\u0026sign=18e5a079630fbe06c7ebba163332dd3c","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"resolution\\":\\"1080x1920\\",\\"gop\\":4,\\"vbitrate\\":5376000}"}},"hd":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_hd.flv?expire=1747472317\\u0026sign=146075e3cbe4482ba43f906fdd6e639a","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_hd/index.m3u8?expire=1747472317\\u0026sign=20e5e8fbbd6d05965acd5fe1de46b030","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"stream_suffix\\":\\"hd\\",\\"v_rtbitrate\\":1642070,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"v_rtbitrate_timestamp\\":1746262072206,\\"v_rtbitrate_vpaas_timestamp\\":1746262713229,\\"v_rtpsnr\\":0,\\"vbitrate\\":1800000,\\"resolution\\":\\"720x1280\\",\\"gop\\":4}"}},"sd":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_sd.flv?expire=1747472317\\u0026sign=d6c2202528e5f3c1760205a862376e4f","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_sd/index.m3u8?expire=1747472317\\u0026sign=ad58a00e2d730a9e5f07e985b0e5129b","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"VCodec\\":\\"h264\\",\\"v_rtbitrate_vpaas_timestamp\\":1746262713229,\\"vbitrate\\":1200000,\\"v_rtbitrate\\":1192670,\\"v_rtpsnr\\":0,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"resolution\\":\\"540x960\\",\\"gop\\":4,\\"v_rtbitrate_timestamp\\":1746262665480,\\"stream_suffix\\":\\"sd\\"}"}},"ld":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_ld.flv?expire=1747472317\\u0026sign=80718a41615f89e45330af2d60c7a3d2","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_ld/index.m3u8?expire=1747472317\\u0026sign=5157534db1e307c82bb12af8297dde46","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"v_rtbitrate_vpaas_timestamp\\":1746262713229,\\"stream_suffix\\":\\"ld\\",\\"resolution\\":\\"360x640\\",\\"v_rtpsnr\\":0,\\"v_rtbitrate_timestamp\\":1746262171779,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"vbitrate\\":600000,\\"gop\\":4,\\"v_rtbitrate\\":583670}"}},"uhd_60":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_uhd60.flv?expire=1747472317\\u0026sign=8376a649418de7e34884ee1533f2da7e","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_uhd60/index.m3u8?expire=1747472317\\u0026sign=d50dced38f4d5a895f76aa22176d760c","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"v_rtpsnr\\":0,\\"v_rtbitrate_timestamp\\":1746262603546,\\"vbitrate\\":5000000,\\"resolution\\":\\"1080x1920\\",\\"stream_suffix\\":\\"uhd60\\",\\"gop\\":4,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"v_rtbitrate\\":4312170,\\"v_rtbitrate_vpaas_timestamp\\":1746262713229}"}}}}', 'title': 'Ich Spiele mit meinem CRUSH Braw'}, 'officalItem': False, 'originalItem': False, 'privateItem': False, 'secret': False}
+
+2025-05-03 08:58:39,428 - TikTokApi.tiktok - ERROR - Failed to create Sound with data: {'CategoryType': 120, 'containerType': 2, 'createTime': 0, 'desc': '', 'digged': False, 'forFriend': False, 'id': '', 'itemCommentStatus': 0, 'liveRoomInfo': {'coverUrl': 'https://p77-sign-va.tiktokcdn.com/tos-maliva-avt-0068/7331691381970042886~tplv-tiktokx-cropcenter:720:720.webp?dr=10399&refresh_token=26bc9696&x-expires=1746432000&x-signature=zhL%2FHHIch586CbOZrBgxik7s89o%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=fdd36af4&idc=no1a', 'followStatus': 0, 'fypRoomTag': {'tag': [{'content': 'LIVE now', 'da_info': '', 'id': 4, 'recommond_info': '', 'style': 1}]}, 'landscape': 2, 'likeCount': 5054, 'liveRoomStats': {'userCount': 201}, 'liveSubOnly': 0, 'liveUrl': '', 'mode': 0, 'ownerInfo': {'avatarLarger': 'https://p77-sign-va.tiktokcdn.com/tos-maliva-avt-0068/7331691381970042886~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=10399&refresh_token=f687861c&x-expires=1746432000&x-signature=HJ8c75QsxJJQJwJl9XzwYaZQE7E%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'avatarMedium': 'https://p77-sign-va.tiktokcdn.com/tos-maliva-avt-0068/7331691381970042886~tplv-tiktokx-cropcenter:720:720.jpeg?dr=10399&refresh_token=dc055596&x-expires=1746432000&x-signature=wML%2FUJ19YoJKUPPsKVdHpmkh6u4%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'avatarThumb': 'https://p77-sign-va.tiktokcdn.com/tos-maliva-avt-0068/7331691381970042886~tplv-tiktokx-cropcenter:100:100.jpeg?dr=10399&refresh_token=4d5cf03d&x-expires=1746432000&x-signature=Nzovzk08Y8xvPYawLf3Mz%2BttzI0%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'ftc': False, 'id': '6898700814198916101', 'nickname': 'crazymontiyt', 'openFavorite': False, 'privateAccount': False, 'relation': 0, 'secret': False, 'signature': '', 'uniqueId': 'crazymontiyt', 'verified': False}, 'roomID': '7500012619508632342', 'shareCount': 13, 'status': 2, 'streamData': '{"common":{"session_id":"000-2025050308583797817C9163FB6A42EE2A","rule_ids":"{\\"ab_version_trace\\":null,\\"sched\\":\\"{\\\\\\"result\\\\\\":{\\\\\\"hit\\\\\\":\\\\\\"default\\\\\\",\\\\\\"cdn\\\\\\":4045}}\\"}","user_count":196,"peer_anchor_level":3},"data":{"origin":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862.flv?expire=1747472318\\u0026sign=ea70c784e6fc89210204bceae41e4930","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862/index.m3u8?expire=1747472318\\u0026sign=b461d060d6cc485dab611680f9545e21","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"vbitrate\\":5376000,\\"resolution\\":\\"1080x1920\\",\\"gop\\":4}"}},"hd":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_hd.flv?expire=1747472318\\u0026sign=2cd70201d6935862d395db01ec3f7c2d","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_hd/index.m3u8?expire=1747472318\\u0026sign=d2cde5e108aa0906ebd48ed2cf19b147","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"v_rtbitrate_vpaas_timestamp\\":1746262708863,\\"vbitrate\\":1800000,\\"gop\\":4,\\"v_rtpsnr\\":0,\\"v_rtbitrate_timestamp\\":1746262072206,\\"v_rtbitrate\\":1642070,\\"stream_suffix\\":\\"hd\\",\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"resolution\\":\\"720x1280\\"}"}},"sd":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_sd.flv?expire=1747472318\\u0026sign=b89b0a70e9cb07b76bbecd136e978a5a","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_sd/index.m3u8?expire=1747472318\\u0026sign=6cf59309b8d4d0392f5ad53fff233211","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"VCodec\\":\\"h264\\",\\"vbitrate\\":1200000,\\"resolution\\":\\"540x960\\",\\"v_rtbitrate_vpaas_timestamp\\":1746262708863,\\"stream_suffix\\":\\"sd\\",\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"gop\\":4,\\"v_rtbitrate\\":1192670,\\"v_rtpsnr\\":0,\\"v_rtbitrate_timestamp\\":1746262665480}"}},"ld":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_ld.flv?expire=1747472318\\u0026sign=da1a393625503a493cb91522fec26fe1","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_ld/index.m3u8?expire=1747472318\\u0026sign=4164fdf719123795d229ccdb67dce3d1","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"VCodec\\":\\"h264\\",\\"stream_suffix\\":\\"ld\\",\\"vbitrate\\":600000,\\"gop\\":4,\\"v_rtbitrate\\":583670,\\"v_rtpsnr\\":0,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"v_rtbitrate_vpaas_timestamp\\":1746262708863,\\"resolution\\":\\"360x640\\",\\"v_rtbitrate_timestamp\\":1746262171779}"}},"uhd_60":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_uhd60.flv?expire=1747472318\\u0026sign=4219cada574e0c1c4d51c52d3c85dd47","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_uhd60/index.m3u8?expire=1747472318\\u0026sign=020dfc021be8b779970ff7901e3ea22d","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"v_rtbitrate\\":4312170,\\"v_rtpsnr\\":0,\\"v_rtbitrate_vpaas_timestamp\\":1746262708863,\\"stream_suffix\\":\\"uhd60\\",\\"vbitrate\\":5000000,\\"VCodec\\":\\"h264\\",\\"resolution\\":\\"1080x1920\\",\\"gop\\":4,\\"v_rtbitrate_timestamp\\":1746262603546,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1}}"}},"hd_60":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_hd60.flv?expire=1747472318\\u0026sign=9abd0e1c80091429fc2354d111008e14","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_hd60/index.m3u8?expire=1747472318\\u0026sign=60babafedf902e26086b105e03d8b8d6","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"resolution\\":\\"720x1280\\",\\"gop\\":4,\\"stream_suffix\\":\\"hd60\\",\\"vbitrate\\":3000000}"}},"ao":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862.flv?expire=1747472318\\u0026sign=ea70c784e6fc89210204bceae41e4930\\u0026only_audio=1","hls":"","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"vbitrate\\":0,\\"resolution\\":\\"\\",\\"gop\\":4,\\"Auto\\":{\\"Enable\\":1,\\"Demotion\\":{\\"StallCount\\":4}},\\"VCodec\\":\\"h264\\"}"}}}}', 'title': 'Ich Spiele mit meinem CRUSH Braw'}, 'officalItem': False, 'originalItem': False, 'privateItem': False, 'secret': False}
+
+2025-05-03 08:58:39,428 [ERROR] Failed to create Sound with data: {'CategoryType': 120, 'containerType': 2, 'createTime': 0, 'desc': '', 'digged': False, 'forFriend': False, 'id': '', 'itemCommentStatus': 0, 'liveRoomInfo': {'coverUrl': 'https://p77-sign-va.tiktokcdn.com/tos-maliva-avt-0068/7331691381970042886~tplv-tiktokx-cropcenter:720:720.webp?dr=10399&refresh_token=26bc9696&x-expires=1746432000&x-signature=zhL%2FHHIch586CbOZrBgxik7s89o%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=fdd36af4&idc=no1a', 'followStatus': 0, 'fypRoomTag': {'tag': [{'content': 'LIVE now', 'da_info': '', 'id': 4, 'recommond_info': '', 'style': 1}]}, 'landscape': 2, 'likeCount': 5054, 'liveRoomStats': {'userCount': 201}, 'liveSubOnly': 0, 'liveUrl': '', 'mode': 0, 'ownerInfo': {'avatarLarger': 'https://p77-sign-va.tiktokcdn.com/tos-maliva-avt-0068/7331691381970042886~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=10399&refresh_token=f687861c&x-expires=1746432000&x-signature=HJ8c75QsxJJQJwJl9XzwYaZQE7E%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'avatarMedium': 'https://p77-sign-va.tiktokcdn.com/tos-maliva-avt-0068/7331691381970042886~tplv-tiktokx-cropcenter:720:720.jpeg?dr=10399&refresh_token=dc055596&x-expires=1746432000&x-signature=wML%2FUJ19YoJKUPPsKVdHpmkh6u4%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'avatarThumb': 'https://p77-sign-va.tiktokcdn.com/tos-maliva-avt-0068/7331691381970042886~tplv-tiktokx-cropcenter:100:100.jpeg?dr=10399&refresh_token=4d5cf03d&x-expires=1746432000&x-signature=Nzovzk08Y8xvPYawLf3Mz%2BttzI0%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=no1a', 'ftc': False, 'id': '6898700814198916101', 'nickname': 'crazymontiyt', 'openFavorite': False, 'privateAccount': False, 'relation': 0, 'secret': False, 'signature': '', 'uniqueId': 'crazymontiyt', 'verified': False}, 'roomID': '7500012619508632342', 'shareCount': 13, 'status': 2, 'streamData': '{"common":{"session_id":"000-2025050308583797817C9163FB6A42EE2A","rule_ids":"{\\"ab_version_trace\\":null,\\"sched\\":\\"{\\\\\\"result\\\\\\":{\\\\\\"hit\\\\\\":\\\\\\"default\\\\\\",\\\\\\"cdn\\\\\\":4045}}\\"}","user_count":196,"peer_anchor_level":3},"data":{"origin":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862.flv?expire=1747472318\\u0026sign=ea70c784e6fc89210204bceae41e4930","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862/index.m3u8?expire=1747472318\\u0026sign=b461d060d6cc485dab611680f9545e21","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"vbitrate\\":5376000,\\"resolution\\":\\"1080x1920\\",\\"gop\\":4}"}},"hd":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_hd.flv?expire=1747472318\\u0026sign=2cd70201d6935862d395db01ec3f7c2d","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_hd/index.m3u8?expire=1747472318\\u0026sign=d2cde5e108aa0906ebd48ed2cf19b147","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"v_rtbitrate_vpaas_timestamp\\":1746262708863,\\"vbitrate\\":1800000,\\"gop\\":4,\\"v_rtpsnr\\":0,\\"v_rtbitrate_timestamp\\":1746262072206,\\"v_rtbitrate\\":1642070,\\"stream_suffix\\":\\"hd\\",\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"resolution\\":\\"720x1280\\"}"}},"sd":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_sd.flv?expire=1747472318\\u0026sign=b89b0a70e9cb07b76bbecd136e978a5a","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_sd/index.m3u8?expire=1747472318\\u0026sign=6cf59309b8d4d0392f5ad53fff233211","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"VCodec\\":\\"h264\\",\\"vbitrate\\":1200000,\\"resolution\\":\\"540x960\\",\\"v_rtbitrate_vpaas_timestamp\\":1746262708863,\\"stream_suffix\\":\\"sd\\",\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"gop\\":4,\\"v_rtbitrate\\":1192670,\\"v_rtpsnr\\":0,\\"v_rtbitrate_timestamp\\":1746262665480}"}},"ld":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_ld.flv?expire=1747472318\\u0026sign=da1a393625503a493cb91522fec26fe1","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_ld/index.m3u8?expire=1747472318\\u0026sign=4164fdf719123795d229ccdb67dce3d1","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"VCodec\\":\\"h264\\",\\"stream_suffix\\":\\"ld\\",\\"vbitrate\\":600000,\\"gop\\":4,\\"v_rtbitrate\\":583670,\\"v_rtpsnr\\":0,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"v_rtbitrate_vpaas_timestamp\\":1746262708863,\\"resolution\\":\\"360x640\\",\\"v_rtbitrate_timestamp\\":1746262171779}"}},"uhd_60":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_uhd60.flv?expire=1747472318\\u0026sign=4219cada574e0c1c4d51c52d3c85dd47","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_uhd60/index.m3u8?expire=1747472318\\u0026sign=020dfc021be8b779970ff7901e3ea22d","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"v_rtbitrate\\":4312170,\\"v_rtpsnr\\":0,\\"v_rtbitrate_vpaas_timestamp\\":1746262708863,\\"stream_suffix\\":\\"uhd60\\",\\"vbitrate\\":5000000,\\"VCodec\\":\\"h264\\",\\"resolution\\":\\"1080x1920\\",\\"gop\\":4,\\"v_rtbitrate_timestamp\\":1746262603546,\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1}}"}},"hd_60":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_hd60.flv?expire=1747472318\\u0026sign=9abd0e1c80091429fc2354d111008e14","hls":"https://pull-hls-f16-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862_hd60/index.m3u8?expire=1747472318\\u0026sign=60babafedf902e26086b105e03d8b8d6","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"Auto\\":{\\"Demotion\\":{\\"StallCount\\":4},\\"Enable\\":1},\\"VCodec\\":\\"h264\\",\\"resolution\\":\\"720x1280\\",\\"gop\\":4,\\"stream_suffix\\":\\"hd60\\",\\"vbitrate\\":3000000}"}},"ao":{"main":{"flv":"https://pull-f5-tt04.tiktokcdn-eu.com/game/stream-7500132966993283862.flv?expire=1747472318\\u0026sign=ea70c784e6fc89210204bceae41e4930\\u0026only_audio=1","hls":"","cmaf":"","dash":"","lls":"","tsl":"","tile":"","rtc":"","sdk_params":"{\\"vbitrate\\":0,\\"resolution\\":\\"\\",\\"gop\\":4,\\"Auto\\":{\\"Enable\\":1,\\"Demotion\\":{\\"StallCount\\":4}},\\"VCodec\\":\\"h264\\"}"}}}}', 'title': 'Ich Spiele mit meinem CRUSH Braw'}, 'officalItem': False, 'originalItem': False, 'privateItem': False, 'secret': False}
+
+2025-05-03 08:58:39,440 [INFO] ✅ Erfolgreich 58 Videos in '/app/data/raw/tiktok_data.csv' gespeichert.
+2025-05-03 08:43:52,185 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-03 08:43:52,185 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-03 08:44:30,476 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:44:30,476 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:44:31,776 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:45:03,188 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-03 08:45:03,188 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-03 08:45:42,589 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:45:42,589 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:45:43,976 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:48:12,291 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-03 08:48:12,292 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-03 08:48:50,676 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:48:50,676 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:48:53,376 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:51:29,680 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-03 08:51:29,680 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-03 08:52:09,576 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:52:09,576 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:52:11,579 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:55:36,678 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-03 08:55:36,678 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-03 08:56:14,676 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:56:14,676 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 08:56:16,780 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 09:07:28,385 [INFO] DATA_PATH = /app/data/raw/tiktok_data.csv
+2025-05-03 09:07:28,385 [INFO] LOG_PATH  = /app/logs/tiktok.log
+2025-05-03 09:08:06,799 - TikTokApi.tiktok - ERROR - Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 09:08:06,799 [ERROR] Failed to create session: Page.goto: Timeout 30000ms exceeded.
+Call log:
+  - navigating to "https://www.tiktok.com/", waiting until "load"
+
+2025-05-03 09:08:10,080 [ERROR] ❌ Fehler beim TikTok-Scraping: TimeoutError: Page.goto: Timeout 30000ms exceeded.
 Call log:
   - navigating to "https://www.tiktok.com/", waiting until "load"
 

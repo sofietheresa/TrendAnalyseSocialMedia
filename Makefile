@@ -2,7 +2,7 @@ include .env
 export
 
 API_URL=https://trendanalysesocialmedia.onrender.com
-TOKEN= Bearer $(API_SECRET) 
+TOKEN=Bearer $(API_SECRET)
 
 FILES=reddit_data.csv tiktok_data.csv youtube_data.csv
 LOGS=reddit.log tiktok.log youtube.log
@@ -26,10 +26,17 @@ sync:
 		rm -f $$tmp; \
 	done
 
-	@echo "\n⬇️  Lade Logs herunter ..."
+	@echo "\n⬇️  Lade Logs herunter & hänge sie an bestehende Dateien an ..."
 	@mkdir -p logs
 	@for log in $(LOGS); do \
-		curl -s $(API_URL)/logs/download/$$log -H "Authorization: $(TOKEN)" -o logs/$$log; \
+		tmp="logs/tmp_$$log"; \
+		curl -s $(API_URL)/logs/download/$$log -H "Authorization: $(TOKEN)" -o $$tmp; \
+		if [ -f logs/$$log ]; then \
+			cat $$tmp >> logs/$$log; \
+		else \
+			mv $$tmp logs/$$log; \
+		fi; \
+		rm -f $$tmp; \
 	done
 
 	@echo "\n✅ Alle Dateien synchronisiert."
