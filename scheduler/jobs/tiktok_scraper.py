@@ -65,7 +65,7 @@ async def trending_videos():
             writer = csv.DictWriter(f, fieldnames=data[0].keys())
             if not file_exists:
                 writer.writeheader()
-            writer.writerows(data, on_bad_lines='warn')
+            writer.writerows(data)
 
         logging.info(f"✅ Erfolgreich {len(data)} Videos in '{csv_path}' gespeichert.")
 

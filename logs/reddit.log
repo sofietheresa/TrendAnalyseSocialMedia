@@ -125,3 +125,9 @@ python: can't open file '/app/scheduler/scheduler/jobs/reddit_scraper.py': [Errn
 
   df_existing = pd.read_csv(csv_path, on_bad_lines='warn')
 2025-05-03 21:28:06,972 - INFO -  160 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-03 21:38:23,270 - INFO -  Starte Reddit-Scraping...
+2025-05-03 21:38:30,032 - INFO -  162 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-03 21:50:47,092 - INFO -  Starte Reddit-Scraping...
+2025-05-03 21:50:54,406 - INFO -  277 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-03 21:54:08,710 - INFO -  Starte Reddit-Scraping...
+2025-05-03 21:54:15,069 - INFO -  277 Einträge gespeichert unter /app/data/raw/reddit_data.csv
