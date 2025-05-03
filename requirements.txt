@@ -6,3 +6,7 @@ python-dotenv
 playwright
 fastapi
 uvicorn
+sqlalchemy
+scikit-learn
+sentence-transformers
+qdrant-client

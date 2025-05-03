@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3.8"
 
 services:
   scheduler:
@@ -16,3 +16,23 @@ services:
       - "8080:10000"  # Falls du FastAPI lokal testen willst
     container_name: trend_scheduler
     restart: unless-stopped
+    depends_on:
+      - qdrant
+
+  scraper-trigger:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python scheduler/scraper_trigger.py
+    env_file:
+      - .env
+    depends_on:
+      - scheduler
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - ./qdrant_storage:/qdrant/storage

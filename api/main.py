@@ -30,6 +30,8 @@ def root():
     logging.info("GET / aufgerufen")
     return {"status": "ok"}
 
+from subprocess import run, CalledProcessError
+
 @app.post("/run-scrapers")
 def run_scrapers(request: Request):
     logging.info("POST /run-scrapers aufgerufen")

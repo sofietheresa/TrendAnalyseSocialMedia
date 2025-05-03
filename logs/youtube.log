@@ -37,3 +37,6 @@
 2025-05-03 09:08:15,697 - INFO - file_cache is only supported with oauth2client<4.0.0
 2025-05-03 09:08:15,776 - INFO - 🔍 Starte YouTube-Scraping...
 2025-05-03 09:08:16,092 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+{"detail":"Logdatei nicht gefunden"}2025-05-03 10:06:02,802 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-03 10:06:02,805 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-03 10:06:02,994 - INFO - ✅ 63 Videos gespeichert unter: /app/data/raw/youtube_data.csv
