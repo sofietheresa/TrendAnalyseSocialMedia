@@ -21,9 +21,6 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 
-logging.info(f"DATA_PATH = {csv_path}")
-logging.info(f"LOG_PATH  = {log_path}")
-
 async def trending_videos():
     if not ms_token:
         logging.error("MS_TOKEN fehlt. Bitte prüfe deine .env-Datei.")
@@ -68,7 +65,7 @@ async def trending_videos():
             writer = csv.DictWriter(f, fieldnames=data[0].keys())
             if not file_exists:
                 writer.writeheader()
-            writer.writerows(data)
+            writer.writerows(data, on_bad_lines='warn')
 
         logging.info(f"✅ Erfolgreich {len(data)} Videos in '{csv_path}' gespeichert.")
 

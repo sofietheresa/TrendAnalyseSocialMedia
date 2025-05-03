@@ -69,7 +69,7 @@ def scrape_youtube_trending(region="DE", max_results=50):
         df = pd.DataFrame(videos)
 
         if DATA_PATH.exists():
-            df_existing = pd.read_csv(DATA_PATH)
+            df_existing = pd.read_csv(DATA_PATH, on_bad_lines='warn')
             df = pd.concat([df_existing, df], ignore_index=True)
 
         df.drop_duplicates(subset=["video_id"], inplace=True)

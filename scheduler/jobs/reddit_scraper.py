@@ -58,7 +58,7 @@ def scrape_reddit():
         csv_path.parent.mkdir(parents=True, exist_ok=True)
 
         if csv_path.exists():
-            df_existing = pd.read_csv(csv_path)
+            df_existing = pd.read_csv(csv_path, on_bad_lines='warn')
             df = pd.concat([df_existing, df], ignore_index=True)
 
         df.drop_duplicates(subset=["title", "text", "subreddit"], inplace=True)

@@ -9,7 +9,8 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from scheduler.run_all_scrapers import run_all  
+from scheduler.run_all_scrapers import run_all
+
 
 load_dotenv()
 

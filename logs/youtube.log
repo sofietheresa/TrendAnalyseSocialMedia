@@ -95,3 +95,15 @@ python: can't open file '/app/scheduler/scheduler/jobs/youtube_scraper.py': [Err
 python: can't open file '/app/scheduler/scheduler/jobs/youtube_scraper.py': [Errno 2] No such file or directory
 python: can't open file '/app/scheduler/scheduler/jobs/youtube_scraper.py': [Errno 2] No such file or directory
 python: can't open file '/app/scheduler/scheduler/jobs/youtube_scraper.py': [Errno 2] No such file or directory
+2025-05-03 21:21:46,461 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-03 21:21:46,465 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-03 21:21:46,691 - INFO - ✅ 78 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-03 21:24:07,749 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-03 21:24:07,753 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-03 21:24:07,949 - INFO - ✅ 78 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-03 21:26:59,763 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-03 21:26:59,766 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-03 21:27:00,005 - INFO - ✅ 78 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-03 21:28:21,613 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-03 21:28:21,616 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-03 21:28:21,782 - INFO - ✅ 78 Videos gespeichert unter: /app/data/raw/youtube_data.csv
