@@ -17,6 +17,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
+# ✅ Job-Warteschlange mit einfachem Format (Strings wie "run_all")
 scraping_job_queue = []
 
 def authorize(request: Request):
@@ -30,13 +31,11 @@ def root():
     logging.info("GET / aufgerufen")
     return {"status": "ok"}
 
-from subprocess import run, CalledProcessError
-
 @app.post("/run-scrapers")
 def run_scrapers(request: Request):
     logging.info("POST /run-scrapers aufgerufen")
     authorize(request)
-    scraping_job_queue.append({"job": "run_all"})
+    scraping_job_queue.append("run_all")
     logging.info("✅ Scrape-Auftrag zur Warteschlange hinzugefügt")
     return {"status": "scraping job queued"}
 
@@ -45,8 +44,8 @@ def get_scrape_job(request: Request):
     authorize(request)
     if scraping_job_queue:
         job = scraping_job_queue.pop(0)
-        logging.info("🎯 Scrape-Auftrag an Client übergeben")
-        return {"job": job}
+        logging.info(f"🎯 Scrape-Auftrag '{job}' an Client übergeben")
+        return {"job": job}  # job ist jetzt ein einfacher String
     return {"job": None}
 
 @app.get("/data/download/{filename}")
