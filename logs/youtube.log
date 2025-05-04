@@ -175,3 +175,16 @@ python: can't open file '/app/scheduler/scheduler/jobs/youtube_scraper.py': [Err
 2025-05-04 14:23:59,499 - INFO - ⏳ Letzter Scrape vor 5.4 Stunden - warte noch
 2025-05-04 14:44:31,537 - INFO - file_cache is only supported with oauth2client<4.0.0
 2025-05-04 14:44:31,605 - INFO - ⏳ Letzter Scrape vor 5.7 Stunden - warte noch
+2025-05-04 14:52:54,297 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 14:52:54,313 - INFO - ⏳ Letzter Scrape vor 5.9 Stunden - warte noch
+2025-05-04 16:59:15,799 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 16:59:16,035 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-04 16:59:16,850 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-04 16:59:16,991 - INFO - 📊 Bestehende Daten: 280 Videos
+2025-05-04 16:59:17,007 - INFO - 🔄 Nach Zusammenführung: 330 Videos
+2025-05-04 16:59:17,032 - INFO - 🔍 67 Duplikate entfernt
+2025-05-04 16:59:17,447 - INFO - ✅ 263 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-04 17:34:00,677 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 17:34:00,888 - INFO - ⏳ Letzter Scrape vor 0.6 Stunden - warte noch
+2025-05-04 17:36:35,956 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 17:36:36,272 - INFO - ⏳ Letzter Scrape vor 0.6 Stunden - warte noch
