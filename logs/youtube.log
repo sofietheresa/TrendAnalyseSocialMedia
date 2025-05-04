@@ -153,3 +153,25 @@ python: can't open file '/app/scheduler/scheduler/jobs/youtube_scraper.py': [Err
 2025-05-04 09:00:05,558 - INFO - 📊 Bestehende Daten: 78 Videos
 2025-05-04 09:00:05,560 - INFO - 🔄 Nach Zusammenführung: 128 Videos
 2025-05-04 09:00:05,578 - INFO - ✅ 128 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-04 09:07:33,704 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 09:07:33,719 - INFO - ⏳ Letzter Scrape vor 0.1 Stunden - warte noch
+2025-05-04 09:29:01,361 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 09:29:01,372 - INFO - ⏳ Letzter Scrape vor 0.5 Stunden - warte noch
+2025-05-04 09:46:39,859 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 09:46:39,871 - INFO - ⏳ Letzter Scrape vor 0.8 Stunden - warte noch
+2025-05-04 09:55:01,731 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 09:55:01,743 - INFO - ⏳ Letzter Scrape vor 0.9 Stunden - warte noch
+2025-05-04 10:22:26,681 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 10:22:26,698 - INFO - ⏳ Letzter Scrape vor 1.4 Stunden - warte noch
+2025-05-04 10:40:51,042 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 10:40:51,059 - INFO - ⏳ Letzter Scrape vor 1.7 Stunden - warte noch
+2025-05-04 10:53:17,427 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 10:53:17,443 - INFO - ⏳ Letzter Scrape vor 1.9 Stunden - warte noch
+2025-05-04 11:36:00,280 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 11:36:00,870 - INFO - ⏳ Letzter Scrape vor 2.6 Stunden - warte noch
+2025-05-04 12:05:11,138 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 12:05:11,567 - INFO - ⏳ Letzter Scrape vor 3.1 Stunden - warte noch
+2025-05-04 14:23:59,479 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 14:23:59,499 - INFO - ⏳ Letzter Scrape vor 5.4 Stunden - warte noch
+2025-05-04 14:44:31,537 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-04 14:44:31,605 - INFO - ⏳ Letzter Scrape vor 5.7 Stunden - warte noch
