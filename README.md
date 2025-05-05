@@ -137,6 +137,3 @@ podman run --rm \
 - [ ] Sentiment analysis pipeline
 - [ ] Streamlit dashboard
 
----
-
-Let me know if you want this written directly to your `README.md` file.
