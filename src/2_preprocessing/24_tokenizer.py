@@ -1,8 +1,11 @@
+from pathlib import Path
 import pandas as pd
+import os 
 import re
 import string
 import nltk
 from nltk.corpus import stopwords
+
 from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -12,7 +15,9 @@ nltk.download('stopwords')
 nltk.download('wordnet')
 
 # Pfad zur Datei (kann für Container oder lokal angepasst werden)
-data_path = os.getenv("DATA_PATH", "/mnt/data/cleaned_social_media_data.csv")
+DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data/processed"
+data_path = DATA_DIR / "cleaned_social_media_data.csv"
+
 
 # Daten einlesen
 df = pd.read_csv(data_path)
@@ -47,4 +52,4 @@ tfidf_matrix = tfidf_vectorizer.fit_transform(df["preprocessed_text"])
 tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), columns=tfidf_vectorizer.get_feature_names_out())
 
 # Optional: Speichern für spätere Verarbeitung in Vektor-DB
-tfidf_df.to_csv("/mnt/data/tfidf_features.csv", index=False)
+tfidf_df.to_csv( DATA_DIR /"tfidf_features.csv", index=False)
