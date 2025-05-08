@@ -69,7 +69,7 @@ trigger-loop:
 		-v $(PWD):/app \
 		-w /app \
 		$(IMAGE_NAME) \
-		python scheduler/scraper_trigger.py
+		python src/scheduler/scraper_trigger.py
 
 # --------------------------------------------
 # 🧱 PODMAN CONTAINER-STEUERUNG
