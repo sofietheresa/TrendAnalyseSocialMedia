@@ -1,0 +1,68 @@
+2025-05-07 13:48:38,560 - INFO - Starte Instagram-Explore-Scraping...
+2025-05-07 13:48:38,561 - INFO - ====== WebDriver manager ======
+2025-05-07 13:48:39,429 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-07 13:48:39,462 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-07 13:48:39,494 - INFO - Driver [C:\Users\SofiePischl\.wdm\drivers\chromedriver\win64\136.0.7103.92\chromedriver-win32/chromedriver.exe] found in cache
+2025-05-07 13:48:46,498 - ERROR - Fehler beim Instagram-Explore-Scraping: Message: element click intercepted: Element <button class=" _acan _acap _acas _aj1- _ap30" type="submit">...</button> is not clickable at point (374, 258). Other element would receive the click: <span class="x1lliihq x1plvlek xryxfnj x1n2onr6 x1ji0vk5 x18bv5gf x193iq5w xeuugli x1fj9vlw x13faqbe x1vvkbs x1s928wv xhkezso x1gmr53x x1cpjm7i x1fgarty x1943h6x x1i0vuye xvs91rp xo1l8bm x5n08af x1tu3fi x3x7a5m x10wh9bi x1wdrske x8viiok x18hxmgj" dir="auto" style="----base-line-clamp-line-height: 18px; --lineHeight: 18px;">...</span>
+  (Session info: chrome=136.0.7103.93)
+Stacktrace:
+	GetHandleVerifier [0x0031FC53+61635]
+	GetHandleVerifier [0x0031FC94+61700]
+	(No symbol) [0x001405D3]
+	(No symbol) [0x0018ECB0]
+	(No symbol) [0x0018D054]
+	(No symbol) [0x0018ABF7]
+	(No symbol) [0x00189EFB]
+	(No symbol) [0x0017E5A5]
+	(No symbol) [0x001AD29C]
+	(No symbol) [0x0017E034]
+	(No symbol) [0x001AD514]
+	(No symbol) [0x001CE61B]
+	(No symbol) [0x001AD096]
+	(No symbol) [0x0017C840]
+	(No symbol) [0x0017D6A4]
+	GetHandleVerifier [0x005A4573+2701795]
+	GetHandleVerifier [0x0059FCF6+2683238]
+	GetHandleVerifier [0x005BAA3E+2793134]
+	GetHandleVerifier [0x00336915+155013]
+	GetHandleVerifier [0x0033CFFD+181357]
+	GetHandleVerifier [0x003274A8+92440]
+	GetHandleVerifier [0x00327650+92864]
+	GetHandleVerifier [0x00312040+5296]
+	BaseThreadInitThunk [0x76995D49+25]
+	RtlInitializeExceptionChain [0x777BCF0B+107]
+	RtlGetAppContainerNamedObjectPath [0x777BCE91+561]
+	(No symbol) [0x00000000]
+
+2025-05-07 13:49:46,767 - INFO - Starte Instagram-Scraping für URL: https://www.instagram.com/p/DICWDtYNq7E/
+2025-05-07 13:49:46,767 - INFO - ====== WebDriver manager ======
+2025-05-07 13:49:47,582 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-07 13:49:49,665 - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-07 13:49:49,702 - INFO - Driver [C:\Users\SofiePischl\.wdm\drivers\chromedriver\win64\136.0.7103.92\chromedriver-win32/chromedriver.exe] found in cache
+2025-05-07 13:50:08,370 - ERROR - Fehler beim Scrapen von https://www.instagram.com/p/DICWDtYNq7E/: Message: 
+Stacktrace:
+	GetHandleVerifier [0x0031FC53+61635]
+	GetHandleVerifier [0x0031FC94+61700]
+	(No symbol) [0x001405D3]
+	(No symbol) [0x0018899E]
+	(No symbol) [0x00188D3B]
+	(No symbol) [0x001D0E12]
+	(No symbol) [0x001AD2E4]
+	(No symbol) [0x001CE61B]
+	(No symbol) [0x001AD096]
+	(No symbol) [0x0017C840]
+	(No symbol) [0x0017D6A4]
+	GetHandleVerifier [0x005A4573+2701795]
+	GetHandleVerifier [0x0059FCF6+2683238]
+	GetHandleVerifier [0x005BAA3E+2793134]
+	GetHandleVerifier [0x00336915+155013]
+	GetHandleVerifier [0x0033CFFD+181357]
+	GetHandleVerifier [0x003274A8+92440]
+	GetHandleVerifier [0x00327650+92864]
+	GetHandleVerifier [0x00312040+5296]
+	BaseThreadInitThunk [0x76995D49+25]
+	RtlInitializeExceptionChain [0x777BCF0B+107]
+	RtlGetAppContainerNamedObjectPath [0x777BCE91+561]
+	(No symbol) [0x00000000]
+
+2025-05-07 14:12:14,166 - INFO - file_cache is only supported with oauth2client<4.0.0
