@@ -265,3 +265,92 @@ python: can't open file '/app/scheduler/scheduler/jobs/youtube_scraper.py': [Err
 2025-05-05 22:28:45,171 - INFO - ⏳ Letzter Scrape vor 4.3 Stunden - warte noch
 2025-05-05 22:46:45,188 - INFO - file_cache is only supported with oauth2client<4.0.0
 2025-05-05 22:46:45,217 - INFO - ⏳ Letzter Scrape vor 4.6 Stunden - warte noch
+2025-05-05 22:55:23,976 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-05 22:55:24,030 - INFO - ⏳ Letzter Scrape vor 4.8 Stunden - warte noch
+2025-05-05 23:03:38,437 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-05 23:03:38,519 - INFO - ⏳ Letzter Scrape vor 4.9 Stunden - warte noch
+2025-05-06 13:32:11,015 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-06 13:32:11,048 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-06 13:32:11,315 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-06 13:32:11,340 - INFO - 📊 Bestehende Daten: 320 Videos
+2025-05-06 13:32:11,343 - INFO - 🔄 Nach Zusammenführung: 370 Videos
+2025-05-06 13:32:11,455 - INFO - ✅ 370 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-06 13:50:43,000 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-06 13:50:43,035 - INFO - ⏳ Letzter Scrape vor 0.3 Stunden - warte noch
+2025-05-06 14:13:38,511 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-06 14:13:38,544 - INFO - ⏳ Letzter Scrape vor 0.7 Stunden - warte noch
+2025-05-06 14:41:24,858 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-06 14:41:24,897 - INFO - ⏳ Letzter Scrape vor 1.2 Stunden - warte noch
+2025-05-06 14:54:00,831 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-06 14:54:00,864 - INFO - ⏳ Letzter Scrape vor 1.4 Stunden - warte noch
+2025-05-06 15:27:35,833 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-06 15:27:35,868 - INFO - ⏳ Letzter Scrape vor 1.9 Stunden - warte noch
+2025-05-06 15:48:12,713 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-06 15:48:12,749 - INFO - ⏳ Letzter Scrape vor 2.3 Stunden - warte noch
+2025-05-06 16:00:59,148 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-06 16:00:59,187 - INFO - ⏳ Letzter Scrape vor 2.5 Stunden - warte noch
+2025-05-06 16:20:01,542 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-06 16:20:01,604 - INFO - ⏳ Letzter Scrape vor 2.8 Stunden - warte noch
+2025-05-07 12:30:17,471 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 12:30:17,532 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-07 12:30:17,870 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-07 12:30:17,900 - INFO - 📊 Bestehende Daten: 370 Videos
+2025-05-07 12:30:17,904 - INFO - 🔄 Nach Zusammenführung: 420 Videos
+2025-05-07 12:30:18,069 - INFO - ✅ 420 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-07 13:10:53,053 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 13:10:53,081 - INFO - ⏳ Letzter Scrape vor 0.7 Stunden - warte noch
+2025-05-07 13:45:24,495 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 13:45:24,517 - INFO - ⏳ Letzter Scrape vor 1.3 Stunden - warte noch
+2025-05-07 13:57:51,087 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 13:57:51,115 - INFO - ⏳ Letzter Scrape vor 1.5 Stunden - warte noch
+2025-05-07 14:29:23,613 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 14:29:23,635 - INFO - ⏳ Letzter Scrape vor 2.0 Stunden - warte noch
+2025-05-07 14:47:45,769 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 14:47:45,820 - INFO - ⏳ Letzter Scrape vor 2.3 Stunden - warte noch
+2025-05-07 14:49:28,006 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 14:49:28,055 - INFO - ⏳ Letzter Scrape vor 2.3 Stunden - warte noch
+2025-05-07 15:38:21,961 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 15:38:22,009 - INFO - ⏳ Letzter Scrape vor 3.1 Stunden - warte noch
+2025-05-07 15:52:59,390 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 15:52:59,429 - INFO - ⏳ Letzter Scrape vor 3.4 Stunden - warte noch
+2025-05-07 16:21:40,459 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 16:21:40,562 - INFO - ⏳ Letzter Scrape vor 3.9 Stunden - warte noch
+2025-05-07 16:49:21,231 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 16:49:21,267 - INFO - ⏳ Letzter Scrape vor 4.3 Stunden - warte noch
+2025-05-07 17:00:58,223 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 17:00:58,258 - INFO - ⏳ Letzter Scrape vor 4.5 Stunden - warte noch
+2025-05-07 17:29:29,385 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 17:29:29,427 - INFO - ⏳ Letzter Scrape vor 5.0 Stunden - warte noch
+2025-05-07 17:46:01,543 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 17:46:01,587 - INFO - ⏳ Letzter Scrape vor 5.3 Stunden - warte noch
+2025-05-07 17:55:16,750 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 17:55:16,815 - INFO - ⏳ Letzter Scrape vor 5.4 Stunden - warte noch
+2025-05-07 17:58:08,382 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 17:58:08,437 - INFO - ⏳ Letzter Scrape vor 5.5 Stunden - warte noch
+2025-05-07 18:54:50,021 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 18:54:50,063 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-07 18:54:50,285 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-07 18:54:50,310 - INFO - 📊 Bestehende Daten: 420 Videos
+2025-05-07 18:54:50,312 - INFO - 🔄 Nach Zusammenführung: 470 Videos
+2025-05-07 18:54:50,314 - INFO - 🔍 42 Duplikate entfernt
+2025-05-07 18:54:50,441 - INFO - ✅ 428 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-07 19:17:32,092 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 19:17:32,132 - INFO - ⏳ Letzter Scrape vor 0.4 Stunden - warte noch
+2025-05-07 19:31:09,585 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 19:31:09,630 - INFO - ⏳ Letzter Scrape vor 0.6 Stunden - warte noch
+2025-05-07 19:43:50,690 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 19:43:50,729 - INFO - ⏳ Letzter Scrape vor 0.8 Stunden - warte noch
+2025-05-07 19:56:29,988 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 19:56:30,028 - INFO - ⏳ Letzter Scrape vor 1.0 Stunden - warte noch
+2025-05-07 20:28:11,597 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 20:28:11,640 - INFO - ⏳ Letzter Scrape vor 1.6 Stunden - warte noch
+2025-05-07 20:45:44,637 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 20:45:44,682 - INFO - ⏳ Letzter Scrape vor 1.8 Stunden - warte noch
+2025-05-07 20:59:18,526 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 20:59:18,566 - INFO - ⏳ Letzter Scrape vor 2.1 Stunden - warte noch
+2025-05-07 21:22:56,992 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 21:22:57,036 - INFO - ⏳ Letzter Scrape vor 2.5 Stunden - warte noch
+2025-05-07 21:32:03,742 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 21:32:03,903 - INFO - ⏳ Letzter Scrape vor 2.6 Stunden - warte noch
+2025-05-07 21:40:26,424 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-07 21:40:26,520 - INFO - ⏳ Letzter Scrape vor 2.8 Stunden - warte noch
