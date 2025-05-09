@@ -44,3 +44,10 @@ plan zeischendurch: erst gerüst --> alles deployen, dann modelle
 große herausforderung dass alles laufen zu lassen
 
 render ist zwar intuitiv aber braucht eine ewigkeit um zu starten
+
+
+später: Instagram anbinden wietere datenquellen, youtube video subscriptions
+
+verbesserung des topic modeling und der sentiment analyse
+
+
