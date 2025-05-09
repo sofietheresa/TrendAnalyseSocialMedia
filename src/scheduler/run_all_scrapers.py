@@ -15,7 +15,7 @@ SCRAPER_SCRIPTS = sorted(JOBS_DIR.glob("*_scraper.py"))
 
 def run_script(script):
     name = Path(script).stem.replace("_scraper", "")
-    log_file = Path("/app/logs") / f"{name}.log"
+    log_file = Path("logs") / f"{name}.log"
 
     
     print(f"📄 Log-Datei: {log_file}")
@@ -28,7 +28,7 @@ def run_script(script):
         with open(log_file, "a", encoding="utf-8") as log:
             subprocess.run(
                 ["python", str(relative_script_path)],
-                cwd="scheduler",
+                cwd=str(BASE_DIR),
                 env=os.environ.copy(),
                 stdout=log,
                 stderr=log,

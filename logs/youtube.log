@@ -354,3 +354,99 @@ python: can't open file '/app/scheduler/scheduler/jobs/youtube_scraper.py': [Err
 2025-05-07 21:32:03,903 - INFO - ⏳ Letzter Scrape vor 2.6 Stunden - warte noch
 2025-05-07 21:40:26,424 - INFO - file_cache is only supported with oauth2client<4.0.0
 2025-05-07 21:40:26,520 - INFO - ⏳ Letzter Scrape vor 2.8 Stunden - warte noch
+2025-05-09 11:06:24,581 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-09 11:06:24,701 - WARNING - ⚠️ Fehler beim Prüfen des letzten Scrape-Zeitpunkts: Unknown datetime string format, unable to parse: scraped_at, at position 0
+2025-05-09 11:06:24,702 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-09 11:06:25,032 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-09 11:06:25,055 - INFO - 📊 Bestehende Daten: 479 Videos
+2025-05-09 11:06:25,056 - INFO - 🔄 Nach Zusammenführung: 529 Videos
+2025-05-09 11:06:25,058 - INFO - 🔍 1 Duplikate entfernt
+2025-05-09 11:06:25,146 - INFO - ✅ 528 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-09 11:14:47,302 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-09 11:14:47,370 - WARNING - ⚠️ Fehler beim Prüfen des letzten Scrape-Zeitpunkts: Unknown datetime string format, unable to parse: scraped_at, at position 0
+2025-05-09 11:14:47,370 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-09 11:14:47,715 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-09 11:14:47,742 - INFO - 📊 Bestehende Daten: 528 Videos
+2025-05-09 11:14:47,743 - INFO - 🔄 Nach Zusammenführung: 578 Videos
+2025-05-09 11:14:47,745 - INFO - 🔍 50 Duplikate entfernt
+2025-05-09 11:14:47,801 - INFO - ✅ 528 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-09 11:30:16,051 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-09 11:30:16,118 - WARNING - ⚠️ Fehler beim Prüfen des letzten Scrape-Zeitpunkts: Unknown datetime string format, unable to parse: scraped_at, at position 0
+2025-05-09 11:30:16,118 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-09 11:30:16,421 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-09 11:30:16,450 - INFO - 📊 Bestehende Daten: 528 Videos
+2025-05-09 11:30:16,451 - INFO - 🔄 Nach Zusammenführung: 578 Videos
+2025-05-09 11:30:16,453 - INFO - 🔍 50 Duplikate entfernt
+2025-05-09 11:30:16,528 - INFO - ✅ 528 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-09 11:43:43,576 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-09 11:43:43,605 - WARNING - ⚠️ Fehler beim Prüfen des letzten Scrape-Zeitpunkts: Unknown datetime string format, unable to parse: scraped_at, at position 0
+2025-05-09 11:43:43,606 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-09 11:43:43,904 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-09 11:43:43,919 - INFO - 📊 Bestehende Daten: 528 Videos
+2025-05-09 11:43:43,920 - INFO - 🔄 Nach Zusammenführung: 578 Videos
+2025-05-09 11:43:43,924 - INFO - 🔍 50 Duplikate entfernt
+2025-05-09 11:43:43,963 - INFO - ✅ 528 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-09 11:56:07,245 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-09 11:56:07,315 - WARNING - ⚠️ Fehler beim Prüfen des letzten Scrape-Zeitpunkts: Unknown datetime string format, unable to parse: scraped_at, at position 0
+2025-05-09 11:56:07,316 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-09 11:56:07,633 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-09 11:56:07,647 - INFO - 📊 Bestehende Daten: 528 Videos
+2025-05-09 11:56:07,647 - INFO - 🔄 Nach Zusammenführung: 578 Videos
+2025-05-09 11:56:07,649 - INFO - 🔍 50 Duplikate entfernt
+2025-05-09 11:56:07,674 - INFO - ✅ 528 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-09 12:48:37,084 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-09 12:48:37,171 - WARNING - ⚠️ Fehler beim Prüfen des letzten Scrape-Zeitpunkts: Unknown datetime string format, unable to parse: scraped_at, at position 0
+2025-05-09 12:48:37,172 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-09 12:48:37,657 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-09 12:48:37,681 - INFO - 📊 Bestehende Daten: 528 Videos
+2025-05-09 12:48:37,682 - INFO - 🔄 Nach Zusammenführung: 578 Videos
+2025-05-09 12:48:37,687 - INFO - 🔍 49 Duplikate entfernt
+2025-05-09 12:48:37,741 - INFO - ✅ 529 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-09 13:21:05,106 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-09 13:21:05,185 - WARNING - ⚠️ Fehler beim Prüfen des letzten Scrape-Zeitpunkts: Unknown datetime string format, unable to parse: scraped_at, at position 0
+2025-05-09 13:21:05,186 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-09 13:21:05,510 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-09 13:21:05,575 - INFO - 📊 Bestehende Daten: 529 Videos
+2025-05-09 13:21:05,576 - INFO - 🔄 Nach Zusammenführung: 579 Videos
+2025-05-09 13:21:05,579 - INFO - 🔍 50 Duplikate entfernt
+2025-05-09 13:21:05,632 - INFO - ✅ 529 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-09 13:44:30,426 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-09 13:44:30,514 - WARNING - ⚠️ Fehler beim Prüfen des letzten Scrape-Zeitpunkts: Unknown datetime string format, unable to parse: scraped_at, at position 0
+2025-05-09 13:44:30,514 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-09 13:44:30,809 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-09 13:44:30,842 - INFO - 📊 Bestehende Daten: 529 Videos
+2025-05-09 13:44:30,843 - INFO - 🔄 Nach Zusammenführung: 579 Videos
+2025-05-09 13:44:30,846 - INFO - 🔍 50 Duplikate entfernt
+2025-05-09 13:44:30,910 - INFO - ✅ 529 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-09 13:56:52,093 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-09 13:56:52,169 - WARNING - ⚠️ Fehler beim Prüfen des letzten Scrape-Zeitpunkts: Unknown datetime string format, unable to parse: scraped_at, at position 0
+2025-05-09 13:56:52,169 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-09 13:56:52,484 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-09 13:56:52,514 - INFO - 📊 Bestehende Daten: 529 Videos
+2025-05-09 13:56:52,514 - INFO - 🔄 Nach Zusammenführung: 579 Videos
+2025-05-09 13:56:52,516 - INFO - 🔍 50 Duplikate entfernt
+2025-05-09 13:56:52,571 - INFO - ✅ 529 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-09 14:39:17,872 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-09 14:39:17,966 - WARNING - ⚠️ Fehler beim Prüfen des letzten Scrape-Zeitpunkts: Unknown datetime string format, unable to parse: scraped_at, at position 0
+2025-05-09 14:39:17,967 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-09 14:39:18,292 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-09 14:39:18,323 - INFO - 📊 Bestehende Daten: 529 Videos
+2025-05-09 14:39:18,324 - INFO - 🔄 Nach Zusammenführung: 579 Videos
+2025-05-09 14:39:18,326 - INFO - 🔍 50 Duplikate entfernt
+2025-05-09 14:39:18,405 - INFO - ✅ 529 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-09 14:44:38,303 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-09 14:44:38,325 - WARNING - ⚠️ Fehler beim Prüfen des letzten Scrape-Zeitpunkts: Unknown datetime string format, unable to parse: scraped_at, at position 0
+2025-05-09 14:44:38,326 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-09 14:44:38,616 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-09 14:44:38,642 - INFO - 📊 Bestehende Daten: 529 Videos
+2025-05-09 14:44:38,643 - INFO - 🔄 Nach Zusammenführung: 579 Videos
+2025-05-09 14:44:38,645 - INFO - 🔍 47 Duplikate entfernt
+2025-05-09 14:44:38,700 - INFO - ✅ 532 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-09 14:57:01,188 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-09 14:57:01,254 - WARNING - ⚠️ Fehler beim Prüfen des letzten Scrape-Zeitpunkts: Unknown datetime string format, unable to parse: scraped_at, at position 0
+2025-05-09 14:57:01,255 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-09 14:57:01,656 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-09 14:57:01,673 - INFO - 📊 Bestehende Daten: 532 Videos
+2025-05-09 14:57:01,673 - INFO - 🔄 Nach Zusammenführung: 582 Videos
+2025-05-09 14:57:01,676 - INFO - 🔍 50 Duplikate entfernt
+2025-05-09 14:57:01,745 - INFO - ✅ 532 Videos gespeichert unter: /app/data/raw/youtube_data.csv
