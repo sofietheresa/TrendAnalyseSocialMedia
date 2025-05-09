@@ -46,4 +46,4 @@ RUN python -m playwright install --with-deps
 
 
 
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "10000"]
+CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "10000"]
