@@ -41,7 +41,12 @@ def should_scrape():
         if df.empty:
             return True
         
-        last_scrape = pd.to_datetime(df['scraped_at'].max())
+        df['scraped_at'] = pd.to_datetime(df['scraped_at'], errors='coerce')
+        if df['scraped_at'].isnull().all():
+            logging.warning("⚠️ Keine gültigen scraped_at-Werte – führe Scrape durch")
+            return True
+
+        last_scrape = df['scraped_at'].max()
         time_since_last = datetime.now() - last_scrape
         
         if time_since_last < timedelta(hours=MIN_HOURS_BETWEEN_SCRAPES):
