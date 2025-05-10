@@ -1,139 +1,194 @@
-Here's an updated version of your `README.md` to reflect the current state of the project, including the TikTok integration and deployment via Render:
+# Social Media Trend Analysis
 
----
+Eine moderne Anwendung zur Analyse von Social Media Trends mit einer Web-Oberfläche und Echtzeit-Monitoring.
 
-# TrendSage – Social Media Trend Discovery for Publishing
+## Features
 
-**TrendSage** is an open-source machine learning project designed to automatically discover trending topics and sentiments from social media platforms such as **Reddit**, **YouTube**, and **TikTok**. This tool is intended for publishers, authors, content creators, and media professionals who want to identify emerging trends before they go mainstream.
+- **Daten-Scraping** von verschiedenen Social Media Plattformen:
+  - TikTok
+  - YouTube
+  - Reddit
+- **Automatische Analyse** von Trends und Mustern
+- **Web-Dashboard** zur Visualisierung der Ergebnisse
+- **Echtzeit-Monitoring** der Pipeline-Performance
+- **REST-API** für externe Integrationen
 
-The project includes scheduled scraping, unsupervised topic modeling, sentiment analysis, and intuitive dashboards – built using free, open-source Python tools and deployed via **Render** and **GitHub Actions**.
+## Technologie-Stack
 
----
+- **Backend:**
 
-## ✅ Project Goals
+  - Python 3.11+
+  - FastAPI
+  - ZenML für ML-Pipelines
+  - TensorFlow für ML-Modelle
+  - NLTK für Textverarbeitung
 
-- Automatically extract trending social media data multiple times per day
-- Identify and group emerging topics using unsupervised topic modeling
-- Analyze sentiment around trending content
-- Visualize trends and evolution of topics and sentiment in a clean interface
-- Run reliably in a containerized environment like Render
+- **Frontend:**
 
----
+  - React
+  - Chart.js für Visualisierungen
+  - Modernes, responsives Design
 
-## 📁 Project Structure
+- **Infrastruktur:**
+  - Docker & Docker Compose
+  - Nginx als Reverse Proxy
+  - Prometheus & Grafana für Monitoring
+  - Qdrant für Vektordatenbank
 
-```text
-trendsage/
-│
-├── api/                  # FastAPI application
-│   └── main.py
-│
-├── scheduler/            # Scheduled scrapers and orchestration
-│   ├── run_all_scrapers.py
-│   └── jobs/
-│       ├── reddit_scraper.py
-│       ├── youtube_scraper.py
-│       └── tiktok_scraper.py
-│
-├── data/
-│   ├── raw/              # Scraped CSV files
-│   └── processed/        # Cleaned and enriched data
-│
-├── logs/                 # Scraper logs
-│
-├── notebooks/            # Analysis and development
-│
-├── models/               # Saved models for topic/sentiment analysis
-│
-├── app/                  # Streamlit dashboard (WIP)
-│
-├── .env                  # Environment variables (not tracked)
-├── Dockerfile            # Container definition
-├── docker-compose.yml    # Local multi-service setup
-├── requirements.txt      # Python dependencies
-├── Makefile              # Common commands
-├── README.md             # This file
-└── scheduler.yaml        # GitHub Actions workflow
-```
+## Installation
 
----
-
-## ⚙️ How It Works
-
-### 1. Data Collection
-
-- Reddit via `PRAW`
-- YouTube via YouTube Data API v3
-- TikTok via `TikTokApi` (browser automation with Playwright)
-
-### 2. Scraper Scheduling
-
-- `/run-scrapers` endpoint triggers all scrapers
-- Automatically scheduled every 15 minutes via **GitHub Actions**
-- Secured with API token-based authentication
-
-### 3. Logging and Storage
-
-- Logs for each platform are stored under `/app/logs/*.log`
-- Raw data saved in `/app/data/raw/*.csv`
-- Data and logs can be downloaded via HTTP endpoints or `make sync`
-
----
-
-## 🚀 Deployment (Render + GitHub Actions)
-
-1. **Deploy backend to [Render.com](https://render.com/)**
-
-   - Use FastAPI + Uvicorn
-   - Set up `.env` variables in Render (e.g. `YT_KEY`, `REDDIT_ID`, `MS_TOKEN`, `API_SECRET`)
-
-2. **Trigger scrapers via GitHub Actions**
-
-   ```yaml
-   name: Trigger Scraper Every 15 Minutes
-
-   on:
-     schedule:
-       - cron: "*/15 * * * *"
-     workflow_dispatch:
-
-   jobs:
-     run-scraper:
-       runs-on: ubuntu-latest
-       steps:
-         - name: Trigger Render scraper endpoint
-           run: |
-             curl -X POST https://trendanalysesocialmedia.onrender.com/run-scrapers \
-                  -H "Authorization: Bearer ${{ secrets.API_SECRET }}"
-   ```
-
-3. **Secure sync to local machine**
+1. **Voraussetzungen:**
 
    ```bash
-   make sync
+   - Docker & Docker Compose
+   - Python 3.11+
+   - Node.js 16+ (für Frontend-Entwicklung)
    ```
 
----
+2. **Repository klonen:**
 
-## 🧪 Run TikTok scraper (manual)
+   ```bash
+   git clone https://github.com/yourusername/trend-analyse-social-media.git
+   cd trend-analyse-social-media
+   ```
 
-```bash
-podman run --rm \
-  --env-file .env \
-  -v "${PWD}:/app/src" \
-  tiktokapi:latest
+3. **Python-Paket installieren:**
+
+   ```bash
+   pip install -e .
+   ```
+
+4. **Umgebungsvariablen konfigurieren:**
+
+   ```bash
+   cp .env.example .env
+   # Bearbeite .env mit deinen API-Keys und Konfigurationen
+   ```
+
+5. **Docker-Container starten:**
+   ```bash
+   docker-compose up -d
+   ```
+
+## Verwendung
+
+### Web-Dashboard
+
+- Öffne `https://deine-domain.de` im Browser
+- Dashboard zeigt aktuelle Trends und Analysen
+- Pipeline kann manuell gestartet werden
+- Echtzeit-Updates alle 30 Sekunden
+
+### API-Endpunkte
+
+- `GET /api/` - API-Dokumentation
+- `POST /api/run-pipeline` - Pipeline starten
+- `GET /api/status` - Status der letzten Analyse
+- `GET /api/metrics` - Prometheus Metriken
+
+### Monitoring
+
+- Grafana Dashboard: `https://deine-domain.de:3001`
+  - Login: admin/admin
+  - Pipeline-Performance
+  - Fehlerraten
+  - Ressourcennutzung
+
+## Projektstruktur
+
+```
+trend-analyse-social-media/
+├── src/                    # Hauptquellcode
+│   ├── api.py             # FastAPI-Anwendung
+│   ├── pipelines/         # ML-Pipelines
+│   └── scrapers/          # Social Media Scraper
+├── frontend/              # React Frontend
+├── docker-compose.yml     # Docker-Konfiguration
+├── Dockerfile            # Docker-Build
+├── nginx.conf            # Nginx-Konfiguration
+├── setup.py              # Python-Paket-Konfiguration
+└── setup_ssl.sh          # SSL-Setup-Skript
 ```
 
----
+## Entwicklung
 
-## ✅ Status
+### Frontend-Entwicklung
 
-- [x] Project initialized
-- [x] Scraper jobs implemented for Reddit, YouTube, TikTok
-- [x] Logging and persistent data storage working
-- [x] FastAPI deployed and secured
-- [x] GitHub Actions integration live
-- [ ] Topic modeling pipeline
-- [ ] Sentiment analysis pipeline
-- [ ] Streamlit dashboard
+```bash
+cd frontend
+npm install
+npm start
+```
 
+### Backend-Entwicklung
+
+```bash
+# Virtuelle Umgebung erstellen
+python -m venv venv
+source venv/bin/activate  # oder `venv\Scripts\activate` unter Windows
+
+# Abhängigkeiten installieren
+pip install -e .
+```
+
+### Tests ausführen
+
+```bash
+python -m pytest tests/
+```
+
+## Deployment
+
+1. **SSL-Zertifikate einrichten:**
+
+   ```bash
+   chmod +x setup_ssl.sh
+   ./setup_ssl.sh deine-domain.de
+   ```
+
+2. **Nginx-Konfiguration anpassen:**
+
+   - Bearbeite `nginx.conf`
+   - Ersetze `server_name _;` mit deiner Domain
+
+3. **Container neu starten:**
+   ```bash
+   docker-compose down
+   docker-compose up -d
+   ```
+
+## Monitoring & Wartung
+
+- **Logs anzeigen:**
+
+  ```bash
+  docker-compose logs -f
+  ```
+
+- **Container-Status prüfen:**
+
+  ```bash
+  docker-compose ps
+  ```
+
+- **Backup erstellen:**
+  ```bash
+  # Daten sichern
+  tar -czf backup.tar.gz data/ qdrant_storage/
+  ```
+
+## Lizenz
+
+MIT License - siehe [LICENSE](LICENSE) für Details.
+
+## Beitragen
+
+1. Fork das Repository
+2. Erstelle einen Feature-Branch
+3. Committe deine Änderungen
+4. Push zum Branch
+5. Erstelle einen Pull Request
+
+## Kontakt
+
+Bei Fragen oder Problemen, erstelle bitte ein Issue im GitHub-Repository.

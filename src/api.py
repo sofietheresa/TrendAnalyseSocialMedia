@@ -1,5 +1,10 @@
 from fastapi import FastAPI, HTTPException
-from src.pipelines import social_media_analysis_pipeline
+from fastapi.middleware.cors import CORSMiddleware
+from zenml.client import Client
+from zenml.pipelines import pipeline
+from zenml.steps import step
+import os
+from typing import Dict, Any
 import logging
 from pathlib import Path
 import json
@@ -18,89 +23,101 @@ PIPELINE_DURATION = Histogram('pipeline_duration_seconds', 'Time spent running p
 PIPELINE_ERRORS = Counter('pipeline_errors_total', 'Total number of pipeline errors')
 
 app = FastAPI(
-    title="Social Media Analysis API",
+    title="Social Media Trend Analysis API",
     description="API für die Analyse von Social Media Trends",
     version="1.0.0"
 )
 
-@app.get("/")
-def read_root():
-    return {
-        "message": "Willkommen bei der Social Media Analysis API",
-        "endpoints": {
-            "GET /": "Diese Hilfeseite",
-            "POST /run-pipeline": "Startet die Analyse-Pipeline",
-            "GET /status": "Zeigt den Status der letzten Analyse",
-            "GET /metrics": "Prometheus Metriken"
-        }
-    }
+# CORS-Konfiguration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In Produktion auf spezifische Domains beschränken
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.post("/run-pipeline")
-def run_pipeline():
-    PIPELINE_RUNS.inc()
-    start_time = time.time()
-    
+# Pipeline-Client initialisieren
+client = Client()
+
+@app.get("/")
+async def root():
+    return {"message": "Social Media Trend Analysis API"}
+
+@app.post("/api/run-pipeline/{step}")
+async def run_pipeline_step(step: str):
     try:
-        # Pipeline starten
-        pipeline = social_media_analysis_pipeline()
-        pipeline.run()
-        
-        # Ergebnisse laden
-        results_dir = Path("data/processed")
-        results = {}
-        
-        # Exploration Results
-        if (results_dir / "exploration_results.json").exists():
-            with open(results_dir / "exploration_results.json", "r") as f:
-                results["exploration"] = json.load(f)
-        
-        # Prediction Results
-        if (results_dir / "prediction_results.json").exists():
-            with open(results_dir / "prediction_results.json", "r") as f:
-                results["prediction"] = json.load(f)
-        
-        duration = time.time() - start_time
-        PIPELINE_DURATION.observe(duration)
+        # Pipeline-Schritt ausführen
+        if step == "data_ingestion":
+            pipeline_instance = client.get_pipeline("data_ingestion_pipeline")
+        elif step == "preprocessing":
+            pipeline_instance = client.get_pipeline("preprocessing_pipeline")
+        elif step == "data_exploration":
+            pipeline_instance = client.get_pipeline("data_exploration_pipeline")
+        elif step == "prediction":
+            pipeline_instance = client.get_pipeline("prediction_pipeline")
+        else:
+            raise HTTPException(status_code=400, detail=f"Unbekannter Pipeline-Schritt: {step}")
+
+        # Pipeline ausführen
+        run = pipeline_instance.run()
         
         return {
             "status": "success",
-            "message": "Pipeline erfolgreich ausgeführt",
-            "timestamp": datetime.now().isoformat(),
-            "duration_seconds": duration,
-            "results": results
+            "step": step,
+            "run_id": run.id,
+            "message": f"Pipeline-Schritt '{step}' erfolgreich ausgeführt"
         }
-    
     except Exception as e:
-        PIPELINE_ERRORS.inc()
-        logger.error(f"Pipeline fehlgeschlagen: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/status")
-def get_status():
+@app.post("/api/run-pipeline")
+async def run_full_pipeline():
     try:
-        results_dir = Path("data/processed")
-        status = {
-            "last_update": None,
-            "has_results": False,
-            "available_results": []
-        }
+        # Alle Pipeline-Schritte nacheinander ausführen
+        steps = ["data_ingestion", "preprocessing", "data_exploration", "prediction"]
+        results = {}
         
-        if results_dir.exists():
-            # Prüfe auf vorhandene Ergebnisdateien
-            result_files = list(results_dir.glob("*.json"))
-            if result_files:
-                status["has_results"] = True
-                status["available_results"] = [f.name for f in result_files]
-                # Finde das neueste Update
-                latest_file = max(result_files, key=lambda x: x.stat().st_mtime)
-                status["last_update"] = datetime.fromtimestamp(
-                    latest_file.stat().st_mtime
-                ).isoformat()
+        for step in steps:
+            pipeline_instance = client.get_pipeline(f"{step}_pipeline")
+            run = pipeline_instance.run()
+            results[step] = {
+                "run_id": run.id,
+                "status": "completed"
+            }
+        
+        return {
+            "status": "success",
+            "message": "Vollständige Pipeline erfolgreich ausgeführt",
+            "results": results
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/status")
+async def get_status():
+    try:
+        # Status der letzten Pipeline-Ausführungen abrufen
+        status = {}
+        steps = ["data_ingestion", "preprocessing", "data_exploration", "prediction"]
+        
+        for step in steps:
+            pipeline_instance = client.get_pipeline(f"{step}_pipeline")
+            runs = pipeline_instance.get_runs(limit=1)
+            if runs:
+                status[step] = {
+                    "last_run": runs[0].id,
+                    "status": runs[0].status,
+                    "timestamp": runs[0].created_at.isoformat()
+                }
+            else:
+                status[step] = {
+                    "status": "no_runs",
+                    "message": "Keine Pipeline-Ausführungen gefunden"
+                }
         
         return status
-    
     except Exception as e:
-        logger.error(f"Statusabfrage fehlgeschlagen: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/metrics")

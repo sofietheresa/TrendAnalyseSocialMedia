@@ -2,9 +2,10 @@ from zenml import pipeline
 from zenml.steps import step
 from typing import Dict, Any
 import pandas as pd
-from src.pipelines.steps.data_ingestion import run_data_ingestion
+from src.pipelines.steps.data_ingestion import ingest_data
 from src.pipelines.steps.preprocessing import preprocess_data
 from src.pipelines.steps.data_exploration import explore_data
+from src.pipelines.steps.predictions import make_predictions
 
 @step
 def data_exploration(data: pd.DataFrame) -> Dict[str, Any]:
@@ -22,7 +23,7 @@ def make_predictions(data: pd.DataFrame, exploration_results: Dict[str, Any]) ->
 def social_media_analysis_pipeline():
     """Main pipeline that orchestrates all steps."""
     # Run data ingestion
-    raw_data = run_data_ingestion()
+    raw_data = ingest_data()
     
     # Preprocess the data
     processed_data = preprocess_data(raw_data)

@@ -1,161 +1,149 @@
 import React, { useState, useEffect } from 'react';
-import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+import './App.css';
 
 function App() {
-  const [status, setStatus] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState('idle');
   const [error, setError] = useState(null);
-  const [results, setResults] = useState(null);
+  const [stepStatus, setStepStatus] = useState({
+    data_ingestion: 'idle',
+    preprocessing: 'idle',
+    data_exploration: 'idle',
+    prediction: 'idle'
+  });
 
-  const fetchStatus = async () => {
+  const runPipelineStep = async (step) => {
     try {
-      const response = await fetch('/status');
-      const data = await response.json();
-      setStatus(data);
-    } catch (err) {
-      setError('Fehler beim Laden des Status');
-    }
-  };
-
-  const runPipeline = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch('/run-pipeline', {
+      setStepStatus(prev => ({ ...prev, [step]: 'running' }));
+      const response = await fetch(`/api/run-pipeline/${step}`, {
         method: 'POST',
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
-      setResults(data);
-      fetchStatus();
-    } catch (err) {
-      setError('Fehler beim Ausführen der Pipeline');
-    } finally {
-      setLoading(false);
+      setStepStatus(prev => ({ ...prev, [step]: 'completed' }));
+      return data;
+    } catch (error) {
+      setStepStatus(prev => ({ ...prev, [step]: 'error' }));
+      setError(error.message);
+      throw error;
     }
   };
 
-  useEffect(() => {
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 30000); // Alle 30 Sekunden aktualisieren
-    return () => clearInterval(interval);
-  }, []);
+  const runFullPipeline = async () => {
+    try {
+      setStatus('running');
+      setError(null);
+      
+      // Run each step in sequence
+      await runPipelineStep('data_ingestion');
+      await runPipelineStep('preprocessing');
+      await runPipelineStep('data_exploration');
+      await runPipelineStep('prediction');
+      
+      setStatus('completed');
+    } catch (error) {
+      setStatus('error');
+      setError(error.message);
+    }
+  };
+
+  const getButtonClass = (status) => {
+    switch (status) {
+      case 'running': return 'button-running';
+      case 'completed': return 'button-completed';
+      case 'error': return 'button-error';
+      default: return 'button-idle';
+    }
+  };
 
   return (
     <div className="App">
-      <header>
-        <h1>Social Media Analysis Dashboard</h1>
+      <header className="App-header">
+        <h1>Social Media Trend Analysis</h1>
       </header>
+      
+      <main className="App-main">
+        <section className="pipeline-controls">
+          <h2>Pipeline Steuerung</h2>
+          
+          <div className="pipeline-buttons">
+            <button 
+              className={`pipeline-button ${getButtonClass(status)}`}
+              onClick={runFullPipeline}
+              disabled={status === 'running'}
+            >
+              Gesamte Pipeline starten
+            </button>
+          </div>
 
-      <main>
-        <section className="status-section">
-          <h2>Status</h2>
-          {status && (
-            <div className="status-info">
-              <p>Letztes Update: {status.last_update || 'Keine Daten'}</p>
-              <p>Verfügbare Ergebnisse: {status.available_results.length}</p>
-            </div>
-          )}
-        </section>
-
-        <section className="actions-section">
-          <button 
-            onClick={runPipeline} 
-            disabled={loading}
-            className="run-button"
-          >
-            {loading ? 'Pipeline läuft...' : 'Pipeline starten'}
-          </button>
+          <div className="step-buttons">
+            <h3>Einzelne Schritte</h3>
+            <button 
+              className={`step-button ${getButtonClass(stepStatus.data_ingestion)}`}
+              onClick={() => runPipelineStep('data_ingestion')}
+              disabled={stepStatus.data_ingestion === 'running'}
+            >
+              Daten-Import
+            </button>
+            
+            <button 
+              className={`step-button ${getButtonClass(stepStatus.preprocessing)}`}
+              onClick={() => runPipelineStep('preprocessing')}
+              disabled={stepStatus.preprocessing === 'running'}
+            >
+              Vorverarbeitung
+            </button>
+            
+            <button 
+              className={`step-button ${getButtonClass(stepStatus.data_exploration)}`}
+              onClick={() => runPipelineStep('data_exploration')}
+              disabled={stepStatus.data_exploration === 'running'}
+            >
+              Daten-Exploration
+            </button>
+            
+            <button 
+              className={`step-button ${getButtonClass(stepStatus.prediction)}`}
+              onClick={() => runPipelineStep('prediction')}
+              disabled={stepStatus.prediction === 'running'}
+            >
+              Vorhersage
+            </button>
+          </div>
         </section>
 
         {error && (
-          <section className="error-section">
-            <p className="error-message">{error}</p>
-          </section>
+          <div className="error-message">
+            <h3>Fehler</h3>
+            <p>{error}</p>
+          </div>
         )}
 
-        {results && (
-          <section className="results-section">
-            <h2>Letzte Ergebnisse</h2>
-            <div className="results-content">
-              <pre>{JSON.stringify(results, null, 2)}</pre>
+        <section className="status-section">
+          <h2>Status</h2>
+          <div className="status-grid">
+            <div className="status-item">
+              <span>Daten-Import:</span>
+              <span className={stepStatus.data_ingestion}>{stepStatus.data_ingestion}</span>
             </div>
-          </section>
-        )}
+            <div className="status-item">
+              <span>Vorverarbeitung:</span>
+              <span className={stepStatus.preprocessing}>{stepStatus.preprocessing}</span>
+            </div>
+            <div className="status-item">
+              <span>Daten-Exploration:</span>
+              <span className={stepStatus.data_exploration}>{stepStatus.data_exploration}</span>
+            </div>
+            <div className="status-item">
+              <span>Vorhersage:</span>
+              <span className={stepStatus.prediction}>{stepStatus.prediction}</span>
+            </div>
+          </div>
+        </section>
       </main>
-
-      <style jsx>{`
-        .App {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 20px;
-        }
-
-        header {
-          text-align: center;
-          margin-bottom: 40px;
-        }
-
-        section {
-          background: white;
-          border-radius: 8px;
-          padding: 20px;
-          margin-bottom: 20px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .run-button {
-          background: #007bff;
-          color: white;
-          border: none;
-          padding: 10px 20px;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 16px;
-        }
-
-        .run-button:disabled {
-          background: #ccc;
-        }
-
-        .error-message {
-          color: #dc3545;
-          padding: 10px;
-          background: #f8d7da;
-          border-radius: 4px;
-        }
-
-        .results-content {
-          background: #f8f9fa;
-          padding: 15px;
-          border-radius: 4px;
-          overflow-x: auto;
-        }
-
-        pre {
-          margin: 0;
-          white-space: pre-wrap;
-        }
-      `}</style>
     </div>
   );
 }

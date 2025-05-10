@@ -1,57 +1,53 @@
 import os
+import subprocess
+from datetime import datetime
 from pathlib import Path
 import logging
-from datetime import datetime
-from src.scrapers.tiktok_scraper import TikTokScraper
-from src.scrapers.youtube_scraper import YouTubeScraper
-from src.scrapers.reddit_scraper import RedditScraper
+import glob
+import importlib
 
-# Create logs directory in the project root
-logs_dir = Path("logs")
-logs_dir.mkdir(parents=True, exist_ok=True)
+# 🔧 sicherstellen, dass logs-Verzeichnis vorhanden ist
+Path("logs").mkdir(parents=True, exist_ok=True)
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(logs_dir / f"scraping_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"),
-        logging.StreamHandler()
-    ]
-)
+# Automatisch alle *_scraper.py Dateien im jobs/ Verzeichnis laden
+BASE_DIR = Path(__file__).resolve().parent
+JOBS_DIR = BASE_DIR / "jobs"
+SCRAPER_SCRIPTS = sorted(JOBS_DIR.glob("*_scraper.py"))
 
-logger = logging.getLogger(__name__)
+def run_script(script):
+    name = Path(script).stem.replace("_scraper", "")
+    log_file = Path("logs") / f"{name}.log"
+
+    
+    print(f"📄 Log-Datei: {log_file}")
+    print(f"▶️  Starte {script} ...")
+
+    start = datetime.now()
+
+    try:
+        relative_script_path = script.relative_to(BASE_DIR)
+        with open(log_file, "a", encoding="utf-8") as log:
+            subprocess.run(
+                ["python", str(relative_script_path)],
+                cwd=str(BASE_DIR),
+                env=os.environ.copy(),
+                stdout=log,
+                stderr=log,
+                text=True,
+                check=True
+            )
+        duration = (datetime.now() - start).seconds
+        print(f"✅  {script} erfolgreich in {duration} Sekunden.")
+
+    except subprocess.CalledProcessError:
+        logging.error(f"❌ Fehler beim Ausführen von {script} (siehe {log_file})")
+        print(f"❌ Fehler beim Ausführen von {script} (siehe {log_file})")
 
 def run_all():
-    """Run all scrapers and combine their results."""
-    try:
-        # Initialize scrapers
-        tiktok_scraper = TikTokScraper()
-        youtube_scraper = YouTubeScraper()
-        reddit_scraper = RedditScraper()
-
-        # Run scrapers
-        logger.info("Starting TikTok scraping...")
-        tiktok_data = tiktok_scraper.scrape()
-        logger.info(f"TikTok scraping completed. Found {len(tiktok_data)} posts.")
-
-        logger.info("Starting YouTube scraping...")
-        youtube_data = youtube_scraper.scrape()
-        logger.info(f"YouTube scraping completed. Found {len(youtube_data)} posts.")
-
-        logger.info("Starting Reddit scraping...")
-        reddit_data = reddit_scraper.scrape()
-        logger.info(f"Reddit scraping completed. Found {len(reddit_data)} posts.")
-
-        # Combine all data
-        all_data = tiktok_data + youtube_data + reddit_data
-        logger.info(f"Total posts collected: {len(all_data)}")
-
-        return all_data
-
-    except Exception as e:
-        logger.error(f"Error during scraping: {str(e)}")
-        raise
+    
+    for script in SCRAPER_SCRIPTS:
+        logging.info("Attemping to run script: %s", script)
+        run_script(script)
 
 if __name__ == "__main__":
     run_all()

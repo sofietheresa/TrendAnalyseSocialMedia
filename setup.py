@@ -21,7 +21,8 @@ setup(
         "seaborn",
         "joblib",
         "fastapi>=0.68.0",
-        "uvicorn>=0.15.0"
+        "uvicorn>=0.15.0",
+        "prophet"
     ],
     python_requires=">=3.8",
 ) 

@@ -36,6 +36,8 @@ def analyze_temporal_patterns(df: pd.DataFrame) -> Dict[str, Any]:
     
     # Day of week distribution
     day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    # Fill NaN values with 0 and convert to integers
+    df['day_of_week'] = df['day_of_week'].fillna(0).astype(int) % 7
     dow_dist = df.groupby('day_of_week').size()
     dow_dist.index = [day_names[i] for i in dow_dist.index]
     dow_dist = dow_dist.to_dict()
@@ -94,10 +96,26 @@ def analyze_correlations(df: pd.DataFrame) -> Dict[str, float]:
     
     return engagement_correlations
 
+def stringify_keys(obj):
+    """Recursively convert all dict keys to strings (for JSON serialization)."""
+    if isinstance(obj, dict):
+        return {str(k): stringify_keys(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [stringify_keys(i) for i in obj]
+    else:
+        return obj
+
 @step
 def explore_data(data: pd.DataFrame) -> Dict[str, Any]:
     """Perform comprehensive data exploration."""
     logger.info("Starting data exploration...")
+    
+    # Prüfe, ob die erforderlichen Spalten vorhanden sind
+    required_columns = ['platform', 'engagement_score', 'sentiment_score', 'hour', 'day_of_week', 'month', 'lemmatized_text']
+    missing_columns = [col for col in required_columns if col not in data.columns]
+    if missing_columns:
+        logger.error(f"Fehlende Spalten: {missing_columns}")
+        raise ValueError(f"Required columns missing: {missing_columns}")
     
     results = {}
     
@@ -129,9 +147,11 @@ def explore_data(data: pd.DataFrame) -> Dict[str, Any]:
     output_dir = Path("data/processed")
     output_dir.mkdir(parents=True, exist_ok=True)
     
+    # Convert all keys to strings before saving and returning
+    results_str_keys = stringify_keys(results)
     with open(output_dir / "exploration_results.json", "w") as f:
-        json.dump(results, f, indent=2)
+        json.dump(results_str_keys, f, indent=2)
     
     logger.info("Data exploration complete. Results saved to data/processed/exploration_results.json")
     
-    return results 
+    return results_str_keys 

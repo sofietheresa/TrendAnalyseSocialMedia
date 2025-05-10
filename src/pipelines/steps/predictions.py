@@ -23,6 +23,12 @@ logger = logging.getLogger(__name__)
 
 def prepare_features(df: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
     """Prepare features for model training."""
+    # Drop rows with missing lemmatized_text
+    initial_shape = df.shape
+    df = df.dropna(subset=['lemmatized_text'])
+    dropped = initial_shape[0] - df.shape[0]
+    if dropped > 0:
+        logger.warning(f"Dropped {dropped} rows with missing lemmatized_text.")
     # Text features
     vectorizer = TfidfVectorizer(max_features=1000)
     text_features = vectorizer.fit_transform(df['lemmatized_text'])
@@ -168,18 +174,21 @@ def analyze_feature_importance(model: RandomForestRegressor, feature_names: list
 
 def predict_engagement(model: RandomForestRegressor, df: pd.DataFrame) -> pd.DataFrame:
     """Make predictions for engagement."""
+    # Drop rows with missing lemmatized_text
+    initial_shape = df.shape
+    df = df.dropna(subset=['lemmatized_text'])
+    dropped = initial_shape[0] - df.shape[0]
+    if dropped > 0:
+        logger.warning(f"Dropped {dropped} rows with missing lemmatized_text in prediction.")
     # Prepare features for prediction
     vectorizer = TfidfVectorizer(max_features=1000)
     text_features = vectorizer.fit_transform(df['lemmatized_text'])
     numerical_features = df[['hour', 'day_of_week', 'month', 'sentiment_score']].values
     X = np.hstack([text_features.toarray(), numerical_features])
-    
     # Make predictions
     predictions = model.predict(X)
-    
     # Add predictions to dataframe
     df['predicted_engagement'] = predictions
-    
     return df
 
 @step
