@@ -11,7 +11,8 @@ setup(
         "scikit-learn",
         "nltk",
         "textblob",
-        "tensorflow",
+        "tensorflow>=2.16.0",
+        "tf-keras>=2.16.0",
         "python-dotenv",
         "requests",
         "beautifulsoup4",
@@ -22,7 +23,9 @@ setup(
         "joblib",
         "fastapi>=0.68.0",
         "uvicorn>=0.15.0",
-        "prophet"
+        "prophet",
+        "qdrant-client>=1.14.0",
+        "sentence-transformers>=2.2.0"
     ],
     python_requires=">=3.8",
 ) 

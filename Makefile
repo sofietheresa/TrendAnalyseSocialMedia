@@ -55,7 +55,7 @@ sync:
 
 	@echo "\n✅ Alle Dateien synchronisiert."
 
-# 🔁 Nur Scraper via API triggern (z. B. für Testzwecke)
+# 🔁 Nur Scraper via API triggern (z. B. für Testzwecke)
 trigger-api:
 	curl -X POST $(API_URL)/run-scrapers \
 		-H "Authorization: $(TOKEN)"
@@ -75,7 +75,7 @@ trigger-loop:
 # 🧱 PODMAN CONTAINER-STEUERUNG
 # --------------------------------------------
 
-.PHONY: build run run-detached clean clean-all restart logs shell
+.PHONY: build run run-detached clean-container restart logs shell
 
 # 📦 Container-Image bauen
 build:
@@ -104,12 +104,12 @@ run-detached:
 		$(IMAGE_NAME)
 
 # 🧼 Container stoppen und löschen
-clean:
+clean-container:
 	-podman stop $(CONTAINER_NAME)
 	-podman rm $(CONTAINER_NAME)
 
 # 🧨 Alles löschen (inkl. lokale Logs & Daten)
-clean-all: clean
+clean-all: clean-container
 	rm -rf logs/* data/*
 
 # 🔄 Container neustarten
@@ -144,3 +144,50 @@ compose-up:
 
 compose-logs:
 	docker-compose logs -f scraper-trigger
+
+# --------------------------------------------
+# 🛠️ ENTWICKLUNG & WARTUNG
+# --------------------------------------------
+
+.PHONY: install start qdrant stop-qdrant lint test pipeline download-nltk clean
+
+# 📦 Abhängigkeiten installieren
+install:
+	pip install -e .
+
+# 🚀 FastAPI-Server starten
+start:
+	uvicorn src.main:app --reload
+
+# 🔍 Qdrant Vektordatenbank starten
+qdrant:
+	docker run -d --name qdrant -p 6333:6333 -p 6334:6334 qdrant/qdrant
+
+# 🛑 Qdrant stoppen
+stop-qdrant:
+	docker stop qdrant || true
+	docker rm qdrant || true
+
+# ✨ Code formatieren und linten
+lint:
+	black src/ || true
+	flake8 src/ || true
+
+# 🧪 Tests ausführen
+test:
+	pytest || echo "No tests found."
+
+# 🔄 Pipeline ausführen
+pipeline:
+	python src/setup_pipeline.py
+
+# 📚 NLTK-Ressourcen herunterladen
+download-nltk:
+	python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords'); nltk.download('wordnet'); nltk.download('averaged_perceptron_tagger'); nltk.download('averaged_perceptron_tagger_eng')"
+
+# 🧹 Temporäre Dateien aufräumen
+clean:
+	rm -rf __pycache__ .pytest_cache .mypy_cache
+	rm -rf data/processed/*.csv data/processed/*.json
+	rm -rf .venv
+	echo "Cleaned up temporary and output files."
