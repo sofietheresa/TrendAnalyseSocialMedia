@@ -1,0 +1,15 @@
+zenml
+pandas
+numpy
+scikit-learn
+nltk
+textblob
+tensorflow
+python-dotenv
+requests
+beautifulsoup4
+selenium
+webdriver-manager
+matplotlib
+seaborn
+joblib

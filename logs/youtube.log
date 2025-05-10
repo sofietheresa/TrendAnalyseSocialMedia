@@ -492,3 +492,107 @@ python: can't open file '/app/scheduler/scheduler/jobs/youtube_scraper.py': [Err
 2025-05-09 16:50:37,081 - INFO - 🔄 Nach Zusammenführung: 588 Videos
 2025-05-09 16:50:37,083 - INFO - 🔍 49 Duplikate entfernt
 2025-05-09 16:50:37,145 - INFO - ✅ 539 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 08:54:20,887 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 08:54:20,919 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 08:54:21,108 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 08:54:21,130 - INFO - 📊 Bestehende Daten: 539 Videos
+2025-05-10 08:54:21,133 - INFO - 🔄 Nach Zusammenführung: 589 Videos
+2025-05-10 08:54:21,217 - INFO - ✅ 589 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 08:55:40,395 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 08:55:40,418 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 08:55:40,568 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 08:55:40,584 - INFO - 📊 Bestehende Daten: 589 Videos
+2025-05-10 08:55:40,585 - INFO - 🔄 Nach Zusammenführung: 639 Videos
+2025-05-10 08:55:40,586 - INFO - 🔍 50 Duplikate entfernt
+2025-05-10 08:55:40,640 - INFO - ✅ 589 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 09:20:05,814 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 09:20:05,837 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 09:20:06,144 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 09:20:06,162 - INFO - 📊 Bestehende Daten: 589 Videos
+2025-05-10 09:20:06,163 - INFO - 🔄 Nach Zusammenführung: 639 Videos
+2025-05-10 09:20:06,164 - INFO - 🔍 50 Duplikate entfernt
+2025-05-10 09:20:06,219 - INFO - ✅ 589 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 09:35:29,241 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 09:35:29,266 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 09:35:29,466 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 09:35:29,484 - INFO - 📊 Bestehende Daten: 589 Videos
+2025-05-10 09:35:29,484 - INFO - 🔄 Nach Zusammenführung: 639 Videos
+2025-05-10 09:35:29,486 - INFO - 🔍 50 Duplikate entfernt
+2025-05-10 09:35:29,539 - INFO - ✅ 589 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 09:47:51,752 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 09:47:51,775 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 09:47:52,015 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 09:47:52,030 - INFO - 📊 Bestehende Daten: 589 Videos
+2025-05-10 09:47:52,031 - INFO - 🔄 Nach Zusammenführung: 639 Videos
+2025-05-10 09:47:52,032 - INFO - 🔍 50 Duplikate entfernt
+2025-05-10 09:47:52,087 - INFO - ✅ 589 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 10:00:24,091 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 10:00:24,140 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 10:00:24,394 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 10:00:24,428 - INFO - 📊 Bestehende Daten: 589 Videos
+2025-05-10 10:00:24,429 - INFO - 🔄 Nach Zusammenführung: 639 Videos
+2025-05-10 10:00:24,431 - INFO - 🔍 50 Duplikate entfernt
+2025-05-10 10:00:24,548 - INFO - ✅ 589 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 10:29:52,812 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 10:29:52,836 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 10:29:53,033 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 10:29:53,050 - INFO - 📊 Bestehende Daten: 589 Videos
+2025-05-10 10:29:53,050 - INFO - 🔄 Nach Zusammenführung: 639 Videos
+2025-05-10 10:29:53,052 - INFO - 🔍 50 Duplikate entfernt
+2025-05-10 10:29:53,093 - INFO - ✅ 589 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 11:15:59,353 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 11:15:59,902 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 11:16:00,855 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 11:16:01,391 - INFO - 📊 Bestehende Daten: 589 Videos
+2025-05-10 11:16:01,544 - INFO - 🔄 Nach Zusammenführung: 639 Videos
+2025-05-10 11:16:02,279 - INFO - 🔍 50 Duplikate entfernt
+2025-05-10 11:16:03,869 - INFO - ✅ 589 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 11:20:31,333 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 11:20:31,424 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 11:20:31,709 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 11:20:31,754 - INFO - 📊 Bestehende Daten: 589 Videos
+2025-05-10 11:20:31,759 - INFO - 🔄 Nach Zusammenführung: 639 Videos
+2025-05-10 11:20:31,771 - INFO - 🔍 50 Duplikate entfernt
+2025-05-10 11:20:31,900 - INFO - ✅ 589 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 11:24:08,232 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 11:24:08,347 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 11:24:08,756 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 11:24:08,812 - INFO - 📊 Bestehende Daten: 589 Videos
+2025-05-10 11:24:08,815 - INFO - 🔄 Nach Zusammenführung: 639 Videos
+2025-05-10 11:24:08,832 - INFO - 🔍 50 Duplikate entfernt
+2025-05-10 11:24:09,007 - INFO - ✅ 589 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 11:39:17,617 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 11:39:17,658 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 11:39:17,905 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 11:39:17,963 - INFO - 📊 Bestehende Daten: 589 Videos
+2025-05-10 11:39:17,964 - INFO - 🔄 Nach Zusammenführung: 639 Videos
+2025-05-10 11:39:17,967 - INFO - 🔍 50 Duplikate entfernt
+2025-05-10 11:39:18,033 - INFO - ✅ 589 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 11:49:33,771 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 11:49:33,825 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 11:49:34,509 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 11:49:34,554 - INFO - 📊 Bestehende Daten: 589 Videos
+2025-05-10 11:49:34,556 - INFO - 🔄 Nach Zusammenführung: 639 Videos
+2025-05-10 11:49:34,561 - INFO - 🔍 50 Duplikate entfernt
+2025-05-10 11:49:34,735 - INFO - ✅ 589 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 12:03:21,218 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 12:03:21,266 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 12:03:21,490 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 12:03:21,511 - INFO - 📊 Bestehende Daten: 589 Videos
+2025-05-10 12:03:21,511 - INFO - 🔄 Nach Zusammenführung: 639 Videos
+2025-05-10 12:03:21,515 - INFO - 🔍 50 Duplikate entfernt
+2025-05-10 12:03:21,632 - INFO - ✅ 589 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 13:41:27,195 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 13:41:27,667 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 13:41:28,262 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 13:41:28,317 - INFO - 📊 Bestehende Daten: 589 Videos
+2025-05-10 13:41:28,318 - INFO - 🔄 Nach Zusammenführung: 639 Videos
+2025-05-10 13:41:28,338 - INFO - 🔍 39 Duplikate entfernt
+2025-05-10 13:41:28,565 - INFO - ✅ 600 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 13:53:33,083 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 13:53:33,195 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 13:53:33,471 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 13:53:33,508 - INFO - 📊 Bestehende Daten: 600 Videos
+2025-05-10 13:53:33,510 - INFO - 🔄 Nach Zusammenführung: 650 Videos
+2025-05-10 13:53:33,515 - INFO - 🔍 50 Duplikate entfernt
+2025-05-10 13:53:33,662 - INFO - ✅ 600 Videos gespeichert unter: /app/data/raw/youtube_data.csv

@@ -1,49 +1,27 @@
 FROM python:3.11-slim
 
-# Systemabhängigkeiten für Playwright-Browser
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    wget \
+    build-essential \
     curl \
-    gnupg \
-    libglib2.0-0 \
-    libnss3 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libxss1 \
-    libasound2 \
-    libx11-xcb1 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
-    libgbm1 \
-    libxshmfence1 \
-    libasound2 \
-    libpangocairo-1.0-0 \
-    libgtk-3-0 \
-    libdrm2 \
-    libxfixes3 \
-    libxext6 \
-    libx11-6 \
-    fonts-liberation \
-    libappindicator3-1 \
-    lsb-release \
-    xdg-utils \
+    software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
-# Arbeitsverzeichnis
-WORKDIR /app
-COPY . /app
+# Copy requirements first to leverage Docker cache
+COPY setup.py .
+RUN pip install -e .
 
-# Install requirements
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy the rest of the application
+COPY . .
 
-# 🟢 Playwright-Browser installieren
-RUN python -m playwright install --with-deps
+# Create necessary directories
+RUN mkdir -p data/raw data/processed logs
 
-# App kopieren
+# Expose the port the app runs on
+EXPOSE 8000
 
-
-
-CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "10000"]
+# Command to run the application
+CMD ["python", "src/api.py"]

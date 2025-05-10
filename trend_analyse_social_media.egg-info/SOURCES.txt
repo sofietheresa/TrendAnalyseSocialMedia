@@ -1,0 +1,7 @@
+README.md
+setup.py
+trend_analyse_social_media.egg-info/PKG-INFO
+trend_analyse_social_media.egg-info/SOURCES.txt
+trend_analyse_social_media.egg-info/dependency_links.txt
+trend_analyse_social_media.egg-info/requires.txt
+trend_analyse_social_media.egg-info/top_level.txt
