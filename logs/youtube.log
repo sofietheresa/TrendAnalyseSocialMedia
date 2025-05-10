@@ -663,3 +663,24 @@ ModuleNotFoundError: No module named 'googleapiclient'
 2025-05-10 17:36:03,311 - INFO - 🔄 Nach Zusammenführung: 653 Videos
 2025-05-10 17:36:03,316 - INFO - 🔍 50 Duplikate entfernt
 2025-05-10 17:36:03,437 - INFO - ✅ 603 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 18:05:58,650 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 18:05:58,696 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 18:05:58,855 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 18:05:58,856 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 18:05:59,257 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 18:05:59,310 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 18:05:59,356 - INFO - 📊 Bestehende Daten: 603 Videos
+2025-05-10 18:05:59,360 - INFO - 🔄 Nach Zusammenführung: 653 Videos
+2025-05-10 18:05:59,382 - INFO - 🔍 50 Duplikate entfernt
+2025-05-10 18:05:59,396 - INFO - 📊 Bestehende Daten: 603 Videos
+2025-05-10 18:05:59,397 - INFO - 🔄 Nach Zusammenführung: 653 Videos
+2025-05-10 18:05:59,406 - INFO - 🔍 50 Duplikate entfernt
+2025-05-10 18:05:59,658 - INFO - ✅ 603 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 18:05:59,664 - INFO - ✅ 603 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-10 20:51:23,057 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-10 20:51:23,184 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-10 20:51:23,531 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-10 20:51:23,831 - INFO - 📊 Bestehende Daten: 603 Videos
+2025-05-10 20:51:23,839 - INFO - 🔄 Nach Zusammenführung: 653 Videos
+2025-05-10 20:51:23,849 - INFO - 🔍 50 Duplikate entfernt
+2025-05-10 20:51:24,117 - INFO - ✅ 603 Videos gespeichert unter: /app/data/raw/youtube_data.csv
