@@ -955,3 +955,34 @@ OSError: [Errno 30] Read-only file system: '/app'
 2025-05-11 15:07:19,323 - INFO - 🔄 Neue Daten: 50 Videos gefunden
 2025-05-11 15:07:19,324 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
 2025-05-11 15:07:19,339 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 15:51:40,857 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 15:51:40,863 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 15:51:41,059 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 15:51:41,060 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
+2025-05-11 15:51:41,073 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 15:52:51,651 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 15:52:51,678 - INFO - ⏳ Letzter Scrape vor 0.0 Stunden - warte noch
+2025-05-11 15:54:03,895 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 15:54:03,931 - INFO - ⏳ Letzter Scrape vor 0.0 Stunden - warte noch
+2025-05-11 16:10:17,968 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 16:10:17,974 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 16:10:18,171 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 16:10:18,172 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
+2025-05-11 16:10:18,187 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 16:17:44,168 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 16:17:44,192 - INFO - ⏳ Letzter Scrape vor 0.1 Stunden - warte noch
+2025-05-11 17:04:51,580 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 17:04:51,596 - INFO - ⏳ Letzter Scrape vor 0.9 Stunden - warte noch
+2025-05-11 17:06:27,390 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 17:06:27,396 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 17:06:27,614 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 17:06:27,615 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
+2025-05-11 17:06:27,635 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 17:12:52,024 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 17:12:52,036 - INFO - ⏳ Letzter Scrape vor 0.1 Stunden - warte noch
+2025-05-11 17:31:25,424 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 17:31:25,441 - INFO - ⏳ Letzter Scrape vor 0.4 Stunden - warte noch
+2025-05-11 17:43:59,002 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 17:43:59,021 - INFO - ⏳ Letzter Scrape vor 0.6 Stunden - warte noch
+2025-05-11 17:55:25,052 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 17:55:25,065 - INFO - ⏳ Letzter Scrape vor 0.8 Stunden - warte noch

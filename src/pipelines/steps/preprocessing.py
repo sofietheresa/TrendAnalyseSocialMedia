@@ -10,29 +10,20 @@ from nltk import pos_tag
 from textblob import TextBlob
 import logging
 from typing import List, Tuple
+import emoji
 
 logger = logging.getLogger(__name__)
 
 # Download required NLTK data
-nltk.download('punkt')
-nltk.download('stopwords')
-nltk.download('wordnet')
-nltk.download('averaged_perceptron_tagger')
+nltk.download('punkt', quiet=True)
+nltk.download('stopwords', quiet=True)
+nltk.download('wordnet', quiet=True)
+nltk.download('averaged_perceptron_tagger', quiet=True)
 
 def remove_emojis(text):
     if not isinstance(text, str):
         return ""
-    emoji_pattern = re.compile(
-        "[" 
-        u"\U0001F600-\U0001F64F"
-        u"\U0001F300-\U0001F5FF"
-        u"\U0001F680-\U0001F6FF"
-        u"\U0001F1E0-\U0001F1FF"
-        u"\U00002700-\U000027BF"
-        u"\U000024C2-\U0001F251"
-        "]", flags=re.UNICODE
-    )
-    return emoji_pattern.sub(r'', text)
+    return emoji.replace_emoji(text, replace='')
 
 def get_wordnet_pos(tag):
     if tag.startswith('J'):
@@ -102,7 +93,7 @@ def extract_text_features(text):
 
 @step
 def preprocess_data(data: pd.DataFrame) -> pd.DataFrame:
-    """Preprocess the social media data as in the notebook."""
+    """Preprocess the social media data from the SQLite database."""
     logger.info(f"Starting preprocessing with input data shape: {data.shape}")
     
     # Make a copy to avoid modifying the original
@@ -131,30 +122,27 @@ def preprocess_data(data: pd.DataFrame) -> pd.DataFrame:
     df['text'] = df['content'].fillna('')
     logger.info(f"Data shape after basic cleaning: {df.shape}")
     
-    # 3. Engagement calculation
-    logger.info("Calculating engagement scores...")
-    if 'engagement' not in df.columns:
-        # Platform-specific engagement calculation
-        for platform in df['platform'].unique():
-            platform_mask = df['platform'] == platform
-            if platform == 'tiktok':
-                if {'likes','shares','comments'}.issubset(df.columns):
-                    df.loc[platform_mask, 'engagement'] = df.loc[platform_mask, ['likes','shares','comments']].fillna(0).astype(float).sum(axis=1)
-            elif platform == 'reddit':
-                if {'score','num_comments'}.issubset(df.columns):
-                    df.loc[platform_mask, 'engagement'] = df.loc[platform_mask, ['score','num_comments']].fillna(0).astype(float).sum(axis=1)
-                elif {'score','comments'}.issubset(df.columns):
-                    df.loc[platform_mask, 'engagement'] = df.loc[platform_mask, ['score','comments']].fillna(0).astype(float).sum(axis=1)
-            elif platform == 'youtube':
-                if {'like_count','comment_count','view_count'}.issubset(df.columns):
-                    df.loc[platform_mask, 'engagement'] = df.loc[platform_mask, ['like_count','comment_count','view_count']].fillna(0).astype(float).sum(axis=1)
-                elif {'likes','comments','views'}.issubset(df.columns):
-                    df.loc[platform_mask, 'engagement'] = df.loc[platform_mask, ['likes','comments','views']].fillna(0).astype(float).sum(axis=1)
-        
-        # If engagement is still not calculated for some rows, set to 0
-        df['engagement'] = df['engagement'].fillna(0)
+    # 3. Platform-specific processing
+    logger.info("Performing platform-specific processing...")
     
-    logger.info(f"Engagement score range: {df['engagement'].min()} to {df['engagement'].max()}")
+    # TikTok specific
+    tiktok_mask = df['platform'] == 'tiktok'
+    if tiktok_mask.any():
+        df.loc[tiktok_mask, 'engagement'] = df.loc[tiktok_mask, ['likes', 'shares', 'comments']].fillna(0).sum(axis=1)
+    
+    # Reddit specific
+    reddit_mask = df['platform'] == 'reddit'
+    if reddit_mask.any():
+        df.loc[reddit_mask, 'engagement'] = df.loc[reddit_mask, ['score', 'num_comments']].fillna(0).sum(axis=1)
+    
+    # YouTube specific
+    youtube_mask = df['platform'] == 'youtube'
+    if youtube_mask.any():
+        df.loc[youtube_mask, 'engagement'] = df.loc[youtube_mask, ['like_count', 'comment_count', 'view_count']].fillna(0).sum(axis=1)
+    
+    # Rename engagement to engagement_score
+    df.rename(columns={'engagement': 'engagement_score'}, inplace=True)
+    logger.info(f"Engagement score range: {df['engagement_score'].min()} to {df['engagement_score'].max()}")
     
     # 4. Text preprocessing
     logger.info("Preprocessing text...")
@@ -164,7 +152,18 @@ def preprocess_data(data: pd.DataFrame) -> pd.DataFrame:
     else:
         df['combined_text'] = df['text'].fillna('')
     
-    df['lemmatized_text'] = df['combined_text'].astype(str).apply(lambda x: preprocess_text(x, remove_stopwords=True))
+    # Process text in chunks to avoid memory issues
+    chunk_size = 1000
+    total_rows = len(df)
+    processed_texts = []
+    
+    for i in range(0, total_rows, chunk_size):
+        chunk = df['combined_text'].iloc[i:i+chunk_size]
+        processed_chunk = chunk.apply(lambda x: preprocess_text(x, remove_stopwords=True))
+        processed_texts.extend(processed_chunk)
+        logger.info(f"Processed {min(i+chunk_size, total_rows)}/{total_rows} texts")
+    
+    df['lemmatized_text'] = processed_texts
     logger.info(f"Data shape after text preprocessing: {df.shape}")
     
     # Log text preprocessing results
@@ -173,8 +172,15 @@ def preprocess_data(data: pd.DataFrame) -> pd.DataFrame:
     
     # 5. Feature extraction
     logger.info("Extracting text features...")
-    features = df['lemmatized_text'].apply(extract_text_features)
-    features_df = pd.DataFrame(features.tolist())
+    # Process features in chunks
+    features_list = []
+    for i in range(0, total_rows, chunk_size):
+        chunk = df['lemmatized_text'].iloc[i:i+chunk_size]
+        features_chunk = chunk.apply(extract_text_features)
+        features_list.extend(features_chunk)
+        logger.info(f"Extracted features for {min(i+chunk_size, total_rows)}/{total_rows} texts")
+    
+    features_df = pd.DataFrame(features_list)
     df = pd.concat([df, features_df], axis=1)
     logger.info(f"Data shape after feature extraction: {df.shape}")
     
@@ -196,21 +202,43 @@ def preprocess_data(data: pd.DataFrame) -> pd.DataFrame:
     
     # 7. Engagement normalization
     logger.info("Normalizing engagement scores...")
-    min_eng = df['engagement'].min()
-    max_eng = df['engagement'].max()
+    min_eng = df['engagement_score'].min()
+    max_eng = df['engagement_score'].max()
     if max_eng > min_eng:
-        df['engagement_score'] = (df['engagement'] - min_eng) / (max_eng - min_eng)
+        df['normalized_engagement'] = (df['engagement_score'] - min_eng) / (max_eng - min_eng)
     else:
-        df['engagement_score'] = 0
-    logger.info(f"Normalized engagement score range: {df['engagement_score'].min()} to {df['engagement_score'].max()}")
+        df['normalized_engagement'] = 0
     
-    # 8. Final validation
-    if len(df) == 0:
-        logger.error("No data left after preprocessing! Please check raw data and preprocessing steps.")
-        raise ValueError("No data left after preprocessing. Check raw data and preprocessing steps.")
-
-    # Add normalized_engagement as alias for engagement_score
-    df['normalized_engagement'] = df['engagement_score']
-
-    logger.info(f"Preprocessing complete. Final dataset shape: {df.shape}")
+    # 8. Platform-specific features
+    logger.info("Adding platform-specific features...")
+    df['is_tiktok'] = (df['platform'] == 'tiktok').astype(int)
+    df['is_reddit'] = (df['platform'] == 'reddit').astype(int)
+    df['is_youtube'] = (df['platform'] == 'youtube').astype(int)
+    
+    # 9. Final cleaning
+    logger.info("Performing final cleaning...")
+    # Remove any remaining NaN values
+    df = df.fillna({
+        'word_count': 0,
+        'char_count': 0,
+        'avg_word_length': 0,
+        'sentiment_score': 0,
+        'sentiment_subjectivity': 0,
+        'normalized_engagement': 0
+    })
+    
+    # Select and reorder final columns
+    final_columns = [
+        'platform', 'content', 'engagement_score', 'normalized_engagement',
+        'timestamp', 'hour', 'day_of_week', 'month', 'date',
+        'word_count', 'char_count', 'avg_word_length',
+        'sentiment_score', 'sentiment_subjectivity',
+        'is_tiktok', 'is_reddit', 'is_youtube',
+        'lemmatized_text'
+    ]
+    
+    df = df[final_columns]
+    logger.info(f"Final data shape: {df.shape}")
+    logger.info(f"Final columns: {list(df.columns)}")
+    
     return df 
