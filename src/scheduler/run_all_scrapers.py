@@ -1,14 +1,15 @@
-import subprocess
 import os
+import subprocess
 from datetime import datetime
 from pathlib import Path
 import logging
 import glob
+import importlib
 
 # 🔧 sicherstellen, dass logs-Verzeichnis vorhanden ist
-Path("/app/logs").mkdir(parents=True, exist_ok=True)
+Path("logs").mkdir(parents=True, exist_ok=True)
 
-# Automatisch alle *_scraper.py Dateien im jobs/ Verzeichnis ladenBASE_DIR = Path(__file__).resolve().parent
+# Automatisch alle *_scraper.py Dateien im jobs/ Verzeichnis laden
 BASE_DIR = Path(__file__).resolve().parent
 JOBS_DIR = BASE_DIR / "jobs"
 SCRAPER_SCRIPTS = sorted(JOBS_DIR.glob("*_scraper.py"))
