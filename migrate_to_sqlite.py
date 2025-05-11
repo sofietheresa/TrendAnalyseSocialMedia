@@ -103,27 +103,44 @@ def clean_leading_empty_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def get_existing_reddit_data(cursor):
+    cursor.execute("SELECT * FROM reddit_data")
+    columns = [description[0] for description in cursor.description]
+    return pd.DataFrame(cursor.fetchall(), columns=columns)
+
+
+def get_existing_tiktok_data(cursor):
+    cursor.execute("SELECT * FROM tiktok_data")
+    columns = [description[0] for description in cursor.description]
+    return pd.DataFrame(cursor.fetchall(), columns=columns)
+
+
+def get_existing_youtube_data(cursor):
+    cursor.execute("SELECT * FROM youtube_data")
+    columns = [description[0] for description in cursor.description]
+    return pd.DataFrame(cursor.fetchall(), columns=columns)
+
+
 def import_reddit_data():
     try:
         # Lese die CSV-Datei und überspringe die erste Zeile
         df = pd.read_csv(RAW_DIR / "reddit_data.csv", skiprows=1)
         logging.info(f"Gelesene CSV-Datei hat {len(df)} Zeilen und {len(df.columns)} Spalten")
         
-        # Extrahiere die Spaltennamen aus der ersten Zeile
-        header_row = pd.read_csv(RAW_DIR / "reddit_data.csv", nrows=1)
-        logging.info(f"Header-Zeile Spalten: {header_row.columns.tolist()}")
-        
         # Nehme die letzten 8 Spalten und setze die korrekten Spaltennamen
         df = df.iloc[:, -8:]
         df.columns = ['subreddit', 'title', 'text', 'score', 'comments', 'created', 'url', 'scraped_at']
         
-        # Debug-Ausgabe der ersten Zeile
-        logging.info(f"Erste Zeile der Daten: {df.iloc[0].to_dict()}")
-        
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
+        # Hole existierende Daten
+        existing_df = get_existing_reddit_data(cursor)
+        
         inserted_count = 0
+        updated_count = 0
+        skipped_count = 0
+
         for index, row in df.iterrows():
             try:
                 # Generiere eine eindeutige ID
@@ -138,14 +155,8 @@ def import_reddit_data():
                 # Konvertiere den created-Timestamp
                 created_str = safe_str_convert(row['created'])
                 try:
-                    # Konvertiere den String in ein datetime-Objekt
                     dt = datetime.strptime(created_str, "%Y-%m-%d %H:%M:%S")
-                    # Konvertiere in Unix-Timestamp (Sekunden seit 1970)
                     created = int(dt.timestamp())
-                    # Debug-Ausgabe für die ersten 5 Einträge
-                    if index < 5:
-                        logging.info(f"Created (Rohwert): {created_str}")
-                        logging.info(f"Created (konvertiert): {created} ({datetime.fromtimestamp(created)})")
                 except Exception as e:
                     logging.warning(f"Fehler bei der Timestamp-Konvertierung in Zeile {index}: {e}")
                     created = int(datetime.now().timestamp())
@@ -153,35 +164,49 @@ def import_reddit_data():
                 url = safe_str_convert(row['url'])
                 subreddit = safe_str_convert(row['subreddit'])
                 scraped_at = safe_timestamp_convert(row['scraped_at'])
+
+                # Prüfe, ob der Eintrag bereits existiert
+                existing_row = existing_df[existing_df['id'] == post_id]
                 
-                # Debug-Ausgabe für die ersten 5 Einträge
-                if index < 5:
-                    logging.info(f"Importiere Eintrag {index + 1}:")
-                    logging.info(f"  Title: {title}")
-                    logging.info(f"  Score: {score}")
-                    logging.info(f"  Comments: {comments}")
-                    logging.info(f"  Subreddit: {subreddit}")
+                if len(existing_row) == 0:
+                    # Neuer Eintrag
+                    cursor.execute("""
+                        INSERT INTO reddit_data (
+                            id, title, author, score, created_utc,
+                            num_comments, url, subreddit, scraped_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        post_id, title, "", score, created,
+                        comments, url, subreddit, scraped_at
+                    ))
+                    inserted_count += 1
+                else:
+                    # Vergleiche die Werte
+                    existing = existing_row.iloc[0]
+                    if (existing['title'] != title or
+                        existing['score'] != score or
+                        existing['created_utc'] != created or
+                        existing['num_comments'] != comments or
+                        existing['url'] != url or
+                        existing['subreddit'] != subreddit):
+                        
+                        # Update wenn sich etwas geändert hat
+                        cursor.execute("""
+                            UPDATE reddit_data SET
+                                title = ?, score = ?, created_utc = ?,
+                                num_comments = ?, url = ?, subreddit = ?,
+                                scraped_at = ?
+                            WHERE id = ?
+                        """, (
+                            title, score, created, comments,
+                            url, subreddit, scraped_at, post_id
+                        ))
+                        updated_count += 1
+                    else:
+                        skipped_count += 1
                 
-                cursor.execute("""
-                    INSERT OR REPLACE INTO reddit_data (
-                        id, title, author, score, created_utc,
-                        num_comments, url, subreddit, scraped_at
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    post_id,
-                    title,
-                    "",  # author ist nicht in den Daten vorhanden
-                    score,
-                    created,
-                    comments,
-                    url,
-                    subreddit,
-                    scraped_at
-                ))
-                inserted_count += 1
-                
-                if inserted_count % 100 == 0:
-                    logging.info(f"Bisher {inserted_count} Einträge importiert")
+                if (inserted_count + updated_count) % 100 == 0:
+                    logging.info(f"Bisher {inserted_count} neue und {updated_count} aktualisierte Einträge")
                     
             except Exception as e:
                 logging.warning(f"Fehler beim Import eines Reddit-Eintrags in Zeile {index}: {e}")
@@ -189,8 +214,11 @@ def import_reddit_data():
 
         conn.commit()
         conn.close()
-        logging.info(f"✅ {inserted_count} Reddit-Einträge erfolgreich importiert")
-        return inserted_count
+        logging.info(f"✅ Reddit-Import abgeschlossen:")
+        logging.info(f"   - {inserted_count} neue Einträge")
+        logging.info(f"   - {updated_count} aktualisierte Einträge")
+        logging.info(f"   - {skipped_count} unveränderte Einträge")
+        return inserted_count + updated_count
     except Exception as e:
         logging.error(f"❌ Fehler beim Import der Reddit-Daten: {e}")
         return 0
@@ -198,46 +226,95 @@ def import_reddit_data():
 
 def import_tiktok_data():
     try:
-        df = pd.read_csv(RAW_DIR / "tiktok_data.csv", header=None)
-        df = clean_leading_empty_columns(df)
-
-        expected_cols = [
-            'id', 'description', 'author_username', 'author_id',
-            'likes', 'shares', 'comments', 'plays', 'video_url', 'created_time'
-        ]
-
-        df = df.iloc[:, :len(expected_cols)].copy()
-        df.columns = expected_cols[:df.shape[1]]
-
+        df = pd.read_csv(RAW_DIR / "tiktok_data.csv")
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        for _, row in df.iterrows():
-            cursor.execute("""
-                INSERT OR REPLACE INTO tiktok_data (
-                    id, description, author_username, author_id,
-                    likes, shares, comments, plays, video_url,
-                    created_time, scraped_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                safe_str_convert(row.get('id', '')),
-                safe_str_convert(row.get('description', '')),
-                safe_str_convert(row.get('author_username', '')),
-                safe_str_convert(row.get('author_id', '')),
-                safe_int_convert(row.get('likes', 0)),
-                safe_int_convert(row.get('shares', 0)),
-                safe_int_convert(row.get('comments', 0)),
-                safe_int_convert(row.get('plays', 0)),
-                safe_str_convert(row.get('video_url', '')),
-                safe_int_convert(row.get('created_time', 0)),
-                safe_timestamp_convert(None)
-            ))
+        # Hole existierende Daten
+        existing_df = get_existing_tiktok_data(cursor)
+        
+        inserted_count = 0
+        updated_count = 0
+        skipped_count = 0
+
+        for index, row in df.iterrows():
+            try:
+                video_id = safe_str_convert(row.get('id', ''))
+                if not video_id:
+                    continue
+
+                # Extrahiere die Werte
+                description = safe_str_convert(row.get('description', ''))
+                author_username = safe_str_convert(row.get('author_username', ''))
+                author_id = safe_str_convert(row.get('author_id', ''))
+                likes = safe_int_convert(row.get('likes', 0))
+                shares = safe_int_convert(row.get('shares', 0))
+                comments = safe_int_convert(row.get('comments', 0))
+                plays = safe_int_convert(row.get('plays', 0))
+                video_url = safe_str_convert(row.get('video_url', ''))
+                created_time = safe_int_convert(row.get('created_time', 0))
+                scraped_at = safe_timestamp_convert(None)
+
+                # Prüfe, ob der Eintrag bereits existiert
+                existing_row = existing_df[existing_df['id'] == video_id]
+                
+                if len(existing_row) == 0:
+                    # Neuer Eintrag
+                    cursor.execute("""
+                        INSERT INTO tiktok_data (
+                            id, description, author_username, author_id,
+                            likes, shares, comments, plays, video_url,
+                            created_time, scraped_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        video_id, description, author_username, author_id,
+                        likes, shares, comments, plays, video_url,
+                        created_time, scraped_at
+                    ))
+                    inserted_count += 1
+                else:
+                    # Vergleiche die Werte
+                    existing = existing_row.iloc[0]
+                    if (existing['description'] != description or
+                        existing['author_username'] != author_username or
+                        existing['author_id'] != author_id or
+                        existing['likes'] != likes or
+                        existing['shares'] != shares or
+                        existing['comments'] != comments or
+                        existing['plays'] != plays or
+                        existing['video_url'] != video_url or
+                        existing['created_time'] != created_time):
+                        
+                        # Update wenn sich etwas geändert hat
+                        cursor.execute("""
+                            UPDATE tiktok_data SET
+                                description = ?, author_username = ?, author_id = ?,
+                                likes = ?, shares = ?, comments = ?, plays = ?,
+                                video_url = ?, created_time = ?, scraped_at = ?
+                            WHERE id = ?
+                        """, (
+                            description, author_username, author_id,
+                            likes, shares, comments, plays, video_url,
+                            created_time, scraped_at, video_id
+                        ))
+                        updated_count += 1
+                    else:
+                        skipped_count += 1
+
+                if (inserted_count + updated_count) % 100 == 0:
+                    logging.info(f"Bisher {inserted_count} neue und {updated_count} aktualisierte Einträge")
+                    
+            except Exception as e:
+                logging.warning(f"Fehler beim Import eines TikTok-Eintrags in Zeile {index}: {e}")
+                continue
 
         conn.commit()
         conn.close()
-        logging.info(f"✅ {len(df)} TikTok-Einträge importiert")
-        return len(df)
-
+        logging.info(f"✅ TikTok-Import abgeschlossen:")
+        logging.info(f"   - {inserted_count} neue Einträge")
+        logging.info(f"   - {updated_count} aktualisierte Einträge")
+        logging.info(f"   - {skipped_count} unveränderte Einträge")
+        return inserted_count + updated_count
     except Exception as e:
         logging.error(f"❌ Fehler beim Import der TikTok-Daten: {e}")
         return 0
@@ -246,31 +323,86 @@ def import_tiktok_data():
 def import_youtube_data():
     try:
         df = pd.read_csv(RAW_DIR / "youtube_data.csv")
-        df = clean_leading_empty_columns(df)
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        for _, row in df.iterrows():
-            cursor.execute("""
-                INSERT OR REPLACE INTO youtube_data (
-                    video_id, title, channel_title, view_count,
-                    like_count, comment_count, published_at, scraped_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                safe_str_convert(row.get('video_id', '')),
-                safe_str_convert(row.get('title', '')),
-                safe_str_convert(row.get('channel_title', '')),
-                safe_int_convert(row.get('view_count', 0)),
-                safe_int_convert(row.get('like_count', 0)),
-                safe_int_convert(row.get('comment_count', 0)),
-                safe_timestamp_convert(row.get('published_at', None)),
-                safe_timestamp_convert(row.get('scraped_at', None))
-            ))
+        # Hole existierende Daten
+        existing_df = get_existing_youtube_data(cursor)
+        
+        inserted_count = 0
+        updated_count = 0
+        skipped_count = 0
+
+        for index, row in df.iterrows():
+            try:
+                video_id = safe_str_convert(row.get('video_id', ''))
+                if not video_id:
+                    continue
+
+                # Extrahiere die Werte
+                title = safe_str_convert(row.get('title', ''))
+                channel_title = safe_str_convert(row.get('channel_title', ''))
+                view_count = safe_int_convert(row.get('view_count', 0))
+                like_count = safe_int_convert(row.get('like_count', 0))
+                comment_count = safe_int_convert(row.get('comment_count', 0))
+                published_at = safe_timestamp_convert(row.get('published_at', None))
+                scraped_at = safe_timestamp_convert(row.get('scraped_at', None))
+
+                # Prüfe, ob der Eintrag bereits existiert
+                existing_row = existing_df[existing_df['video_id'] == video_id]
+                
+                if len(existing_row) == 0:
+                    # Neuer Eintrag
+                    cursor.execute("""
+                        INSERT INTO youtube_data (
+                            video_id, title, channel_title, view_count,
+                            like_count, comment_count, published_at, scraped_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        video_id, title, channel_title, view_count,
+                        like_count, comment_count, published_at, scraped_at
+                    ))
+                    inserted_count += 1
+                else:
+                    # Vergleiche die Werte
+                    existing = existing_row.iloc[0]
+                    if (existing['title'] != title or
+                        existing['channel_title'] != channel_title or
+                        existing['view_count'] != view_count or
+                        existing['like_count'] != like_count or
+                        existing['comment_count'] != comment_count or
+                        existing['published_at'] != published_at):
+                        
+                        # Update wenn sich etwas geändert hat
+                        cursor.execute("""
+                            UPDATE youtube_data SET
+                                title = ?, channel_title = ?, view_count = ?,
+                                like_count = ?, comment_count = ?, published_at = ?,
+                                scraped_at = ?
+                            WHERE video_id = ?
+                        """, (
+                            title, channel_title, view_count,
+                            like_count, comment_count, published_at,
+                            scraped_at, video_id
+                        ))
+                        updated_count += 1
+                    else:
+                        skipped_count += 1
+
+                if (inserted_count + updated_count) % 100 == 0:
+                    logging.info(f"Bisher {inserted_count} neue und {updated_count} aktualisierte Einträge")
+                    
+            except Exception as e:
+                logging.warning(f"Fehler beim Import eines YouTube-Eintrags in Zeile {index}: {e}")
+                continue
 
         conn.commit()
         conn.close()
-        logging.info(f"✅ {len(df)} YouTube-Einträge importiert")
-        return len(df)
+        logging.info(f"✅ YouTube-Import abgeschlossen:")
+        logging.info(f"   - {inserted_count} neue Einträge")
+        logging.info(f"   - {updated_count} aktualisierte Einträge")
+        logging.info(f"   - {skipped_count} unveränderte Einträge")
+        return inserted_count + updated_count
     except Exception as e:
         logging.error(f"❌ Fehler beim Import der YouTube-Daten: {e}")
         return 0
@@ -283,10 +415,10 @@ def main():
     youtube_count = import_youtube_data()
 
     logging.info("📊 Import-Statistiken:")
-    logging.info(f"   Reddit: {reddit_count} Einträge")
-    logging.info(f"   TikTok: {tiktok_count} Einträge")
-    logging.info(f"   YouTube: {youtube_count} Einträge")
-    logging.info(f"   Gesamt: {reddit_count + tiktok_count + youtube_count} Einträge")
+    logging.info(f"   Reddit: {reddit_count} neue/aktualisierte Einträge")
+    logging.info(f"   TikTok: {tiktok_count} neue/aktualisierte Einträge")
+    logging.info(f"   YouTube: {youtube_count} neue/aktualisierte Einträge")
+    logging.info(f"   Gesamt: {reddit_count + tiktok_count + youtube_count} neue/aktualisierte Einträge")
 
 
 if __name__ == "__main__":

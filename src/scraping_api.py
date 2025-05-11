@@ -90,4 +90,4 @@ def download_all_data(request: Request):
         zip_stream,
         media_type="application/zip",
         headers={"Content-Disposition": "attachment; filename=data_all.zip"}
-    )
+    ) 
