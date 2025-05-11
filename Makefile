@@ -191,3 +191,37 @@ clean:
 	rm -rf data/processed/*.csv data/processed/*.json
 	rm -rf .venv
 	echo "Cleaned up temporary and output files."
+
+# Add this section to your Makefile
+
+.PHONY: restart-server
+
+# 🔄 Restart FastAPI server
+restart-server:
+	@echo "Stopping any running FastAPI server..."
+	-pkill -f "uvicorn src.main:app" || true
+	@echo "Starting FastAPI server..."
+	uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+	# Port, auf dem Streamlit läuft
+PORT ?= 8501
+APP ?= frontend/app.py  # Pfad zu deiner Streamlit-Hauptdatei
+
+# ▶️ Startet das Streamlit-Frontend
+start-frontend:
+	streamlit run $(APP) --server.port=$(PORT)
+
+# 🔁 Startet neu, beendet ggf. laufende Instanz
+restart-frontend:
+	-@kill -9 $$(lsof -t -i :$(PORT)) 2>/dev/null || true
+	sleep 1
+	make start-frontend
+
+# 🛑 Beendet Frontend-Prozess auf dem Port
+stop-frontend:
+	-@kill -9 $$(lsof -t -i :$(PORT)) 2>/dev/null || echo "✅ Kein laufender Streamlit-Prozess gefunden."
+
+# 📂 Öffnet das Frontend im Browser
+open-frontend:
+	python -m webbrowser http://localhost:$(PORT)
+

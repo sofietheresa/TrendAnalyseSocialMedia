@@ -361,6 +361,24 @@ async def semantic_search(request: SearchRequest):
         logger.error(f"Error in semantic search: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/data")
+async def get_data():
+    data_dir = Path("data/raw")
+    if not data_dir.exists():
+        raise HTTPException(status_code=404, detail="Data directory not found")
+    
+    # Logic to retrieve and return data
+    return JSONResponse(content={"message": "Data retrieved successfully"})
+
+@app.get("/logs")
+async def get_logs():
+    logs_dir = Path("logs")
+    if not logs_dir.exists():
+        raise HTTPException(status_code=404, detail="Logs directory not found")
+    
+    # Logic to retrieve and return logs
+    return JSONResponse(content={"message": "Logs retrieved successfully"})
+
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc):
     """Global exception handler for HTTP exceptions."""
