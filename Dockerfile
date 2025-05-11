@@ -4,24 +4,39 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     software-properties-common \
+    wget \
+    gnupg \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first to leverage Docker cache
+# Upgrade pip
+RUN pip install --upgrade pip
+
+# ⬇️ Wichtig: requirements.txt zuerst kopieren, damit setup.py sie lesen kann
+COPY requirements.txt .
 COPY setup.py .
-RUN pip install -e .
+
+# Install project dependencies
+RUN pip install --no-cache-dir -e .
+
+# Install Playwright and its dependencies
+RUN pip install playwright && \
+    playwright install chromium && \
+    playwright install-deps
 
 # Copy the rest of the application
 COPY . .
 
-# Create necessary directories
-RUN mkdir -p data/raw data/processed logs
+# Create necessary directories and set permissions
+RUN mkdir -p data/raw data/processed logs && \
+    chmod -R 777 data logs
 
-# Expose the port the app runs on
-EXPOSE 8000
+# Expose port
+EXPOSE 10000
 
-# Command to run the application
+# Run app
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "10000"]

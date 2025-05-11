@@ -424,3 +424,58 @@ Traceback (most recent call last):
 ModuleNotFoundError: No module named 'praw'
 2025-05-11 13:48:47,701 - INFO -  Starte Reddit-Scraping...
 2025-05-11 13:48:54,956 - INFO -  128 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+Traceback (most recent call last):
+  File "/app/src/scheduler/jobs/reddit_scraper.py", line 2, in <module>
+    import praw
+ModuleNotFoundError: No module named 'praw'
+Traceback (most recent call last):
+  File "/app/src/scheduler/jobs/reddit_scraper.py", line 2, in <module>
+    import praw
+ModuleNotFoundError: No module named 'praw'
+Traceback (most recent call last):
+  File "/app/src/scheduler/jobs/reddit_scraper.py", line 2, in <module>
+    import praw
+ModuleNotFoundError: No module named 'praw'
+2025-05-11 14:13:57,436 - INFO -  Starte Reddit-Scraping...
+2025-05-11 14:14:05,137 - INFO -  127 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 14:15:27,243 - INFO -  Starte Reddit-Scraping...
+2025-05-11 14:15:33,481 - INFO -  135 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 14:23:46,307 - INFO -  Starte Reddit-Scraping...
+2025-05-11 14:23:52,809 - INFO -  135 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 14:25:11,079 - INFO -  Starte Reddit-Scraping...
+2025-05-11 14:25:16,898 - INFO -  127 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 14:37:32,647 - INFO -  Starte Reddit-Scraping...
+2025-05-11 14:37:39,408 - INFO -  127 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 14:38:10,904 - INFO -  Starte Reddit-Scraping...
+2025-05-11 14:38:17,661 - INFO -  127 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 14:41:47,685 - INFO -  Starte Reddit-Scraping...
+2025-05-11 14:41:55,320 - INFO -  135 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 14:46:19,702 - INFO -  Starte Reddit-Scraping...
+2025-05-11 14:46:26,009 - INFO -  135 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 14:49:14,384 - INFO -  Starte Reddit-Scraping...
+2025-05-11 14:49:20,453 - INFO -  135 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 14:54:24,262 - INFO -  Starte Reddit-Scraping...
+2025-05-11 14:54:31,717 - INFO -  121 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+Traceback (most recent call last):
+  File "/app/src/scheduler/jobs/reddit_scraper.py", line 2, in <module>
+    import praw
+ModuleNotFoundError: No module named 'praw'
+Traceback (most recent call last):
+  File "/Users/sofl3/anaconda3/lib/python3.11/pathlib.py", line 1116, in mkdir
+    os.mkdir(self, mode)
+FileNotFoundError: [Errno 2] No such file or directory: '/app/logs'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/sofl3/Documents/TrendAnalyseSocialMedia/src/scheduler/jobs/reddit_scraper.py", line 17, in <module>
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+  File "/Users/sofl3/anaconda3/lib/python3.11/pathlib.py", line 1120, in mkdir
+    self.parent.mkdir(parents=True, exist_ok=True)
+  File "/Users/sofl3/anaconda3/lib/python3.11/pathlib.py", line 1116, in mkdir
+    os.mkdir(self, mode)
+OSError: [Errno 30] Read-only file system: '/app'
+2025-05-11 15:02:35,791 - INFO -  Starte Reddit-Scraping...
+2025-05-11 15:02:42,466 - INFO -  126 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 15:06:51,487 - INFO -  Starte Reddit-Scraping...
+2025-05-11 15:06:58,053 - INFO -  134 Einträge gespeichert unter /app/data/raw/reddit_data.csv
