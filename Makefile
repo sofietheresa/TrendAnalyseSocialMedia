@@ -131,7 +131,7 @@ shell:
 .PHONY: run-all-scrapers
 
 run-all-scrapers:
-	python scheduler/run_all_scrapers.py
+	python src/scheduler/run_all_scrapers.py
 
 # --------------------------------------------
 # 🐳 OPTIONAL: DOCKER-COMPOSE UNTERSTÜTZUNG

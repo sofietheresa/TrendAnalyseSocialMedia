@@ -1,10 +1,12 @@
+import logging
+import os
 import sqlite3
 import pandas as pd
 from pathlib import Path
-import logging
 from datetime import datetime
+import hashlib
 
-# Logging-Konfiguration
+# Konfiguriere Logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
@@ -13,17 +15,13 @@ logging.basicConfig(
 
 # Konstanten
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "data/social_media.db"
-RAW_DIR = BASE_DIR / "data/raw"
+DB_PATH =  Path("data")  / "social_media.db"
+RAW_DIR =  Path("data")  / "raw"
 
 
 def setup_database():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-
-    cursor.execute("DROP TABLE IF EXISTS reddit_data")
-    cursor.execute("DROP TABLE IF EXISTS tiktok_data")
-    cursor.execute("DROP TABLE IF EXISTS youtube_data")
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS reddit_data (
@@ -71,6 +69,15 @@ def setup_database():
     conn.commit()
     conn.close()
     logging.info("✅ Datenbank-Tabellen erstellt")
+
+
+def delete_source_file(file_path):
+    try:
+        if file_path.exists():
+            file_path.unlink()
+            logging.info(f"✅ Quelldatei gelöscht: {file_path}")
+    except Exception as e:
+        logging.error(f"❌ Fehler beim Löschen der Quelldatei {file_path}: {e}")
 
 
 def safe_int_convert(value):
@@ -123,28 +130,56 @@ def get_existing_youtube_data(cursor):
 
 def import_reddit_data():
     try:
+        logging.info("Starte Reddit-Import...")
         # Lese die CSV-Datei und überspringe die erste Zeile
-        df = pd.read_csv(RAW_DIR / "reddit_data.csv", skiprows=1)
+        csv_path = RAW_DIR / "reddit_data.csv"
+        logging.info(f"Lese CSV-Datei von: {csv_path}")
+        
+        df = pd.read_csv(csv_path, skiprows=1)
         logging.info(f"Gelesene CSV-Datei hat {len(df)} Zeilen und {len(df.columns)} Spalten")
+        logging.info(f"Spalten: {df.columns.tolist()}")
         
         # Nehme die letzten 8 Spalten und setze die korrekten Spaltennamen
         df = df.iloc[:, -8:]
         df.columns = ['subreddit', 'title', 'text', 'score', 'comments', 'created', 'url', 'scraped_at']
+        logging.info("Spalten nach Umbenennung:")
+        logging.info(f"Spalten: {df.columns.tolist()}")
         
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
         # Hole existierende Daten
         existing_df = get_existing_reddit_data(cursor)
+        logging.info(f"Existierende Einträge in der Datenbank: {len(existing_df)}")
         
         inserted_count = 0
         updated_count = 0
         skipped_count = 0
+        error_count = 0
 
         for index, row in df.iterrows():
             try:
-                # Generiere eine eindeutige ID
-                post_id = f"reddit_{index + 1}"
+                # Generiere eine eindeutige ID basierend auf URL und Timestamp
+                url = safe_str_convert(row['url'])
+                if not url:
+                    logging.warning(f"Keine URL in Zeile {index}")
+                    error_count += 1
+                    continue
+                    
+                # Extrahiere die Post-ID aus der URL oder generiere eine eindeutige ID
+                post_id = None
+                if url:
+                    # Versuche die ID aus der URL zu extrahieren
+                    url_parts = url.split('/')
+                    if len(url_parts) > 1:
+                        post_id = url_parts[-1]
+                
+                # Wenn keine ID aus der URL extrahiert werden konnte, generiere eine eindeutige ID
+                if not post_id:
+                    # Erstelle eine eindeutige ID aus URL und Timestamp
+                    timestamp = safe_str_convert(row['created'])
+                    unique_string = f"{url}_{timestamp}_{index}"
+                    post_id = hashlib.md5(unique_string.encode()).hexdigest()
                 
                 # Extrahiere die Werte aus der Zeile
                 title = safe_str_convert(row['title'])
@@ -161,7 +196,6 @@ def import_reddit_data():
                     logging.warning(f"Fehler bei der Timestamp-Konvertierung in Zeile {index}: {e}")
                     created = int(datetime.now().timestamp())
                 
-                url = safe_str_convert(row['url'])
                 subreddit = safe_str_convert(row['subreddit'])
                 scraped_at = safe_timestamp_convert(row['scraped_at'])
 
@@ -180,6 +214,8 @@ def import_reddit_data():
                         comments, url, subreddit, scraped_at
                     ))
                     inserted_count += 1
+                    
+                        
                 else:
                     # Vergleiche die Werte
                     existing = existing_row.iloc[0]
@@ -202,14 +238,14 @@ def import_reddit_data():
                             url, subreddit, scraped_at, post_id
                         ))
                         updated_count += 1
+                        if updated_count % 10 == 0:
+                            logging.info(f"Aktualisierte Einträge: {updated_count}")
                     else:
                         skipped_count += 1
                 
-                if (inserted_count + updated_count) % 100 == 0:
-                    logging.info(f"Bisher {inserted_count} neue und {updated_count} aktualisierte Einträge")
-                    
             except Exception as e:
                 logging.warning(f"Fehler beim Import eines Reddit-Eintrags in Zeile {index}: {e}")
+                error_count += 1
                 continue
 
         conn.commit()
@@ -218,6 +254,7 @@ def import_reddit_data():
         logging.info(f"   - {inserted_count} neue Einträge")
         logging.info(f"   - {updated_count} aktualisierte Einträge")
         logging.info(f"   - {skipped_count} unveränderte Einträge")
+        logging.info(f"   - {error_count} fehlerhafte Einträge")
         return inserted_count + updated_count
     except Exception as e:
         logging.error(f"❌ Fehler beim Import der Reddit-Daten: {e}")
@@ -236,11 +273,13 @@ def import_tiktok_data():
         inserted_count = 0
         updated_count = 0
         skipped_count = 0
+        error_count = 0
 
         for index, row in df.iterrows():
             try:
                 video_id = safe_str_convert(row.get('id', ''))
                 if not video_id:
+                    error_count += 1
                     continue
 
                 # Extrahiere die Werte
@@ -253,7 +292,7 @@ def import_tiktok_data():
                 plays = safe_int_convert(row.get('plays', 0))
                 video_url = safe_str_convert(row.get('video_url', ''))
                 created_time = safe_int_convert(row.get('created_time', 0))
-                scraped_at = safe_timestamp_convert(None)
+                scraped_at = safe_timestamp_convert(row.get('scraped_at', None))
 
                 # Prüfe, ob der Eintrag bereits existiert
                 existing_row = existing_df[existing_df['id'] == video_id]
@@ -301,11 +340,9 @@ def import_tiktok_data():
                     else:
                         skipped_count += 1
 
-                if (inserted_count + updated_count) % 100 == 0:
-                    logging.info(f"Bisher {inserted_count} neue und {updated_count} aktualisierte Einträge")
-                    
             except Exception as e:
                 logging.warning(f"Fehler beim Import eines TikTok-Eintrags in Zeile {index}: {e}")
+                error_count += 1
                 continue
 
         conn.commit()
@@ -314,6 +351,7 @@ def import_tiktok_data():
         logging.info(f"   - {inserted_count} neue Einträge")
         logging.info(f"   - {updated_count} aktualisierte Einträge")
         logging.info(f"   - {skipped_count} unveränderte Einträge")
+        logging.info(f"   - {error_count} fehlerhafte Einträge")
         return inserted_count + updated_count
     except Exception as e:
         logging.error(f"❌ Fehler beim Import der TikTok-Daten: {e}")
@@ -332,11 +370,13 @@ def import_youtube_data():
         inserted_count = 0
         updated_count = 0
         skipped_count = 0
+        error_count = 0
 
         for index, row in df.iterrows():
             try:
                 video_id = safe_str_convert(row.get('video_id', ''))
                 if not video_id:
+                    error_count += 1
                     continue
 
                 # Extrahiere die Werte
@@ -394,6 +434,7 @@ def import_youtube_data():
                     
             except Exception as e:
                 logging.warning(f"Fehler beim Import eines YouTube-Eintrags in Zeile {index}: {e}")
+                error_count += 1
                 continue
 
         conn.commit()
@@ -402,17 +443,63 @@ def import_youtube_data():
         logging.info(f"   - {inserted_count} neue Einträge")
         logging.info(f"   - {updated_count} aktualisierte Einträge")
         logging.info(f"   - {skipped_count} unveränderte Einträge")
+        logging.info(f"   - {error_count} fehlerhafte Einträge")
         return inserted_count + updated_count
     except Exception as e:
         logging.error(f"❌ Fehler beim Import der YouTube-Daten: {e}")
         return 0
 
 
+def clean_database():
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        # Lösche Reddit-Einträge ohne ID
+        cursor.execute("DELETE FROM reddit_data WHERE id IS NULL OR id = ''")
+        reddit_deleted = cursor.rowcount
+        
+        # Lösche TikTok-Einträge ohne ID
+        cursor.execute("DELETE FROM tiktok_data WHERE id IS NULL OR id = ''")
+        tiktok_deleted = cursor.rowcount
+        
+        # Lösche YouTube-Einträge ohne ID
+        cursor.execute("DELETE FROM youtube_data WHERE video_id IS NULL OR video_id = ''")
+        youtube_deleted = cursor.rowcount
+        
+        conn.commit()
+        conn.close()
+        
+        logging.info("✅ Datenbank bereinigt:")
+        logging.info(f"   - {reddit_deleted} Reddit-Einträge ohne ID gelöscht")
+        logging.info(f"   - {tiktok_deleted} TikTok-Einträge ohne ID gelöscht")
+        logging.info(f"   - {youtube_deleted} YouTube-Einträge ohne ID gelöscht")
+        
+    except Exception as e:
+        logging.error(f"❌ Fehler beim Bereinigen der Datenbank: {e}")
+
+
 def main():
+    logging.info("Starte Import-Prozess...")
     setup_database()
+    
+    # Bereinige die Datenbank vor dem Import
+    clean_database()
+    
+    logging.info("Starte Reddit-Import...")
     reddit_count = import_reddit_data()
+    if reddit_count > 0:
+        delete_source_file(RAW_DIR / "reddit_data.csv")
+    
+    logging.info("Starte TikTok-Import...")
     tiktok_count = import_tiktok_data()
+    if tiktok_count > 0:
+        delete_source_file(RAW_DIR / "tiktok_data.csv")
+    
+    logging.info("Starte YouTube-Import...")
     youtube_count = import_youtube_data()
+    if youtube_count > 0:
+        delete_source_file(RAW_DIR / "youtube_data.csv")
 
     logging.info("📊 Import-Statistiken:")
     logging.info(f"   Reddit: {reddit_count} neue/aktualisierte Einträge")
