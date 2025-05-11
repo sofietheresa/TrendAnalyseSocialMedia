@@ -277,3 +277,40 @@ ModuleNotFoundError: No module named 'praw'
 2025-05-10 18:02:41,383 - INFO -  685 Einträge gespeichert unter /app/data/raw/reddit_data.csv
 2025-05-10 20:46:25,842 - INFO -  Starte Reddit-Scraping...
 2025-05-10 20:46:39,340 - INFO -  686 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 09:45:32,015 - INFO -  Starte Reddit-Scraping...
+2025-05-11 09:45:38,971 - INFO -  132 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 09:46:12,209 - INFO -  Starte Reddit-Scraping...
+2025-05-11 09:46:18,559 - INFO -  132 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 09:47:00,861 - INFO -  Starte Reddit-Scraping...
+2025-05-11 09:47:01,873 - INFO -  Starte Reddit-Scraping...
+2025-05-11 09:47:07,413 - INFO -  132 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 09:47:08,449 - INFO -  132 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 09:56:33,821 - INFO -  Starte Reddit-Scraping...
+2025-05-11 09:56:39,646 - INFO -  132 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 10:26:57,421 - INFO -  Starte Reddit-Scraping...
+2025-05-11 10:27:03,694 - INFO -  131 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 10:41:58,723 - INFO -  Starte Reddit-Scraping...
+2025-05-11 10:42:04,993 - INFO -  698 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 10:47:33,560 - INFO -  Starte Reddit-Scraping...
+2025-05-11 10:47:40,305 - INFO -  698 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 10:54:24,027 - INFO -  Starte Reddit-Scraping...
+2025-05-11 10:54:31,052 - INFO -  698 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 11:12:54,955 [ERROR] ❌ Fehler beim Reddit-Scraping: Required configuration setting 'client_id' missing. 
+This setting can be provided in a praw.ini file, as a keyword argument to the Reddit class constructor, or as an environment variable.
+Traceback (most recent call last):
+  File "/app/src/scheduler/jobs/reddit_scraper.py", line 110, in <module>
+    scrape_reddit_trending()
+  File "/app/src/scheduler/jobs/reddit_scraper.py", line 51, in scrape_reddit_trending
+    reddit = praw.Reddit(
+             ^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/praw/util/deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/praw/reddit.py", line 259, in __init__
+    raise MissingRequiredAttributeException(
+praw.exceptions.MissingRequiredAttributeException: Required configuration setting 'client_id' missing. 
+This setting can be provided in a praw.ini file, as a keyword argument to the Reddit class constructor, or as an environment variable.
+2025-05-11 11:14:19,945 - INFO -  Starte Reddit-Scraping...
+2025-05-11 11:14:26,541 - INFO -  131 Einträge gespeichert unter /app/data/raw/reddit_data.csv
+2025-05-11 11:16:26,023 - INFO -  Starte Reddit-Scraping...
+2025-05-11 11:16:33,833 - INFO -  131 Einträge gespeichert unter /app/data/raw/reddit_data.csv

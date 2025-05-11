@@ -684,3 +684,63 @@ ModuleNotFoundError: No module named 'googleapiclient'
 2025-05-10 20:51:23,839 - INFO - 🔄 Nach Zusammenführung: 653 Videos
 2025-05-10 20:51:23,849 - INFO - 🔍 50 Duplikate entfernt
 2025-05-10 20:51:24,117 - INFO - ✅ 603 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 09:45:59,640 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 09:45:59,647 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 09:45:59,837 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 09:45:59,837 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
+2025-05-11 09:45:59,847 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 09:46:33,810 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 09:46:33,817 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 09:46:34,101 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 09:46:34,102 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
+2025-05-11 09:46:34,110 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 09:47:32,018 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 09:47:32,018 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 09:47:32,023 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 09:47:32,023 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 09:47:32,205 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 09:47:32,206 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
+2025-05-11 09:47:32,209 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 09:47:32,209 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
+2025-05-11 09:47:32,219 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 09:47:32,219 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 09:57:01,987 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 09:57:01,991 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 09:57:02,181 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 09:57:02,181 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
+2025-05-11 09:57:02,190 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 10:27:20,170 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 10:27:20,174 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 10:27:20,648 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 10:27:20,649 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
+2025-05-11 10:27:20,659 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 10:42:21,489 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 10:42:21,494 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 10:42:21,679 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 10:42:21,679 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
+2025-05-11 10:42:21,690 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 10:47:56,623 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 10:47:56,627 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 10:47:56,839 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 10:47:56,839 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
+2025-05-11 10:47:56,848 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 10:54:49,398 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 10:54:49,404 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 10:54:49,630 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 10:54:49,631 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
+2025-05-11 10:54:49,646 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 11:13:12,375 - ERROR -  Kein YOUTUBE_API_KEY gefunden. Bitte .env prüfen.
+Traceback (most recent call last):
+  File "/app/src/scheduler/jobs/youtube_scraper.py", line 31, in <module>
+    raise EnvironmentError("YOUTUBE_API_KEY fehlt")
+OSError: YOUTUBE_API_KEY fehlt
+2025-05-11 11:14:41,211 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 11:14:41,216 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 11:14:41,402 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 11:14:41,402 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
+2025-05-11 11:14:41,417 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 11:16:51,681 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 11:16:51,685 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 11:16:51,887 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 11:16:51,887 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
+2025-05-11 11:16:51,899 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
