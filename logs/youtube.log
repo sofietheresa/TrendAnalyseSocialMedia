@@ -492,6 +492,12 @@ python: can't open file '/app/scheduler/scheduler/jobs/youtube_scraper.py': [Err
 2025-05-09 16:50:37,081 - INFO - 🔄 Nach Zusammenführung: 588 Videos
 2025-05-09 16:50:37,083 - INFO - 🔍 49 Duplikate entfernt
 2025-05-09 16:50:37,145 - INFO - ✅ 539 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 08:35:18,359 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 08:35:18,448 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 08:35:18,670 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 08:35:18,715 - INFO - 📊 Bestehende Daten: 539 Videos
+2025-05-11 08:35:18,717 - INFO - 🔄 Nach Zusammenführung: 589 Videos
+2025-05-11 08:35:18,812 - INFO - ✅ 589 Videos gespeichert unter: /app/data/raw/youtube_data.csv
 2025-05-10 08:54:20,887 - INFO - file_cache is only supported with oauth2client<4.0.0
 2025-05-10 08:54:20,919 - INFO - 🔍 Starte YouTube-Scraping...
 2025-05-10 08:54:21,108 - INFO - 🔄 Neue Daten: 50 Videos gefunden
