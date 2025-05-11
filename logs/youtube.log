@@ -1001,3 +1001,12 @@ OSError: [Errno 30] Read-only file system: '/app'
 2025-05-11 18:43:50,766 - INFO - ⏳ Letzter Scrape vor 0.2 Stunden - warte noch
 2025-05-11 20:26:43,718 - INFO - file_cache is only supported with oauth2client<4.0.0
 2025-05-11 20:26:43,731 - INFO - ⏳ Letzter Scrape vor 1.9 Stunden - warte noch
+2025-05-11 20:42:11,484 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 20:42:11,490 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 20:42:11,684 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 20:42:11,685 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
+2025-05-11 20:42:11,700 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-11 20:54:38,692 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 20:54:38,709 - INFO - ⏳ Letzter Scrape vor 0.2 Stunden - warte noch
+2025-05-11 21:19:10,026 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 21:19:10,039 - INFO - ⏳ Letzter Scrape vor 0.6 Stunden - warte noch

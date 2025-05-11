@@ -1,194 +1,158 @@
-# Social Media Trend Analysis
+Hier ist eine überarbeitete Version der README-Datei inklusive Architekturgrafik, die du direkt einbinden kannst:
 
-Eine moderne Anwendung zur Analyse von Social Media Trends mit einer Web-Oberfläche und Echtzeit-Monitoring.
+---
 
-## Features
+# 📈 Social Media Trend Analysis
 
-- **Daten-Scraping** von verschiedenen Social Media Plattformen:
-  - TikTok
-  - YouTube
-  - Reddit
-- **Automatische Analyse** von Trends und Mustern
-- **Web-Dashboard** zur Visualisierung der Ergebnisse
-- **Echtzeit-Monitoring** der Pipeline-Performance
-- **REST-API** für externe Integrationen
+Ein modernes Analyseframework für aktuelle Trends auf TikTok, YouTube und Reddit – mit MLOps, Dashboard, Scheduler & Vektor-DB.
 
-## Technologie-Stack
+## 🚀 Features
 
-- **Backend:**
+- 🛰️ **Daten-Ingestion** von TikTok, YouTube & Reddit
+- 🤖 **ML-Pipeline mit ZenML**: Sentiment & Trendanalyse
+- 📊 **Interaktive Dashboards** via Streamlit
+- 🧠 **Vektorspeicherung** in Qdrant + semantische Suche
+- 🗃️ **SQLite** für strukturierte Rohdaten
+- 🔁 **Scheduler + Orchestration** via ZenML
+- 📡 **Monitoring** mit Prometheus & Grafana
+- 🔗 **REST-API** (FastAPI) für Externe Dienste
 
-  - Python 3.11+
-  - FastAPI
-  - ZenML für ML-Pipelines
-  - TensorFlow für ML-Modelle
-  - NLTK für Textverarbeitung
+## 🧩 Architektur
 
-- **Frontend:**
+![Architektur](./docs/architecture.png)
 
-  - React
-  - Chart.js für Visualisierungen
-  - Modernes, responsives Design
+> **Hinweis:** Die Architektur zeigt den Datenfluss vom Scraping bis zur Vektor-Datenbank.
 
-- **Infrastruktur:**
-  - Docker & Docker Compose
-  - Nginx als Reverse Proxy
-  - Prometheus & Grafana für Monitoring
-  - Qdrant für Vektordatenbank
+## ⚙️ Tech Stack
 
-## Installation
+**Backend:**
 
-1. **Voraussetzungen:**
+- Python 3.11, FastAPI, ZenML, NLTK, TensorFlow
+- SQLite, Qdrant
 
-   ```bash
-   - Docker & Docker Compose
-   - Python 3.11+
-   - Node.js 16+ (für Frontend-Entwicklung)
-   ```
+**Frontend:**
 
-2. **Repository klonen:**
+- Streamlit
 
-   ```bash
-   git clone https://github.com/yourusername/trend-analyse-social-media.git
-   cd trend-analyse-social-media
-   ```
+**Orchestration & Container:**
 
-3. **Python-Paket installieren:**
+- ZenML Pipelines
+- Podman statt Docker
+- Optional: Docker Compose / systemd
 
-   ```bash
-   pip install -e .
-   ```
+**Monitoring:**
 
-4. **Umgebungsvariablen konfigurieren:**
+- Prometheus + Grafana
 
-   ```bash
-   cp .env.example .env
-   # Bearbeite .env mit deinen API-Keys und Konfigurationen
-   ```
+---
 
-5. **Docker-Container starten:**
-   ```bash
-   docker-compose up -d
-   ```
+## 🛠️ Installation
 
-## Verwendung
+### Voraussetzungen
 
-### Web-Dashboard
+- Python 3.11+
+- Node.js 16+ (nur bei React-Frontend)
+- Podman (alternativ: Docker)
+- Optional: `make`, `poetry`, `zenml`
 
-- Öffne `https://deine-domain.de` im Browser
-- Dashboard zeigt aktuelle Trends und Analysen
-- Pipeline kann manuell gestartet werden
-- Echtzeit-Updates alle 30 Sekunden
-
-### API-Endpunkte
-
-- `GET /api/` - API-Dokumentation
-- `POST /api/run-pipeline` - Pipeline starten
-- `GET /api/status` - Status der letzten Analyse
-- `GET /api/metrics` - Prometheus Metriken
-
-### Monitoring
-
-- Grafana Dashboard: `https://deine-domain.de:3001`
-  - Login: admin/admin
-  - Pipeline-Performance
-  - Fehlerraten
-  - Ressourcennutzung
-
-## Projektstruktur
-
-```
-trend-analyse-social-media/
-├── src/                    # Hauptquellcode
-│   ├── api.py             # FastAPI-Anwendung
-│   ├── pipelines/         # ML-Pipelines
-│   └── scrapers/          # Social Media Scraper
-├── frontend/              # React Frontend
-├── docker-compose.yml     # Docker-Konfiguration
-├── Dockerfile            # Docker-Build
-├── nginx.conf            # Nginx-Konfiguration
-├── setup.py              # Python-Paket-Konfiguration
-└── setup_ssl.sh          # SSL-Setup-Skript
-```
-
-## Entwicklung
-
-### Frontend-Entwicklung
+### 1. Repository klonen
 
 ```bash
-cd frontend
-npm install
-npm start
+git clone https://github.com/yourname/trend-analyse-social-media.git
+cd trend-analyse-social-media
 ```
 
-### Backend-Entwicklung
+### 2. Python-Abhängigkeiten installieren
 
 ```bash
-# Virtuelle Umgebung erstellen
 python -m venv venv
-source venv/bin/activate  # oder `venv\Scripts\activate` unter Windows
-
-# Abhängigkeiten installieren
+source venv/bin/activate
 pip install -e .
 ```
 
-### Tests ausführen
+### 3. Umgebungsvariablen anlegen
 
 ```bash
-python -m pytest tests/
+cp .env.example .env
+# API-Keys und Pfade eintragen
 ```
 
-## Deployment
+---
 
-1. **SSL-Zertifikate einrichten:**
+## 📦 Verwendung
 
-   ```bash
-   chmod +x setup_ssl.sh
-   ./setup_ssl.sh deine-domain.de
-   ```
+### Web-Dashboard (Streamlit)
 
-2. **Nginx-Konfiguration anpassen:**
+```bash
+make streamlit
+```
 
-   - Bearbeite `nginx.conf`
-   - Ersetze `server_name _;` mit deiner Domain
+Zeigt:
 
-3. **Container neu starten:**
-   ```bash
-   docker-compose down
-   docker-compose up -d
-   ```
+- Linecharts (Postanzahl über Zeit)
+- Seiten für Reddit, TikTok, YouTube
+- Orchestrator-Seite mit ZenML Stack-Infos & Triggern
 
-## Monitoring & Wartung
+### FastAPI starten
 
-- **Logs anzeigen:**
+```bash
+make start-api
+```
 
-  ```bash
-  docker-compose logs -f
-  ```
+**API-Endpunkte:**
 
-- **Container-Status prüfen:**
+- `GET /api/docs`
+- `POST /api/run-pipeline`
+- `GET /api/status`
 
-  ```bash
-  docker-compose ps
-  ```
+---
 
-- **Backup erstellen:**
-  ```bash
-  # Daten sichern
-  tar -czf backup.tar.gz data/ qdrant_storage/
-  ```
+## 🧪 Pipelines & ZenML
 
-## Lizenz
+- Starte Pipelines über UI oder CLI (`zenml run`)
+- Nutze `zenml describe` zur Analyse des Stacks
+- Vektor-Embeddings landen in Qdrant
 
-MIT License - siehe [LICENSE](LICENSE) für Details.
+---
 
-## Beitragen
+## 📈 Monitoring mit Grafana
 
-1. Fork das Repository
-2. Erstelle einen Feature-Branch
-3. Committe deine Änderungen
-4. Push zum Branch
-5. Erstelle einen Pull Request
+1. Prometheus über `docker-compose` starten
+2. Grafana öffnen unter `http://localhost:3000`
+3. Login: admin/admin
+4. Dashboard für Metriken wie:
 
-## Kontakt
+   - Pipeline-Durchläufe
+   - Fehlerraten
+   - Latenz / Dauer
+   - Speicherlast
 
-Bei Fragen oder Problemen, erstelle bitte ein Issue im GitHub-Repository.
+---
+
+## 📁 Projektstruktur
+
+```bash
+├── src/
+│   ├── steps/               # ZenML Steps
+│   ├── scheduler/           # Zeitgesteuerte Tasks
+│   ├── api/                 # FastAPI App
+├── frontend/
+│   ├── app.py               # Streamlit-Frontend
+│   ├── public/              # Optional: React UI
+├── notebooks/               # Explorative Analyse
+├── qdrant_storage/          # Vektor-DB
+├── data/                    # SQLite-Datenbank
+├── logs/                    # Logdateien
+├── Dockerfile               # Build-Spezifikation
+└── zenml_pipeline.py        # Haupt-Pipeline
+```
+
+---
+
+## 🔐 Sicherheit & Produktion
+
+- Nutze `Podman` mit Rootless-Containern
+- Setze Nginx reverse proxy mit TLS ein
+- Verwende `.env` für Secrets (nicht committen!)
+- Monitoring via Grafana & Prometheus
+- Backups per `tar czf backup.tar.gz data/ qdrant_storage/`

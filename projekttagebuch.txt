@@ -1,0 +1,84 @@
+# Projekttagebuch: Social Media Trend Analysis
+
+## Phase 1: Konzeption und erste Schritte
+
+Die anfängliche Herausforderung bestand darin, das Projekt thematisch einzugrenzen und die Datenbeschaffung zu planen. Meine ursprüngliche Vision war ambitioniert: Ich wollte Daten von Instagram, Twitter (X), TikTok, Reddit und YouTube analysieren. Schnell wurde klar, dass dies zu umfangreich sein würde.
+
+### Herausforderungen bei der Datenbeschaffung
+
+Die größte Hürde war zunächst das Scraping von Instagram. Ich experimentierte mit verschiedenen Bibliotheken wie insta-scrape und insta-download, aber alle zeigten Probleme beim Zugriff. Selbst mit Selenium war die Lösung nicht stabil genug. Ich wollte folgende Daten erfassen:
+
+- URL (Link zum Beitrag)
+- Timestamp (Scraping-Zeitpunkt)
+- Datum (Veröffentlichungsdatum)
+- Inhalt (Bildbeschreibung/ALT-Text)
+- Username
+- Caption
+- Likes (wenn ohne Login sichtbar)
+
+Nach mehreren Fehlversuchen musste ich eine schwere Entscheidung treffen: Instagram und Twitter wurden aus dem Scope entfernt.
+
+## Phase 2: Technische Implementierung
+
+### Datenmanagement-Evolution
+Anfangs arbeitete ich ausschließlich mit CSV-Dateien, was sich später als problematisch erwies:
+- Häufige Git-Merge-Konflikte
+- Inkonsistenzen in der Datenstruktur
+- Schwierigkeiten bei der Versionierung
+
+Die spätere Migration zu SQLite war ein wichtiger Schritt zur Verbesserung der Datenhandhabung.
+
+### Deployment-Herausforderungen
+
+Die Automatisierung des Scrapings erwies sich als komplexer als erwartet:
+1. Erster Versuch: Windows Scheduler
+   - Scheiterte an Sicherheitseinschränkungen
+   - Probleme mit IBM Security
+
+2. Zweiter Versuch: Render
+   - Erforderte saubere Containerisierung
+   - TikTok-API funktionierte nicht in Docker
+   - Lange Deployment-Zeiten
+
+3. Finale Lösung: Hybride Architektur
+   - Lokaler Laptop als Server für TikTok-Scraping
+   - Container für andere Komponenten
+   - GitHub Actions für Scheduling
+
+## Phase 3: MLOps-Integration
+
+Die MLOps-Implementierung war eine besondere Herausforderung, da ich anfangs zu sehr auf die Datenbeschaffung fokussiert war. Erst spät im Projekt wurde mir klar, dass ich die MLOps-Aspekte vernachlässigt hatte:
+
+- Feature Monitoring wurde implementiert
+- Evaluierungsmetriken eingeführt
+- Pipeline-Monitoring aufgesetzt
+
+### Technische Schulden
+
+Während des Projekts entstanden einige technische Schulden:
+- Häufige Strukturänderungen
+- Instabile Pfadkonfigurationen
+- Probleme mit TikTok und Reddit APIs
+
+## Learnings und Ausblick
+
+Für die Zukunft plane ich:
+- Instagram-Integration verbessern
+- YouTube Video Subscriptions einbinden
+- Topic Modeling und Sentiment Analyse optimieren
+- MLOps-Praktiken von Anfang an integrieren
+
+### Wichtigste Erkenntnisse
+
+1. Datenbeschaffung ist komplex und zeitaufwändig
+2. Frühzeitige Datenbankintegration ist wichtig
+3. MLOps muss von Anfang an mitgedacht werden
+4. Hybride Architekturen können sinnvoll sein
+5. Kontinuierliches Monitoring ist essentiell
+
+## Offene Fragen und nächste Schritte
+
+- Wie kann das Topic Modeling verbessert werden?
+- Welche weiteren Datenquellen sind sinnvoll?
+- Wie kann die Performance optimiert werden?
+- Wie kann die Stabilität der Scraper verbessert werden? 
