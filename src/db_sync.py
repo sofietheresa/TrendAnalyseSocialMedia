@@ -131,7 +131,7 @@ class DatabaseSync:
                         logger.error(f"Problematischer Eintrag: {row}")
                         continue
                 
-                logger.info(f"✓ {len(platform_data)} {platform}-Einträge geladen")
+                logger.info(f" {len(platform_data)} {platform}-Einträge geladen")
                 all_data.extend(platform_data)
                 
             except sqlite3.Error as e:
@@ -190,7 +190,7 @@ class DatabaseSync:
                     total_stats["updated"] += chunk_stats.get("updated", 0)
                     total_stats["errors"] += chunk_stats.get("errors", 0)
                     
-                    logger.info(f"✓ Chunk {i} verarbeitet: "
+                    logger.info(f" Chunk {i} verarbeitet: "
                               f"{chunk_stats.get('inserted', 0)} eingefügt, "
                               f"{chunk_stats.get('updated', 0)} aktualisiert, "
                               f"{chunk_stats.get('errors', 0)} Fehler")
