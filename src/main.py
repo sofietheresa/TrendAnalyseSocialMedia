@@ -435,12 +435,11 @@ async def sync_data(request: Request):
                     if platform == "reddit":
                         cursor.execute("""
                             INSERT INTO reddit_data 
-                            (id, title, text, author, score, created_utc, num_comments, url, subreddit, scraped_at, last_updated)
+                            (id, title, text, author, score, created_utc, num_comments, url, subreddit, scraped_at)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                             ON CONFLICT(id) DO UPDATE SET
                                 score=excluded.score,
-                                num_comments=excluded.num_comments,
-                                last_updated=CURRENT_TIMESTAMP
+                                num_comments=excluded.num_comments
                             WHERE score != excluded.score OR num_comments != excluded.num_comments
                         """, (
                             item.get("id"), item.get("title"), item.get("text"), 
@@ -452,14 +451,13 @@ async def sync_data(request: Request):
                     elif platform == "tiktok":
                         cursor.execute("""
                             INSERT INTO tiktok_data 
-                            (id, description, author_username, author_id, likes, shares, comments, plays, video_url, created_time, scraped_at, last_updated)
+                            (id, description, author_username, author_id, likes, shares, comments, plays, video_url, created_time, scraped_at)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                             ON CONFLICT(id) DO UPDATE SET
                                 likes=excluded.likes,
                                 shares=excluded.shares,
                                 comments=excluded.comments,
-                                plays=excluded.plays,
-                                last_updated=CURRENT_TIMESTAMP
+                                plays=excluded.plays
                             WHERE likes != excluded.likes OR shares != excluded.shares OR 
                                   comments != excluded.comments OR plays != excluded.plays
                         """, (
@@ -472,13 +470,12 @@ async def sync_data(request: Request):
                     elif platform == "youtube":
                         cursor.execute("""
                             INSERT INTO youtube_data 
-                            (video_id, title, description, channel_title, view_count, like_count, comment_count, published_at, scraped_at, last_updated)
+                            (video_id, title, description, channel_title, view_count, like_count, comment_count, published_at, scraped_at)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
                             ON CONFLICT(video_id) DO UPDATE SET
                                 view_count=excluded.view_count,
                                 like_count=excluded.like_count,
-                                comment_count=excluded.comment_count,
-                                last_updated=CURRENT_TIMESTAMP
+                                comment_count=excluded.comment_count
                             WHERE view_count != excluded.view_count OR like_count != excluded.like_count OR 
                                   comment_count != excluded.comment_count
                         """, (

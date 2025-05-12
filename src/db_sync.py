@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 # === KONFIGURATION ===
 load_dotenv()
 
-API_URL = os.getenv("API_URL", "http://localhost:8000")
+API_URL = os.getenv("API_URL", "https://jpeg-merry-listing-combining.trycloudflare.com")
 API_KEY = os.getenv("API_KEY")
 if not API_KEY:
     raise ValueError("API_KEY muss in .env gesetzt sein!")
@@ -119,8 +119,6 @@ class DatabaseSync:
                         # Timestamp-Konvertierung für JSON-Serialisierung
                         if 'scraped_at' in item and item['scraped_at']:
                             item['scraped_at'] = str(item['scraped_at'])
-                        if 'last_updated' in item and item['last_updated']:
-                            item['last_updated'] = str(item['last_updated'])
                         if 'created_utc' in item and item['created_utc']:
                             item['created_utc'] = int(item['created_utc'])
                         if 'published_at' in item and item['published_at']:
@@ -243,20 +241,20 @@ def main():
         db = DatabaseSync()
         
         # Aktuelle Statistiken anzeigen
-        logger.info("📊 Lokale Datenbankstatistiken:")
+        logger.info(" Lokale Datenbankstatistiken:")
         stats_before = db.get_local_stats()
         for table, count in stats_before.items():
             logger.info(f"  {table}: {count}")
         
         # Lokale Daten abrufen und zum Server synchronisieren
-        logger.info("🔄 Starte Datensynchronisation zum Server...")
+        logger.info(" Starte Datensynchronisation zum Server...")
         local_data = db.fetch_local_data()
         
         if not local_data:
-            logger.warning("⚠️ Keine lokalen Daten zum Synchronisieren gefunden")
+            logger.warning(" Keine lokalen Daten zum Synchronisieren gefunden")
             return
             
-        logger.info(f"📤 Sende {len(local_data)} Datensätze zum Server...")
+        logger.info(f" Sende {len(local_data)} Datensätze zum Server...")
         sync_result = db.sync_to_remote(local_data)
         
         # Detaillierte Ergebnisausgabe
@@ -267,15 +265,15 @@ def main():
         if 'stats' in sync_result:
             stats = sync_result['stats']
             logger.info("\nStatistik:")
-            logger.info(f"  ✓ Neue Einträge: {stats.get('inserted', 0)}")
-            logger.info(f"  ↻ Aktualisierte Einträge: {stats.get('updated', 0)}")
-            logger.info(f"  ⚠️ Fehler: {stats.get('errors', 0)}")
+            logger.info(f"   Neue Einträge: {stats.get('inserted', 0)}")
+            logger.info(f"   Aktualisierte Einträge: {stats.get('updated', 0)}")
+            logger.info(f"   Fehler: {stats.get('errors', 0)}")
             
             if stats.get('errors', 0) > 0:
-                logger.warning("\n⚠️ Es sind Fehler aufgetreten! Bitte überprüfen Sie das Log für Details.")
+                logger.warning("\n Es sind Fehler aufgetreten! Bitte überprüfen Sie das Log für Details.")
             
     except Exception as e:
-        logger.error(f"❌ Kritischer Fehler während der Synchronisation: {e}", exc_info=True)
+        logger.error(f" Kritischer Fehler während der Synchronisation: {e}", exc_info=True)
         raise
     finally:
         db.close()
