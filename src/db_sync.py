@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 # === KONFIGURATION ===
 load_dotenv()
 
-API_URL = os.getenv("API_URL", "https://composed-gzip-license-agriculture.trycloudflare.com")
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 API_KEY = os.getenv("API_KEY")
 if not API_KEY:
     raise ValueError("API_KEY muss in .env gesetzt sein!")
@@ -84,134 +84,110 @@ class DatabaseSync:
         self.ensure_db_exists()
 
     def ensure_db_exists(self):
+        """Stellt sicher, dass die Datenbank und Tabellen existieren"""
         self.conn = sqlite3.connect(self.db_path)
         self.conn.row_factory = sqlite3.Row
         cursor = self.conn.cursor()
+        
         for table_name, ddl in CREATE_TABLES.items():
             cursor.execute(ddl)
             cursor.execute(f"""
                 CREATE INDEX IF NOT EXISTS idx_{table_name}_scraped 
                 ON {table_name}(scraped_at)
             """)
+        
         self.conn.commit()
 
-    def fetch_remote_data(self, endpoint: str = "/data") -> List[Dict]:
+    def fetch_local_data(self) -> List[Dict]:
+        """Lokale Daten aus der Datenbank abrufen"""
+        all_data = []
+        cursor = self.conn.cursor()
+        
+        for platform, table in {
+            "reddit": "reddit_data",
+            "tiktok": "tiktok_data",
+            "youtube": "youtube_data"
+        }.items():
+            try:
+                cursor.execute(f"SELECT * FROM {table}")
+                rows = cursor.fetchall()
+                for row in rows:
+                    item = dict(row)
+                    item["platform"] = platform
+                    all_data.append(item)
+            except sqlite3.Error as e:
+                logger.warning(f"Fehler beim Laden von {table}: {e}")
+                continue
+        
+        return all_data
+
+    def sync_to_remote(self, data: List[Dict]) -> Dict:
+        """Daten zum Remote-Server synchronisieren"""
         try:
-            response = requests.get(f"{API_URL}{endpoint}", headers=HEADERS)
+            response = requests.post(
+                f"{API_URL}/sync",
+                headers=HEADERS,
+                json={"data": data},
+                timeout=30
+            )
             response.raise_for_status()
-            return response.json().get("data", [])
+            return response.json()
         except requests.exceptions.RequestException as e:
-            logger.error(f"API-Anfrage fehlgeschlagen: {e}")
+            logger.error(f"Fehler bei der Remote-Synchronisation: {e}")
+            if hasattr(e.response, 'text'):
+                logger.error(f"Server-Antwort: {e.response.text}")
             raise
 
-    def upload_to_server(self, data: List[Dict]):
-        try:
-            response = requests.post(f"{API_URL}/sync", json={"data": data}, headers=HEADERS)
-            response.raise_for_status()
-            logger.info(f"{len(data)} lokale Einträge an Server gesendet.")
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Fehler beim Upload an Server: {e}")
-
     def get_local_stats(self) -> Dict[str, int]:
+        """Statistiken über lokale Daten abrufen"""
         stats = {}
         cursor = self.conn.cursor()
+        
         for table in CREATE_TABLES.keys():
             cursor.execute(f"SELECT COUNT(*) as count FROM {table}")
             stats[table] = cursor.fetchone()["count"]
+            
             cursor.execute(f"SELECT MAX(scraped_at) as latest FROM {table}")
             latest = cursor.fetchone()["latest"]
             stats[f"{table}_latest"] = latest if latest else "Keine Daten"
+        
         return stats
-
-    def insert_or_update_data(self, data: List[Dict]) -> Dict[str, int]:
-        stats = {"inserted": 0, "updated": 0, "errors": 0}
-        cursor = self.conn.cursor()
-
-        for item in data:
-            platform = item.get("platform")
-            try:
-                if platform == "reddit":
-                    cursor.execute("""
-                        INSERT OR REPLACE INTO reddit_data 
-                        (id, title, text, author, score, created_utc, num_comments, url, subreddit, scraped_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        item.get("id"), item.get("title"), item.get("text"),
-                        item.get("author"), item.get("score"), item.get("created_utc"),
-                        item.get("num_comments"), item.get("url"), item.get("subreddit"),
-                        item.get("scraped_at")
-                    ))
-
-                elif platform == "tiktok":
-                    cursor.execute("""
-                        INSERT OR REPLACE INTO tiktok_data 
-                        (id, description, author_username, author_id, likes, shares, comments, plays, video_url, created_time, scraped_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        item.get("id"), item.get("description"), item.get("author_username"),
-                        item.get("author_id"), item.get("likes"), item.get("shares"),
-                        item.get("comments"), item.get("plays"), item.get("video_url"),
-                        item.get("created_time"), item.get("scraped_at")
-                    ))
-
-                elif platform == "youtube":
-                    cursor.execute("""
-                        INSERT OR REPLACE INTO youtube_data 
-                        (video_id, title, description, channel_title, view_count, like_count, comment_count, published_at, scraped_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        item.get("video_id"), item.get("title"), item.get("description"),
-                        item.get("channel_title"), item.get("view_count"), item.get("like_count"),
-                        item.get("comment_count"), item.get("published_at"), item.get("scraped_at")
-                    ))
-
-                stats["inserted"] += 1
-
-            except Exception as e:
-                logger.error(f"Fehler beim Verarbeiten von {platform}-Daten: {e}")
-                stats["errors"] += 1
-
-        self.conn.commit()
-        return stats
-
-    def export_unsynced_data(self, platform: str, since: str) -> List[Dict]:
-        cursor = self.conn.cursor()
-        query = f"SELECT * FROM {platform}_data WHERE scraped_at > ?"
-        cursor.execute(query, (since,))
-        return [dict(row) for row in cursor.fetchall()]
 
     def close(self):
+        """Datenbankverbindung schließen"""
         if self.conn:
             self.conn.close()
 
 def main():
     try:
         db = DatabaseSync()
-
-        logger.info("Lokale Datenbankstatistiken vor Sync:")
+        
+        # Aktuelle Statistiken anzeigen
+        logger.info("📊 Lokale Datenbankstatistiken:")
         stats_before = db.get_local_stats()
         for table, count in stats_before.items():
             logger.info(f"  {table}: {count}")
-
-        logger.info("Starte Datensynchronisation...")
-        remote_data = db.fetch_remote_data()
-        db.insert_or_update_data(remote_data)
-
-        for platform in ["reddit", "tiktok", "youtube"]:
-            latest = stats_before.get(f"{platform}_data_latest")
-            if latest and latest != "Keine Daten":
-                unsynced = db.export_unsynced_data(platform, latest)
-                if unsynced:
-                    logger.info(f"Sende {len(unsynced)} {platform}-Einträge an Server...")
-                    db.upload_to_server(unsynced)
-
-        logger.info("Synchronisation abgeschlossen:")
-        stats_after = db.get_local_stats()
-        for table, count in stats_after.items():
-            logger.info(f"  {table}: {count}")
-
+        
+        # Lokale Daten abrufen und zum Server synchronisieren
+        logger.info("🔄 Starte Datensynchronisation zum Server...")
+        local_data = db.fetch_local_data()
+        logger.info(f"📤 Sende {len(local_data)} Datensätze zum Server...")
+        
+        if local_data:
+            sync_result = db.sync_to_remote(local_data)
+            logger.info("✅ Synchronisation abgeschlossen:")
+            logger.info(f"  Status: {sync_result.get('status')}")
+            logger.info(f"  Nachricht: {sync_result.get('message')}")
+            if 'stats' in sync_result:
+                stats = sync_result['stats']
+                logger.info(f"  Neue Einträge: {stats.get('inserted', 0)}")
+                logger.info(f"  Aktualisierte Einträge: {stats.get('updated', 0)}")
+                logger.info(f"  Fehler: {stats.get('errors', 0)}")
+        else:
+            logger.warning("⚠️ Keine lokalen Daten zum Synchronisieren gefunden")
+            
     except Exception as e:
-        logger.error(f"Fehler während der Synchronisation: {e}")
+        logger.error(f"❌ Fehler während der Synchronisation: {e}")
         raise
     finally:
         db.close()

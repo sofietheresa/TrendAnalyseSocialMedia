@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Security, Depends
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Security, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -16,6 +16,7 @@ import numpy as np
 from fastapi.security import APIKeyHeader
 import sqlite3
 from contextlib import contextmanager
+from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 # Import pipeline components
 from src.pipelines.steps.data_ingestion import ingest_data
@@ -381,106 +382,138 @@ async def semantic_search(request: SearchRequest):
         logger.error(f"Error in semantic search: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
     
-def get_db_connection():
-    conn = sqlite3.connect(DATABASE_URL.replace("sqlite:///", ""))
-    conn.row_factory = sqlite3.Row
-    return conn
+# Konfiguration für Datenbank
+DB_PATH = Path("data/social_media.db")
+DATABASE_URL = f"sqlite:///{DB_PATH}"
 
-@app.post("/api/sync", status_code=HTTP_201_CREATED)
-async def sync_data(request: Request, api_key: str = Depends(Security(lambda x: x.headers.get("X-API-Key")))):
-    if api_key != API_KEY:
-        raise HTTPException(status_code=403, detail="Unauthorized")
-
-    try:
-        payload = await request.json()
-        data: List[Dict] = payload.get("data", [])
-    except Exception:
-        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Invalid JSON")
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    inserted, updated, errors = 0, 0, 0
-
-    for item in data:
-        platform = item.get("platform")
-        try:
-            if platform == "reddit":
-                cursor.execute("""
-                    INSERT INTO reddit_data (id, title, text, author, score, created_utc, num_comments, url, subreddit, scraped_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ON CONFLICT(id) DO UPDATE SET
-                        score=excluded.score,
-                        num_comments=excluded.num_comments
-                    WHERE score != excluded.score OR num_comments != excluded.num_comments
-                """, (
-                    item["id"], item["title"], item["text"], item["author"],
-                    item["score"], item["created_utc"], item["num_comments"],
-                    item["url"], item["subreddit"], item["scraped_at"]
-                ))
-
-            elif platform == "tiktok":
-                cursor.execute("""
-                    INSERT INTO tiktok_data (id, description, author_username, author_id, likes, shares, comments, plays, video_url, created_time, scraped_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ON CONFLICT(id) DO UPDATE SET
-                        likes=excluded.likes,
-                        shares=excluded.shares,
-                        comments=excluded.comments,
-                        plays=excluded.plays
-                    WHERE likes != excluded.likes OR shares != excluded.shares OR 
-                          comments != excluded.comments OR plays != excluded.plays
-                """, (
-                    item["id"], item["description"], item["author_username"], item["author_id"],
-                    item["likes"], item["shares"], item["comments"], item["plays"],
-                    item["video_url"], item["created_time"], item["scraped_at"]
-                ))
-
-            elif platform == "youtube":
-                cursor.execute("""
-                    INSERT INTO youtube_data (video_id, title, description, channel_title, view_count, like_count, comment_count, published_at, scraped_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ON CONFLICT(video_id) DO UPDATE SET
-                        view_count=excluded.view_count,
-                        like_count=excluded.like_count,
-                        comment_count=excluded.comment_count
-                    WHERE view_count != excluded.view_count OR like_count != excluded.like_count OR 
-                          comment_count != excluded.comment_count
-                """, (
-                    item["video_id"], item["title"], item["description"], item["channel_title"],
-                    item["view_count"], item["like_count"], item["comment_count"],
-                    item["published_at"], item["scraped_at"]
-                ))
-
-            if cursor.rowcount > 0:
-                inserted += 1  # might include updates as well
-        except Exception as e:
-            errors += 1
-            print(f"❌ Fehler bei {platform}: {e}")
-
-    conn.commit()
-    conn.close()
-
-    return JSONResponse(status_code=201, content={
-        "inserted": inserted,
-        "errors": errors,
-        "message": "Sync completed"
-    })
-
-
+# Entferne die alte get_db_connection Funktion und behalte nur den Kontext-Manager
 @contextmanager
 def get_db_connection():
     """Kontext-Manager für sichere Datenbankverbindungen"""
-    db_path = Path("data/social_media.db")
+    db_path = DB_PATH
     if not db_path.exists():
-        raise HTTPException(status_code=404, detail="Datenbank nicht gefunden")
-    
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        
     conn = sqlite3.connect(str(db_path))
     conn.row_factory = sqlite3.Row
     try:
         yield conn
     finally:
         conn.close()
+
+@app.post("/sync", dependencies=[Depends(verify_api_key)])
+async def sync_data(request: Request):
+    """Synchronisiere Daten von externen Clients"""
+    try:
+        payload = await request.json()
+        data: List[Dict] = payload.get("data", [])
+        if not data:
+            raise HTTPException(
+                status_code=HTTP_400_BAD_REQUEST,
+                detail="Keine Daten zum Synchronisieren gefunden"
+            )
+    except json.JSONDecodeError:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Ungültiges JSON-Format"
+        )
+
+    stats = {"inserted": 0, "updated": 0, "errors": 0}
+    
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            
+            # Stelle sicher, dass die Tabellen existieren
+            for ddl in CREATE_TABLES.values():
+                cursor.execute(ddl)
+            
+            for item in data:
+                platform = item.get("platform")
+                try:
+                    if platform == "reddit":
+                        cursor.execute("""
+                            INSERT INTO reddit_data 
+                            (id, title, text, author, score, created_utc, num_comments, url, subreddit, scraped_at, last_updated)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                            ON CONFLICT(id) DO UPDATE SET
+                                score=excluded.score,
+                                num_comments=excluded.num_comments,
+                                last_updated=CURRENT_TIMESTAMP
+                            WHERE score != excluded.score OR num_comments != excluded.num_comments
+                        """, (
+                            item.get("id"), item.get("title"), item.get("text"), 
+                            item.get("author"), item.get("score"), item.get("created_utc"),
+                            item.get("num_comments"), item.get("url"), item.get("subreddit"),
+                            item.get("scraped_at")
+                        ))
+                    
+                    elif platform == "tiktok":
+                        cursor.execute("""
+                            INSERT INTO tiktok_data 
+                            (id, description, author_username, author_id, likes, shares, comments, plays, video_url, created_time, scraped_at, last_updated)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                            ON CONFLICT(id) DO UPDATE SET
+                                likes=excluded.likes,
+                                shares=excluded.shares,
+                                comments=excluded.comments,
+                                plays=excluded.plays,
+                                last_updated=CURRENT_TIMESTAMP
+                            WHERE likes != excluded.likes OR shares != excluded.shares OR 
+                                  comments != excluded.comments OR plays != excluded.plays
+                        """, (
+                            item.get("id"), item.get("description"), item.get("author_username"),
+                            item.get("author_id"), item.get("likes"), item.get("shares"),
+                            item.get("comments"), item.get("plays"), item.get("video_url"),
+                            item.get("created_time"), item.get("scraped_at")
+                        ))
+                    
+                    elif platform == "youtube":
+                        cursor.execute("""
+                            INSERT INTO youtube_data 
+                            (video_id, title, description, channel_title, view_count, like_count, comment_count, published_at, scraped_at, last_updated)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                            ON CONFLICT(video_id) DO UPDATE SET
+                                view_count=excluded.view_count,
+                                like_count=excluded.like_count,
+                                comment_count=excluded.comment_count,
+                                last_updated=CURRENT_TIMESTAMP
+                            WHERE view_count != excluded.view_count OR like_count != excluded.like_count OR 
+                                  comment_count != excluded.comment_count
+                        """, (
+                            item.get("video_id"), item.get("title"), item.get("description"),
+                            item.get("channel_title"), item.get("view_count"), item.get("like_count"),
+                            item.get("comment_count"), item.get("published_at"), item.get("scraped_at")
+                        ))
+                    
+                    if cursor.rowcount > 0:
+                        if cursor.rowcount == 1:
+                            stats["inserted"] += 1
+                        else:
+                            stats["updated"] += 1
+                            
+                except Exception as e:
+                    logger.error(f"Fehler beim Verarbeiten von {platform}-Daten: {e}")
+                    stats["errors"] += 1
+                    continue
+            
+            conn.commit()
+        
+        return JSONResponse(
+            status_code=HTTP_201_CREATED,
+            content={
+                "status": "success",
+                "message": "Synchronisation abgeschlossen",
+                "stats": stats
+            }
+        )
+    
+    except Exception as e:
+        logger.error(f"Fehler während der Synchronisation: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Datenbankfehler: {str(e)}"
+        )
 
 @app.get("/data", dependencies=[Depends(verify_api_key)])
 async def get_data():
