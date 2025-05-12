@@ -1037,3 +1037,5 @@ OSError: [Errno 30] Read-only file system: '/app'
 2025-05-12 15:31:04,241 - INFO - ⏳ Letzter Scrape vor 3.1 Stunden - warte noch
 2025-05-12 15:49:09,781 - INFO - file_cache is only supported with oauth2client<4.0.0
 2025-05-12 15:49:09,796 - INFO - ⏳ Letzter Scrape vor 3.4 Stunden - warte noch
+2025-05-12 16:12:35,245 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-12 16:12:35,259 - INFO - ⏳ Letzter Scrape vor 3.8 Stunden - warte noch

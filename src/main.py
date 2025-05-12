@@ -14,6 +14,8 @@ from qdrant_client.http import models
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from fastapi.security import APIKeyHeader
+import sqlite3
+from contextlib import contextmanager
 
 # Import pipeline components
 from src.pipelines.steps.data_ingestion import ingest_data
@@ -379,14 +381,53 @@ async def semantic_search(request: SearchRequest):
         logger.error(f"Error in semantic search: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@contextmanager
+def get_db_connection():
+    """Kontext-Manager für sichere Datenbankverbindungen"""
+    db_path = Path("data/social_media.db")
+    if not db_path.exists():
+        raise HTTPException(status_code=404, detail="Datenbank nicht gefunden")
+    
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+    try:
+        yield conn
+    finally:
+        conn.close()
+
 @app.get("/data", dependencies=[Depends(verify_api_key)])
 async def get_data():
-    data_dir = Path("data/raw")
-    if not data_dir.exists():
-        raise HTTPException(status_code=404, detail="Data directory not found")
+    """Alle Daten aus allen Plattform-Tabellen abrufen"""
+    try:
+        all_data = []
+        
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            
+            for platform, table in {
+                "reddit": "reddit_data",
+                "tiktok": "tiktok_data",
+                "youtube": "youtube_data"
+            }.items():
+                try:
+                    cursor.execute(f"SELECT * FROM {table}")
+                    rows = cursor.fetchall()
+                    for row in rows:
+                        item = dict(row)
+                        item["platform"] = platform  # wichtig fürs syncen
+                        all_data.append(item)
+                except sqlite3.Error as e:
+                    logger.warning(f"Fehler beim Laden von {table}: {e}")
+                    continue
+        
+        return {"data": all_data}
     
-    # Logic to retrieve and return data
-    return JSONResponse(content={"message": "Data retrieved successfully"})
+    except Exception as e:
+        logger.error(f"Fehler beim Datenabruf: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Datenbankfehler: {str(e)}"
+        )
 
 @app.get("/logs", dependencies=[Depends(verify_api_key)])
 async def get_logs():
@@ -409,4 +450,4 @@ if __name__ == "__main__":
     # Initialize Qdrant collection on startup
     if qdrant_client:
         initialize_qdrant_collection()
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True) 
+    uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True) 
