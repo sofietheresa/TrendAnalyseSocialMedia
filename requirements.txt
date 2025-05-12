@@ -6,6 +6,8 @@ httpx==0.25.1
 aiofiles==23.2.1
 jinja2==3.1.2
 prometheus-client==0.17.1
+pyngrok==7.0.5
+python-dotenv>=1.0.0
 
 # Data Processing and Analysis
 pandas>=2.0.0
@@ -39,7 +41,6 @@ matplotlib==3.8.2
 seaborn==0.13.0
 
 # Utilities
-python-dotenv>=1.0.0
 requests==2.31.0
 
 # Testing

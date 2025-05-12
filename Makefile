@@ -225,3 +225,57 @@ stop-frontend:
 open-frontend:
 	python -m webbrowser http://localhost:$(PORT)
 
+# --------------------------------------------
+# ☁️ CLOUDFLARE TUNNEL & AUTHENTIFIZIERUNG
+# --------------------------------------------
+
+.PHONY: tunnel tunnel-login tunnel-route db-tunnel
+
+# 🔑 Cloudflare Login & Tunnel Setup
+tunnel-login:
+	cloudflared tunnel login
+
+# 🚇 Tunnel erstellen und konfigurieren
+tunnel-create:
+	@if [ -z "$(TUNNEL_NAME)" ]; then \
+		echo "Error: TUNNEL_NAME nicht gesetzt. Bitte setzen Sie die Variable, z.B.: make tunnel-create TUNNEL_NAME=mein-tunnel"; \
+		exit 1; \
+	fi
+	cloudflared tunnel create $(TUNNEL_NAME)
+	@echo "Erstelle config.yml..."
+	@echo "tunnel: $(TUNNEL_NAME)" > ~/.cloudflared/config.yml
+	@echo "credentials-file: /Users/$(USER)/.cloudflared/$(TUNNEL_NAME).json" >> ~/.cloudflared/config.yml
+	@echo "ingress:" >> ~/.cloudflared/config.yml
+	@echo "  - hostname: api.$(DOMAIN)" >> ~/.cloudflared/config.yml
+	@echo "    service: http://localhost:8000" >> ~/.cloudflared/config.yml
+	@echo "    originRequest:" >> ~/.cloudflared/config.yml
+	@echo "      noTLSVerify: true" >> ~/.cloudflared/config.yml
+	@echo "      headers:" >> ~/.cloudflared/config.yml
+	@echo "        X-API-Key: \${API_KEY}" >> ~/.cloudflared/config.yml
+	@echo "  - hostname: app.$(DOMAIN)" >> ~/.cloudflared/config.yml
+	@echo "    service: http://localhost:3000" >> ~/.cloudflared/config.yml
+	@echo "  - hostname: db.$(DOMAIN)" >> ~/.cloudflared/config.yml
+	@echo "    service: http://localhost:6333" >> ~/.cloudflared/config.yml
+	@echo "  - service: http_status:404" >> ~/.cloudflared/config.yml
+
+# 🌐 DNS Routen einrichten
+tunnel-route:
+	@if [ -z "$(TUNNEL_NAME)" ] || [ -z "$(DOMAIN)" ]; then \
+		echo "Error: TUNNEL_NAME oder DOMAIN nicht gesetzt"; \
+		echo "Verwendung: make tunnel-route TUNNEL_NAME=mein-tunnel DOMAIN=meine-domain.com"; \
+		exit 1; \
+	fi
+	cloudflared tunnel route dns $(TUNNEL_NAME) api.$(DOMAIN)
+	cloudflared tunnel route dns $(TUNNEL_NAME) app.$(DOMAIN)
+	cloudflared tunnel route dns $(TUNNEL_NAME) db.$(DOMAIN)
+
+# 🚀 Tunnel starten
+tunnel:
+	@if [ -z "$(TUNNEL_NAME)" ]; then \
+		echo "Error: TUNNEL_NAME nicht gesetzt. Bitte setzen Sie die Variable, z.B.: make tunnel TUNNEL_NAME=mein-tunnel"; \
+		exit 1; \
+	fi
+	cloudflared tunnel run $(TUNNEL_NAME)
+
+# --------------------------------------------
+

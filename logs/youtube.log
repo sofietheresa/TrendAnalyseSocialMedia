@@ -1010,3 +1010,30 @@ OSError: [Errno 30] Read-only file system: '/app'
 2025-05-11 20:54:38,709 - INFO - ⏳ Letzter Scrape vor 0.2 Stunden - warte noch
 2025-05-11 21:19:10,026 - INFO - file_cache is only supported with oauth2client<4.0.0
 2025-05-11 21:19:10,039 - INFO - ⏳ Letzter Scrape vor 0.6 Stunden - warte noch
+2025-05-11 21:38:22,454 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-11 21:38:22,476 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-11 21:38:22,889 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-11 21:38:22,890 - WARNING - ⚠️ Keine bestehende CSV-Datei gefunden - erstelle neue Datei
+2025-05-11 21:38:22,915 - INFO - ✅ 50 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-12 12:23:37,095 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-12 12:23:37,117 - INFO - 🔍 Starte YouTube-Scraping...
+2025-05-12 12:23:37,326 - INFO - 🔄 Neue Daten: 50 Videos gefunden
+2025-05-12 12:23:37,334 - INFO - 📊 Bestehende Daten: 50 Videos
+2025-05-12 12:23:37,335 - INFO - 🔄 Nach Zusammenführung: 100 Videos
+2025-05-12 12:23:37,370 - INFO - ✅ 100 Videos gespeichert unter: /app/data/raw/youtube_data.csv
+2025-05-12 13:08:08,487 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-12 13:08:08,522 - INFO - ⏳ Letzter Scrape vor 0.7 Stunden - warte noch
+2025-05-12 13:43:29,275 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-12 13:43:29,300 - INFO - ⏳ Letzter Scrape vor 1.3 Stunden - warte noch
+2025-05-12 13:56:19,101 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-12 13:56:19,125 - INFO - ⏳ Letzter Scrape vor 1.5 Stunden - warte noch
+2025-05-12 14:13:24,395 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-12 14:13:24,410 - INFO - ⏳ Letzter Scrape vor 1.8 Stunden - warte noch
+2025-05-12 14:16:07,931 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-12 14:16:07,947 - INFO - ⏳ Letzter Scrape vor 1.9 Stunden - warte noch
+2025-05-12 15:01:07,268 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-12 15:01:07,282 - INFO - ⏳ Letzter Scrape vor 2.6 Stunden - warte noch
+2025-05-12 15:31:04,225 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-12 15:31:04,241 - INFO - ⏳ Letzter Scrape vor 3.1 Stunden - warte noch
+2025-05-12 15:49:09,781 - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-05-12 15:49:09,796 - INFO - ⏳ Letzter Scrape vor 3.4 Stunden - warte noch

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Security, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -13,6 +13,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from sentence_transformers import SentenceTransformer
 import numpy as np
+from fastapi.security import APIKeyHeader
 
 # Import pipeline components
 from src.pipelines.steps.data_ingestion import ingest_data
@@ -55,6 +56,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# API Key configuration
+API_KEY = os.getenv("API_KEY", None)
+if not API_KEY:
+    logger.warning("API_KEY not set in environment variables!")
+
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+async def verify_api_key(api_key: str = Security(api_key_header)):
+    if not API_KEY:
+        return None
+    if api_key == API_KEY:
+        return api_key
+    raise HTTPException(
+        status_code=403,
+        detail="Invalid API key"
+    )
 
 # Pydantic models for request/response
 class ScrapeRequest(BaseModel):
@@ -177,7 +195,7 @@ async def run_pipeline_step(step_name: str, data: Optional[Dict[str, Any]] = Non
         pipeline_runs[run_id]["end_time"] = datetime.now().isoformat()
         raise
 
-@app.get("/")
+@app.get("/", dependencies=[Depends(verify_api_key)])
 async def root():
     """Root endpoint providing API overview."""
     return {
@@ -195,7 +213,7 @@ async def root():
         "documentation": "/docs"
     }
 
-@app.post("/api/scrape", response_model=PipelineResponse)
+@app.post("/api/scrape", response_model=PipelineResponse, dependencies=[Depends(verify_api_key)])
 async def scrape_data(request: ScrapeRequest, background_tasks: BackgroundTasks):
     """Scrape data from specified social media platform."""
     try:
@@ -217,7 +235,7 @@ async def scrape_data(request: ScrapeRequest, background_tasks: BackgroundTasks)
         logger.error(f"Error in scrape endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/download/{platform}", response_model=PipelineResponse)
+@app.get("/api/download/{platform}", response_model=PipelineResponse, dependencies=[Depends(verify_api_key)])
 async def download_data(platform: str):
     """Download previously scraped data for a specific platform."""
     try:
@@ -238,7 +256,7 @@ async def download_data(platform: str):
         logger.error(f"Error in download endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/preprocess", response_model=PipelineResponse)
+@app.post("/api/preprocess", response_model=PipelineResponse, dependencies=[Depends(verify_api_key)])
 async def preprocess_data_endpoint(background_tasks: BackgroundTasks):
     """Preprocess the raw data."""
     try:
@@ -253,7 +271,7 @@ async def preprocess_data_endpoint(background_tasks: BackgroundTasks):
         logger.error(f"Error in preprocess endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/explore", response_model=PipelineResponse)
+@app.get("/api/explore", response_model=PipelineResponse, dependencies=[Depends(verify_api_key)])
 async def explore_data_endpoint():
     """Get exploration results."""
     try:
@@ -274,7 +292,7 @@ async def explore_data_endpoint():
         logger.error(f"Error in explore endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/predict", response_model=PipelineResponse)
+@app.post("/api/predict", response_model=PipelineResponse, dependencies=[Depends(verify_api_key)])
 async def predict_endpoint(background_tasks: BackgroundTasks):
     """Run predictions on the processed data."""
     try:
@@ -289,7 +307,7 @@ async def predict_endpoint(background_tasks: BackgroundTasks):
         logger.error(f"Error in predict endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/status/{run_id}", response_model=PipelineResponse)
+@app.get("/api/status/{run_id}", response_model=PipelineResponse, dependencies=[Depends(verify_api_key)])
 async def get_status(run_id: str):
     """Get the status of a pipeline run."""
     try:
@@ -306,7 +324,7 @@ async def get_status(run_id: str):
         logger.error(f"Error in status endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/search", response_model=PipelineResponse)
+@app.post("/api/search", response_model=PipelineResponse, dependencies=[Depends(verify_api_key)])
 async def semantic_search(request: SearchRequest):
     """Perform semantic search on stored posts."""
     try:
@@ -361,7 +379,7 @@ async def semantic_search(request: SearchRequest):
         logger.error(f"Error in semantic search: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/data")
+@app.get("/data", dependencies=[Depends(verify_api_key)])
 async def get_data():
     data_dir = Path("data/raw")
     if not data_dir.exists():
@@ -370,7 +388,7 @@ async def get_data():
     # Logic to retrieve and return data
     return JSONResponse(content={"message": "Data retrieved successfully"})
 
-@app.get("/logs")
+@app.get("/logs", dependencies=[Depends(verify_api_key)])
 async def get_logs():
     logs_dir = Path("logs")
     if not logs_dir.exists():
