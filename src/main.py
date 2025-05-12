@@ -436,7 +436,7 @@ async def sync_data(request: Request):
                         cursor.execute("""
                             INSERT INTO reddit_data 
                             (id, title, text, author, score, created_utc, num_comments, url, subreddit, scraped_at)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             ON CONFLICT(id) DO UPDATE SET
                                 score=excluded.score,
                                 num_comments=excluded.num_comments
@@ -452,7 +452,7 @@ async def sync_data(request: Request):
                         cursor.execute("""
                             INSERT INTO tiktok_data 
                             (id, description, author_username, author_id, likes, shares, comments, plays, video_url, created_time, scraped_at)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                             ON CONFLICT(id) DO UPDATE SET
                                 likes=excluded.likes,
                                 shares=excluded.shares,
@@ -471,7 +471,7 @@ async def sync_data(request: Request):
                         cursor.execute("""
                             INSERT INTO youtube_data 
                             (video_id, title, description, channel_title, view_count, like_count, comment_count, published_at, scraped_at)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                             ON CONFLICT(video_id) DO UPDATE SET
                                 view_count=excluded.view_count,
                                 like_count=excluded.like_count,
