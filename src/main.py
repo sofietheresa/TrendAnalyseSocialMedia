@@ -19,6 +19,7 @@ from contextlib import contextmanager
 from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 # Import pipeline components
+from src.db_sync import CREATE_TABLES
 from src.pipelines.steps.data_ingestion import ingest_data
 from src.pipelines.steps.preprocessing import preprocess_data
 from src.pipelines.steps.data_exploration import explore_data
