@@ -378,6 +378,93 @@ async def semantic_search(request: SearchRequest):
     except Exception as e:
         logger.error(f"Error in semantic search: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+def get_db_connection():
+    conn = sqlite3.connect(DATABASE_URL.replace("sqlite:///", ""))
+    conn.row_factory = sqlite3.Row
+    return conn
+
+@app.post("/api/sync", status_code=HTTP_201_CREATED)
+async def sync_data(request: Request, api_key: str = Depends(Security(lambda x: x.headers.get("X-API-Key")))):
+    if api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    try:
+        payload = await request.json()
+        data: List[Dict] = payload.get("data", [])
+    except Exception:
+        raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail="Invalid JSON")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    inserted, updated, errors = 0, 0, 0
+
+    for item in data:
+        platform = item.get("platform")
+        try:
+            if platform == "reddit":
+                cursor.execute("""
+                    INSERT INTO reddit_data (id, title, text, author, score, created_utc, num_comments, url, subreddit, scraped_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(id) DO UPDATE SET
+                        score=excluded.score,
+                        num_comments=excluded.num_comments
+                    WHERE score != excluded.score OR num_comments != excluded.num_comments
+                """, (
+                    item["id"], item["title"], item["text"], item["author"],
+                    item["score"], item["created_utc"], item["num_comments"],
+                    item["url"], item["subreddit"], item["scraped_at"]
+                ))
+
+            elif platform == "tiktok":
+                cursor.execute("""
+                    INSERT INTO tiktok_data (id, description, author_username, author_id, likes, shares, comments, plays, video_url, created_time, scraped_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(id) DO UPDATE SET
+                        likes=excluded.likes,
+                        shares=excluded.shares,
+                        comments=excluded.comments,
+                        plays=excluded.plays
+                    WHERE likes != excluded.likes OR shares != excluded.shares OR 
+                          comments != excluded.comments OR plays != excluded.plays
+                """, (
+                    item["id"], item["description"], item["author_username"], item["author_id"],
+                    item["likes"], item["shares"], item["comments"], item["plays"],
+                    item["video_url"], item["created_time"], item["scraped_at"]
+                ))
+
+            elif platform == "youtube":
+                cursor.execute("""
+                    INSERT INTO youtube_data (video_id, title, description, channel_title, view_count, like_count, comment_count, published_at, scraped_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(video_id) DO UPDATE SET
+                        view_count=excluded.view_count,
+                        like_count=excluded.like_count,
+                        comment_count=excluded.comment_count
+                    WHERE view_count != excluded.view_count OR like_count != excluded.like_count OR 
+                          comment_count != excluded.comment_count
+                """, (
+                    item["video_id"], item["title"], item["description"], item["channel_title"],
+                    item["view_count"], item["like_count"], item["comment_count"],
+                    item["published_at"], item["scraped_at"]
+                ))
+
+            if cursor.rowcount > 0:
+                inserted += 1  # might include updates as well
+        except Exception as e:
+            errors += 1
+            print(f"❌ Fehler bei {platform}: {e}")
+
+    conn.commit()
+    conn.close()
+
+    return JSONResponse(status_code=201, content={
+        "inserted": inserted,
+        "errors": errors,
+        "message": "Sync completed"
+    })
+
 
 @app.get("/data", dependencies=[Depends(verify_api_key)])
 async def get_data():

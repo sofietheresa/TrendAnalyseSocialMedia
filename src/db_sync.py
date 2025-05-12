@@ -2,7 +2,7 @@ import requests
 import sqlite3
 import os
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Tuple, Any
 from pathlib import Path
 import logging
 from dotenv import load_dotenv
@@ -12,7 +12,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('logs/db_sync.log', encoding='utf-8'),
+        logging.FileHandler('logs/db_sync.log'),
         logging.StreamHandler()
     ]
 )
@@ -87,14 +87,12 @@ class DatabaseSync:
         self.conn = sqlite3.connect(self.db_path)
         self.conn.row_factory = sqlite3.Row
         cursor = self.conn.cursor()
-
         for table_name, ddl in CREATE_TABLES.items():
             cursor.execute(ddl)
             cursor.execute(f"""
                 CREATE INDEX IF NOT EXISTS idx_{table_name}_scraped 
                 ON {table_name}(scraped_at)
             """)
-
         self.conn.commit()
 
     def fetch_remote_data(self, endpoint: str = "/data") -> List[Dict]:
@@ -106,18 +104,23 @@ class DatabaseSync:
             logger.error(f"API-Anfrage fehlgeschlagen: {e}")
             raise
 
+    def upload_to_server(self, data: List[Dict]):
+        try:
+            response = requests.post(f"{API_URL}/sync", json={"data": data}, headers=HEADERS)
+            response.raise_for_status()
+            logger.info(f"{len(data)} lokale Einträge an Server gesendet.")
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Fehler beim Upload an Server: {e}")
+
     def get_local_stats(self) -> Dict[str, int]:
         stats = {}
         cursor = self.conn.cursor()
-
         for table in CREATE_TABLES.keys():
             cursor.execute(f"SELECT COUNT(*) as count FROM {table}")
             stats[table] = cursor.fetchone()["count"]
-
             cursor.execute(f"SELECT MAX(scraped_at) as latest FROM {table}")
             latest = cursor.fetchone()["latest"]
             stats[f"{table}_latest"] = latest if latest else "Keine Daten"
-
         return stats
 
     def insert_or_update_data(self, data: List[Dict]) -> Dict[str, int]:
@@ -133,7 +136,7 @@ class DatabaseSync:
                         (id, title, text, author, score, created_utc, num_comments, url, subreddit, scraped_at)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
-                        item.get("id"), item.get("title"), item.get("text"), 
+                        item.get("id"), item.get("title"), item.get("text"),
                         item.get("author"), item.get("score"), item.get("created_utc"),
                         item.get("num_comments"), item.get("url"), item.get("subreddit"),
                         item.get("scraped_at")
@@ -171,10 +174,15 @@ class DatabaseSync:
         self.conn.commit()
         return stats
 
+    def export_unsynced_data(self, platform: str, since: str) -> List[Dict]:
+        cursor = self.conn.cursor()
+        query = f"SELECT * FROM {platform}_data WHERE scraped_at > ?"
+        cursor.execute(query, (since,))
+        return [dict(row) for row in cursor.fetchall()]
+
     def close(self):
         if self.conn:
             self.conn.close()
-
 
 def main():
     try:
@@ -187,13 +195,17 @@ def main():
 
         logger.info("Starte Datensynchronisation...")
         remote_data = db.fetch_remote_data()
-        sync_stats = db.insert_or_update_data(remote_data)
+        db.insert_or_update_data(remote_data)
+
+        for platform in ["reddit", "tiktok", "youtube"]:
+            latest = stats_before.get(f"{platform}_data_latest")
+            if latest and latest != "Keine Daten":
+                unsynced = db.export_unsynced_data(platform, latest)
+                if unsynced:
+                    logger.info(f"Sende {len(unsynced)} {platform}-Einträge an Server...")
+                    db.upload_to_server(unsynced)
 
         logger.info("Synchronisation abgeschlossen:")
-        logger.info(f"  Neue Einträge: {sync_stats['inserted']}")
-        logger.info(f"  Fehler: {sync_stats['errors']}")
-
-        logger.info("Lokale Datenbankstatistiken nach Sync:")
         stats_after = db.get_local_stats()
         for table, count in stats_after.items():
             logger.info(f"  {table}: {count}")
@@ -203,7 +215,6 @@ def main():
         raise
     finally:
         db.close()
-
 
 if __name__ == "__main__":
     main()
