@@ -1,65 +1,71 @@
-Danke für die Ergänzungen. Auf dieser Grundlage habe ich den Erfahrungsbericht nun etwas förmlicher, kohärenter und trotzdem persönlich gehalten. Er ist gut geeignet für eine Projektdokumentation oder einen schriftlichen Anhang im Rahmen einer Abgabe:
-
----
-
 ## 📘 Erfahrungsbericht zum Projekt: Social-Media-Datenanalyse mit MLOps-Integration
 
 ### Einleitung
 
-Mein Projekt startete offiziell am 11. April 2025 – also vor exakt 30 Tagen. Der Einstieg gestaltete sich jedoch schwieriger als erwartet, da ich zunächst mit einem anderen Thema begonnen hatte. Erst nach mehreren Umorientierungen und viel Unsicherheit entschied ich mich für die Analyse von Social-Media-Daten – mit dem Schwerpunkt auf automatisierter Datengewinnung, Vorverarbeitung und maschinellem Lernen innerhalb einer produktionsreifen MLOps-Architektur.
+Mein Projekt startete offiziell am 11. April 2025. Der Einstieg war nicht leicht: Ich war zunächst unentrschlossen, welches Thema ich bearbeiten sollte. Ich wollte gerne ein Thema bearbeiten, das mich selbst interessiert, das kein "Standard Projekt" ist und das auch allgemeine Relevanz hat. So bin ich erstmal auf das das Thema "Analyse von Symptomen im Bereich von Neurodivergenzen" auseinandersetzen.
 
-Die vergangenen zehn Tage waren besonders intensiv. Mit wachsendem Zeitdruck konnte ich in kurzer Zeit große Fortschritte erzielen, auch wenn viele Hürden auf dem Weg lagen. Zwischenzeitlich war ich verzweifelt, doch am Ende steht ein funktionierendes System – mit Optimierungspotenzial, aber klarer Struktur und ausbaufähiger Funktionalität.
+Hier wäre jedoch die Datenlage schwerig gewesen, sodass ich mich nochmal umorientieren musste. In Zusammenarbeit mit Prof. Dr. Klotz bin ich dann auf das Thema Social Media Trendanalyse gekommen.  
+
+Nachdem das geklärt war, konnte ich anfangen an dem Projekt zu arbeiten. Jedoch war bis hierher schon einiges an Zeit verloren gegangen, nachfolgend eine zeitliche Zusammenfassung:
+
+Zeitübersicht: 
+
+
+Die vergangenen zehn Tage waren besonders arbeitsintensiv: Mit steigendem Zeitdruck gelang es mir dennoch, ein funktionierendes System aufzubauen – modular, nachvollziehbar und bereit zur Erweiterung, wenn auch mit erkennbarem Optimierungspotenzial.
 
 ---
 
 ### Thematische Ausrichtung und Zielsetzung
 
-Ziel meines Projekts war es, Beiträge aus sozialen Netzwerken wie Instagram, TikTok und Reddit automatisiert zu erfassen und hinsichtlich Stimmung, Themen und potenzieller Relevanz zu analysieren. Ich wollte herausfinden, wie sich Inhalte typisieren und Stimmungen in Texten quantifizieren lassen – und gleichzeitig herausfordernde Aspekte wie Datenzugriff, Deployment und Wiederholbarkeit sauber lösen.
+Ziel war es, Beiträge aus sozialen Netzwerken wie TikTok, Reddit und YouTube automatisiert zu erfassen, zu bereinigen und hinsichtlich Stimmung, Themen und potenzieller Relevanz zu analysieren. Dabei ging es nicht nur um reine Modellierung, sondern auch um robuste Datenverarbeitung, Reproduzierbarkeit und Deployment – also eine Ende-zu-Ende-Perspektive auf maschinelles Lernen.
 
 ---
 
-### Datenbeschaffung: Vom Experiment zur Infrastruktur
+### Datenbeschaffung: Vom Rohtext zum Datensatz
 
-Der wohl aufwendigste und nervenaufreibendste Teil des Projekts war das Webscraping. Ich hatte zunächst vor, Instagram und die Plattform X (ehemals Twitter) gemeinsam zu verarbeiten, musste jedoch aufgrund unzuverlässiger Schnittstellen und technischer Einschränkungen letztere streichen.
+Die Datenbeschaffung war der technisch wie organisatorisch aufwendigste Teil des Projekts. Unterschiedliche Plattformen erforderten jeweils eigene Scraping-Logik, API-Nutzung oder Workarounds. Besonders TikTok und Instagram stellten sich als instabil oder schwer zugänglich heraus. Zudem mussten für jede Quelle geeignete Felder, Zeitformate und Identifier definiert werden – was aufgrund der Heterogenität der Plattformen zeitaufwendig war.
 
-Für Instagram nutzte ich verschiedene Python-Bibliotheken, darunter `instaloader`, `instascrape` und `instagram-scraper`, stieß jedoch schnell an deren Grenzen (Rate-Limits, fehlender Login-Support, etc.). Die letztlich funktionierende Lösung war ein automatisierter Browserzugriff mittels Selenium – technisch aufwendig, aber zuverlässig genug für ein erstes Datenkorpus.
-
-Ich legte früh fest, welche Informationen ich speichern wollte – darunter URL, Veröffentlichungsdatum, ALT-Text, Benutzername, Bildunterschrift und (wenn möglich) die Anzahl der Likes. Die Datenstruktur wurde mehrfach angepasst und erst spät in eine relationale Datenbank überführt. Bis dahin arbeitete ich ausschließlich mit CSV-Dateien, was bei paralleler Entwicklung und Versionskontrolle zu zahlreichen Merge-Konflikten führte.
+Das Zusammenführen der Daten war ebenfalls herausfordernd: Viele Datensätze kamen zunächst als CSV-Dateien mit abweichenden Strukturen. Die Vereinheitlichung und der spätere Import in eine relationale SQLite-Datenbank erforderte sorgfältiges Mapping und wiederholte Umstrukturierung.
 
 ---
 
-### Architektur & Deployment: Container, Scheduler und hybride Systeme
+### Arbeiten auf zwei Geräten
 
-Ein zentrales Ziel war es, das Projekt modular und containerisiert umzusetzen. Ich setzte konsequent auf Docker, um alle Komponenten sauber zu kapseln. Für das Hosting und Scheduling verwendete ich Render sowie GitHub Actions. Doch auch hier traten unerwartete Probleme auf: TikTok ließ sich innerhalb des Containers nicht zuverlässig scrapen, weshalb ich auf eine hybride Lösung mit meinem lokalen Rechner als Datenerfassungseinheit ausweichen musste.
-
-Render stellte sich zudem als ressourcenintensiv heraus – das Starten der App dauerte ungewöhnlich lange. Auch das Scheduling über den Windows Task Scheduler scheiterte, u. a. an Sicherheitsrichtlinien des Betriebssystems (Stichwort: IBM Security). Trotz alledem gelang es mir, eine funktionierende Architektur zu etablieren, in der Daten gesammelt, verarbeitet und ausgewertet werden konnten.
+Während der Entwicklung nutzte ich sowohl meinen privaten Mac als auch ein Windows-basiertes Arbeitsgerät. Diese duale Infrastruktur führte zu wiederholten Problemen bei Git (Konflikte durch Zeilenenden, Pfade, Umgebungen), brachte aber auch einen entscheidenden Vorteil: Die Anwendung ist inzwischen sowohl unter macOS als auch unter Windows stabil lauffähig – was zur Plattformunabhängigkeit und Robustheit beiträgt.
 
 ---
 
-### Modellierung & Analyse: Zwischen Experiment und Pipeline
+### Architektur & Deployment: Komplexität sichtbar machen
 
-Die eigentliche Modellierung rückte lange in den Hintergrund. Erst als die Datenbeschaffung weitgehend funktionierte, begann ich mit der Umsetzung von Analyse- und Vorhersagemodellen. Zum Einsatz kamen:
+Ein zentrales Ziel war der produktionsnahe Aufbau der Infrastruktur. Ich setzte konsequent auf Containerisierung (Podman statt Docker) und orchestrierte die Pipelines mit ZenML. Die Anwendung bestand aus mehreren Komponenten: Scraper, Datenbank, Embedding-Index (Qdrant), ML-Pipeline, FastAPI-Backend und Streamlit-Frontend.
 
-- **Feature-Engineering** mit TF-IDF
-- **Regression** über Random Forest zur Bewertung von Popularität
-- **Topic Modeling** mittels LDA und BERTopic
-- **Sentimentanalyse** mit TextBlob, VADER und einem Transformer-Modell
+Die größte Hürde war jedoch das Deployment. Render funktionierte nicht zuverlässig mit Qdrant, Replit konnte keine SQLite-Verbindungen stabil halten, und auch Versuche mit `minikube`, `kind` oder Bare-Metal-Kubernetes erwiesen sich als zu instabil oder komplex für die verbleibende Zeit. Am Ende fiel die Entscheidung auf eine Cloudflare-Tunnel-Lösung in Verbindung mit lokalem Hosting – eine praktikable, wenn auch nicht finale Lösung.
 
-Zur Evaluation nutzte ich Metriken wie MSE, MAE, R², Explained Variance und weitere. Die Vorhersagen selbst sind aktuell noch wenig aussagekräftig, was ich auf die Heterogenität und begrenzte Größe der Datensätze zurückführe. Hier besteht noch Optimierungsbedarf.
+---
 
-Die gesamte Modellpipeline wurde mit **ZenML** orchestriert. Ich definierte sowohl Preprocessing- als auch Training- und Inferenzschritte in wiederverwendbaren Pipelines. Für Visualisierung und Interaktion baute ich ein **Streamlit-Dashboard**, über das sich unter anderem die Pipelines starten lassen.
+### Modellierung & Analyse
+
+Die Modellierung erfolgte in einem iterativen Prozess. Zur Anwendung kamen:
+
+* **Feature Engineering** (z. B. Textlänge, Hashtag-Zahl, Sentimentwerte)
+* **Topic Modeling** (LDA, BERTopic)
+* **Sentimentanalyse** (TextBlob, VADER, DistilBERT)
+* **Popularitätsregression** (Random Forest)
+
+Alle Modelle wurden in ZenML-Pipelines eingebunden, automatisiert trainiert und evaluiert. Für Visualisierung und Interaktion baute ich ein Streamlit-Dashboard, über das u. a. Vorhersagen und Trends abgerufen werden können.
 
 ---
 
 ### Reflexion & Ausblick
 
-Dieses Projekt war für mich ein Wechselbad der Gefühle. Über Wochen hinweg kämpfte ich mit instabilen Schnittstellen, fehlerhaften Abhängigkeiten, Deployment-Problemen und einer steilen Lernkurve im Bereich MLOps. Die letzten zehn Tage waren geprägt von hoher Intensität, aber auch von einer klaren Struktur und sichtbaren Fortschritten.
+Dieses Projekt war lehrreich, fordernd und an vielen Stellen frustrierend – aber ebenso befriedigend. Besonders die Kombination aus MLOps, Webscraping, Modellierung und UI-Design war komplex. Dennoch ist es gelungen, ein funktionierendes, nachvollziehbares und erweiterbares System zu bauen.
 
-Die wichtigsten Learnings:
+**Wichtige Erkenntnisse:**
 
-- **Scraping ist nie trivial**, insbesondere bei Plattformen ohne stabile öffentliche APIs.
-- **Containerisierung hilft**, aber bringt auch neue Herausforderungen.
-- **MLOps ist mehr als Deployment** – es beginnt mit Datenverfügbarkeit, Monitoring, Automatisierung und endet erst bei nachvollziehbarer Evaluation.
-- **Alleine arbeiten heißt alles selbst entscheiden müssen** – das ist einerseits befreiend, andererseits fordernd.
+* Plattformdaten sind schwer standardisierbar – Scraping ist fehleranfällig.
+* Git und Remote-Work auf mehreren Geräten müssen gut koordiniert werden.
+* Deployment ist oft der limitierende Faktor, nicht das Modell.
+* Automatisierung (Pipelines, CI, Logging) schafft langfristige Stabilität.
 
-Für die verbleibende Projektzeit plane ich, die Modellgüte zu verbessern, das Dashboard interaktiver zu gestalten und den Übergang von Entwicklung zu Betrieb noch klarer zu strukturieren.
+Für die Zukunft plane ich, die Deployment-Strategie weiter zu verbessern, das Frontend interaktiver zu gestalten und mehr echte Nutzerinteraktion in die Modellbewertung einfließen zu lassen.
+
