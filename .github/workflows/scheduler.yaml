@@ -2,8 +2,8 @@ name: Trigger Scraper Every 15 Minutes
 
 on:
   schedule:
-    - cron: "*/5 * * * *" # Alle 15 Minuten (UTC)
-  workflow_dispatch: # Manuell triggerbar über GitHub UI
+    - cron: "*/5 * * * *" # alle 5 Minuten
+  workflow_dispatch:
 
 jobs:
   run-scraper:
@@ -14,5 +14,7 @@ jobs:
           API_SECRET: ${{ secrets.API_SECRET }}
           BASE_URL: ${{ secrets.BASE_URL }}
         run: |
-          curl -X POST $BASE_URL/run-scrapers \
-            -H "Authorization: $API_SECRET"
+          curl -X POST "$BASE_URL/run-scrapers" \
+            -H "accept: application/json" \
+            -H "API_SECRET: $API_SECRET" \
+            -d ''
