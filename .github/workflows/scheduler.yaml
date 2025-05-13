@@ -9,9 +9,10 @@ jobs:
   run-scraper:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger /run-scrapers Endpoint on Render
+      - name: Trigger /run-scrapers Endpoint
         env:
           API_SECRET: ${{ secrets.API_SECRET }}
+           BASE_URL: ${{ secrets.BASE_URL }}
         run: |
-          curl -X POST https://trendanalysesocialmedia.onrender.com/run-scrapers \
+          curl -X POST $BASE_URL/run-scrapers \
             -H "Authorization: Bearer $API_SECRET"

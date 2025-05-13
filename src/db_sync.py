@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 # === KONFIGURATION ===
 load_dotenv()
 
-API_URL = os.getenv("API_URL", "https://jpeg-merry-listing-combining.trycloudflare.com")
+API_URL = os.getenv("BASE_URL")
 API_KEY = os.getenv("API_KEY")
 if not API_KEY:
     raise ValueError("API_KEY muss in .env gesetzt sein!")

@@ -14,7 +14,7 @@ from scheduler.run_all_scrapers import run_all
 
 load_dotenv()
 
-RENDER_URL = os.getenv("RENDER_URL", "https://trendanalysesocialmedia.onrender.com")
+URL = os.getenv("URL")
 API_SECRET = os.getenv("API_SECRET")
 
 HEADERS = {
@@ -28,7 +28,7 @@ logging.basicConfig(
 
 def get_job():
     try:
-        r = requests.get(f"{RENDER_URL}/scrape-job", headers=HEADERS)
+        r = requests.get(f"{URL}/scrape-job", headers=HEADERS)
         r.raise_for_status()
         return r.json().get("job")
     except Exception as e:

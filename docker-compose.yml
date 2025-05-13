@@ -55,7 +55,7 @@ services:
     ports:
       - "3000:80"  # Changed from 3000:3000 since nginx runs on 80
     environment:
-      - REACT_APP_API_URL=https://deine-domain.de
+      - BASE_URL=${BASE_URL}
       - NODE_ENV=production
     depends_on:
       - api

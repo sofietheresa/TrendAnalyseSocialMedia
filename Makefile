@@ -5,7 +5,7 @@
 include .env
 export
 
-API_URL=https://trendanalysesocialmedia.onrender.com
+API_URL=$(BASE_URL)
 TOKEN=Bearer $(API_SECRET)
 
 FILES=reddit_data.csv tiktok_data.csv youtube_data.csv
@@ -22,7 +22,7 @@ CONTAINER_PORT=10000
 
 .PHONY: sync trigger-api trigger-loop
 
-# ⏱️ Scraping-Job über API auf Render auslösen + Daten/Logs lokal abholen
+# ⏱️ Scraping-Job über API auslösen + Daten/Logs lokal abholen
 sync:
 	curl -X POST $(API_URL)/run-scrapers \
 		-H "Authorization: $(TOKEN)"
@@ -60,7 +60,7 @@ trigger-api:
 	curl -X POST $(API_URL)/run-scrapers \
 		-H "Authorization: $(TOKEN)"
 
-# 🕓 Lokal laufende Endlosschleife, die alle 15min Render abfragt & lokal scrapt
+# 🕓 Lokal laufende Endlosschleife, die alle 15min App abfragt & lokal scrapt
 trigger-loop:
 	podman run -it --rm \
 		--env-file .env \

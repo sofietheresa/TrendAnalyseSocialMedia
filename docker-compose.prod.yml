@@ -19,7 +19,7 @@ services:
     ports:
       - "3000:80"
     environment:
-      - REACT_APP_API_URL=${RENDER_EXTERNAL_URL}
+      - BASE_URL=${BASE_URL}
       - NODE_ENV=production
     depends_on:
       - api
