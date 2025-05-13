@@ -12,7 +12,7 @@ jobs:
       - name: Trigger /run-scrapers Endpoint
         env:
           API_SECRET: ${{ secrets.API_SECRET }}
-           BASE_URL: ${{ secrets.BASE_URL }}
+          BASE_URL: ${{ secrets.BASE_URL }}
         run: |
           curl -X POST $BASE_URL/run-scrapers \
             -H "Authorization: Bearer $API_SECRET"
