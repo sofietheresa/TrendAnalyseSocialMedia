@@ -15,4 +15,4 @@ jobs:
           BASE_URL: ${{ secrets.BASE_URL }}
         run: |
           curl -X POST $BASE_URL/run-scrapers \
-            -H "Authorization: Bearer $API_SECRET"
+            -H "Authorization: $API_SECRET"
