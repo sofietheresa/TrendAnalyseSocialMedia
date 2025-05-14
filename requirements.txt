@@ -24,17 +24,6 @@ emoji>=2.2.0
 # Vector Database
 qdrant-client>=1.6.0
 
-# Social Media APIs
-TikTokApi>=5.2.2
-google-api-python-client>=2.0.0
-praw>=7.7.0
-
-# Web Scraping and Automation
-playwright>=1.40.0
-selenium==4.15.2
-webdriver-manager==4.0.1
-beautifulsoup4==4.12.2
-pytube==15.0.0
 
 # Visualization
 matplotlib==3.8.2
