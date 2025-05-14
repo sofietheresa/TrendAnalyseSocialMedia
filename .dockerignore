@@ -1,10 +1,26 @@
-.venv
-__pycache__
-*.pyc
-*.pyo
-*.pyd
+# Allgemein unnötig im Image
+__pycache__/
+*.py[cod]
 *.log
-*.sqlite
+*.zip
+*.md
+*.ipynb
+*.pdf
+*.csv
 *.db
-*.ipynb_checkpoints
-*.git
+.env
+
+# Lokale Daten
+data/
+logs/
+results/
+notebooks/
+docs/
+frontend/
+grafana/
+prometheus/
+
+# Node.js
+node_modules/
+package-lock.json
+package.json

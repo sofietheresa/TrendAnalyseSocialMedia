@@ -17,20 +17,98 @@ html, body, #root {
 }
 
 
+/* Kalenderfilter */
+.filter-section {
+  margin: 0 auto 2em auto;
+  max-width: 700px;
+  display: flex;
+  justify-content: center;
+}
+.calendar-filter {
+  display: flex;
+  align-items: center;
+  gap: 1.2em;
+  flex-wrap: wrap;
+  background: #f7f5ff;
+  padding: 1em 1.5em;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px 0 rgba(180,160,255,0.07);
+}
+.calendar-input {
+  margin: 0 0.3em;
+  padding: 0.2em 0.6em;
+  font-size: 1rem;
+  border: 1px solid #c1b8e6;
+  border-radius: 6px;
+  background: #fff;
+}
+.calendar-filter-btn {
+  margin-left: 1em;
+  padding: 0.35em 1.3em;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  background: #a48fff;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.calendar-filter-btn:hover {
+  background: #7b5fff;
+}
+.calendar-separator {
+  margin: 0 0.8em;
+  font-size: 1.1em;
+  color: #6c6897;
+}
+
+@media (max-width: 700px) {
+  .calendar-filter {
+    flex-direction: column;
+    gap: 0.8em;
+    align-items: flex-start;
+    padding: 0.8em 0.6em;
+  }
+  .calendar-filter-btn {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
 /* Navigation oben */
 .app-nav {
   display: flex;
   justify-content: center;
-  gap: 60px;
-  padding: 30px 0 10px 0;
+  gap: 100px;
+  padding: 40px 0 20px 0;
   background: transparent;
   font-family: Arial, sans-serif;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 400;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .app-nav {
+    gap: 40px;
+    font-size: 1rem;
+    padding: 24px 0 10px 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .app-nav {
+    flex-direction: column;
+    gap: 18px;
+    align-items: center;
+    padding: 12px 0 6px 0;
+  }
+}
   letter-spacing: 0.01em;
   border: none;
   box-shadow: none;
-}
+
 
 .nav-link {
   text-decoration: none;

@@ -5,6 +5,9 @@ import './App.css';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
 function App() {
+  // Kalenderfilter State
+  const [startDateTime, setStartDateTime] = useState("");
+  const [endDateTime, setEndDateTime] = useState("");
 
   // Default-Dummy-Daten, damit immer etwas angezeigt wird
   const [topics, setTopics] = useState([
@@ -59,6 +62,30 @@ function App() {
                 <h1 className="main-title" style={{ fontFamily: 'Arial, sans-serif' }}>SOCIAL MEDIA Trend Analysis</h1>
               </header>
               <main className="App-main">
+                <section className="filter-section">
+                  <form className="calendar-filter" onSubmit={e => { e.preventDefault(); /* Hier könnte später eine Filterfunktion aufgerufen werden */ }}>
+                    <label>
+                      Von:
+                      <input
+                        type="datetime-local"
+                        value={startDateTime}
+                        onChange={e => setStartDateTime(e.target.value)}
+                        className="calendar-input"
+                      />
+                    </label>
+                    <span className="calendar-separator">bis</span>
+                    <label>
+                      Bis:
+                      <input
+                        type="datetime-local"
+                        value={endDateTime}
+                        onChange={e => setEndDateTime(e.target.value)}
+                        className="calendar-input"
+                      />
+                    </label>
+                    <button type="submit" className="calendar-filter-btn">Filtern</button>
+                  </form>
+                </section>
                 <section className="topics-stack-section">
                   {topics.slice(0, 3).map((topic, i) => (
                     <div
