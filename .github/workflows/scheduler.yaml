@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Trigger /run-scrapers Endpoint
         env:
-          API_SECRET: ${{ secrets.API_SECRET }}
+          API_SECRET: ${{ secrets.API_KEY }}
           BASE_URL: ${{ secrets.BASE_URL }}
         run: |
           curl -X POST $BASE_URL/run-scrapers \

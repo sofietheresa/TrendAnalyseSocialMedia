@@ -30,7 +30,7 @@ if not API_KEY:
 DB_PATH = Path("data/social_media.db")
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-HEADERS = {"X-API-Key": API_KEY}
+HEADERS = {"API_KEY": API_KEY}
 
 # === TABELLENSTRUKTUR ===
 CREATE_TABLES = {

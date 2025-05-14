@@ -1,151 +1,108 @@
+// src/App.js
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+
 function App() {
-  const [status, setStatus] = useState('idle');
-  const [error, setError] = useState(null);
-  const [stepStatus, setStepStatus] = useState({
-    data_ingestion: 'idle',
-    preprocessing: 'idle',
-    data_exploration: 'idle',
-    prediction: 'idle'
-  });
 
-  const runPipelineStep = async (step) => {
-    try {
-      setStepStatus(prev => ({ ...prev, [step]: 'running' }));
-      const response = await fetch(`/api/run-pipeline/${step}`, {
-        method: 'POST',
+  // Default-Dummy-Daten, damit immer etwas angezeigt wird
+  const [topics, setTopics] = useState([
+    { topic: 'Topic 1', count: 123 },
+    { topic: 'Topic 2', count: 87 },
+    { topic: 'Topic 3', count: 56 }
+  ]);
+  const [sourceCounts, setSourceCounts] = useState({ Tiktok: 101, Youtube: 102, Reddit: 103 });
+
+  useEffect(() => {
+    fetch('/data/processed/exploration_results.json')
+      .then(res => res.json())
+      .then(data => {
+        if (data.top_topics) {
+          setTopics(data.top_topics.slice(0, 5));
+        } else if (data.topics) {
+          setTopics(data.topics.slice(0, 5));
+        }
+        if (data.sources) {
+          setSourceCounts(data.sources);
+        }
       });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      setStepStatus(prev => ({ ...prev, [step]: 'completed' }));
-      return data;
-    } catch (error) {
-      setStepStatus(prev => ({ ...prev, [step]: 'error' }));
-      setError(error.message);
-      throw error;
-    }
-  };
-
-  const runFullPipeline = async () => {
-    try {
-      setStatus('running');
-      setError(null);
-      
-      // Run each step in sequence
-      await runPipelineStep('data_ingestion');
-      await runPipelineStep('preprocessing');
-      await runPipelineStep('data_exploration');
-      await runPipelineStep('prediction');
-      
-      setStatus('completed');
-    } catch (error) {
-      setStatus('error');
-      setError(error.message);
-    }
-  };
-
-  const getButtonClass = (status) => {
-    switch (status) {
-      case 'running': return 'button-running';
-      case 'completed': return 'button-completed';
-      case 'error': return 'button-error';
-      default: return 'button-idle';
-    }
-  };
+  }, []);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Social Media Trend Analysis</h1>
-      </header>
-      
-      <main className="App-main">
-        <section className="pipeline-controls">
-          <h2>Pipeline Steuerung</h2>
-          
-          <div className="pipeline-buttons">
-            <button 
-              className={`pipeline-button ${getButtonClass(status)}`}
-              onClick={runFullPipeline}
-              disabled={status === 'running'}
-            >
-              Gesamte Pipeline starten
-            </button>
-          </div>
+    <Router>
+      <div className="App gradient-bg">
+        <nav className="app-nav">
+          <Link to="/" className="nav-link">Startseite</Link>
+          <Link to="/daten" className="nav-link">Daten</Link>
+          <Link to="/logs" className="nav-link">Logs</Link>
+          <Link to="/pipeline" className="nav-link">Pipeline</Link>
+          <Link to="/doku" className="nav-link">Doku</Link>
+        </nav>
+        <Routes>
+          <Route path="/" element={
+            <>
+              <header className="App-header">
+                <h1 className="main-title" style={{ fontFamily: 'Arial, sans-serif' }}>SOCIAL MEDIA Trend Analysis</h1>
+              </header>
+              <main className="App-main">
+                <section className="topics-stack-section">
+                  {topics.slice(0, 3).map((topic, i) => (
+                    <div
+                      key={topic.topic}
+                      className={`topic-stack topic-stack-${i+1}`}
+                      style={{
+                        fontFamily: 'Arial, sans-serif',
+                        fontWeight: i === 0 ? 900 : 700,
+                        fontSize: i === 0 ? '3.2rem' : i === 1 ? '2.4rem' : '2rem',
+                        opacity: i === 0 ? 1 : i === 1 ? 0.7 : 0.5,
+                        textAlign: 'center',
+                        color: '#2a2253',
+                        margin: 0,
+                        marginBottom: '0.2em',
+                        letterSpacing: '0.01em',
+                        lineHeight: 1.1
+                      }}
+                    >
+                      {topic.topic}
+                    </div>
+                  ))}
+                </section>
 
-          <div className="step-buttons">
-            <h3>Einzelne Schritte</h3>
-            <button 
-              className={`step-button ${getButtonClass(stepStatus.data_ingestion)}`}
-              onClick={() => runPipelineStep('data_ingestion')}
-              disabled={stepStatus.data_ingestion === 'running'}
-            >
-              Daten-Import
-            </button>
-            
-            <button 
-              className={`step-button ${getButtonClass(stepStatus.preprocessing)}`}
-              onClick={() => runPipelineStep('preprocessing')}
-              disabled={stepStatus.preprocessing === 'running'}
-            >
-              Vorverarbeitung
-            </button>
-            
-            <button 
-              className={`step-button ${getButtonClass(stepStatus.data_exploration)}`}
-              onClick={() => runPipelineStep('data_exploration')}
-              disabled={stepStatus.data_exploration === 'running'}
-            >
-              Daten-Exploration
-            </button>
-            
-            <button 
-              className={`step-button ${getButtonClass(stepStatus.prediction)}`}
-              onClick={() => runPipelineStep('prediction')}
-              disabled={stepStatus.prediction === 'running'}
-            >
-              Vorhersage
-            </button>
-          </div>
-        </section>
-
-        {error && (
-          <div className="error-message">
-            <h3>Fehler</h3>
-            <p>{error}</p>
-          </div>
-        )}
-
-        <section className="status-section">
-          <h2>Status</h2>
-          <div className="status-grid">
-            <div className="status-item">
-              <span>Daten-Import:</span>
-              <span className={stepStatus.data_ingestion}>{stepStatus.data_ingestion}</span>
-            </div>
-            <div className="status-item">
-              <span>Vorverarbeitung:</span>
-              <span className={stepStatus.preprocessing}>{stepStatus.preprocessing}</span>
-            </div>
-            <div className="status-item">
-              <span>Daten-Exploration:</span>
-              <span className={stepStatus.data_exploration}>{stepStatus.data_exploration}</span>
-            </div>
-            <div className="status-item">
-              <span>Vorhersage:</span>
-              <span className={stepStatus.prediction}>{stepStatus.prediction}</span>
-            </div>
-          </div>
-        </section>
-      </main>
-    </div>
+                <section className="postcount-row">
+                  <div className="postcount-grid">
+                    {Object.entries(sourceCounts).slice(0, 3).map(([quelle, anzahl], i) => (
+                      <div key={quelle} className="postcount-col">
+                        <div className="postcount-number">{String(i+1).padStart(2, '0')}</div>
+                        <div className="postcount-source">{quelle}</div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </main>
+            </>
+          } />
+          <Route path="/daten" element={<Daten />} />
+          <Route path="/logs" element={<Logs />} />
+          <Route path="/pipeline" element={<Pipeline />} />
+          <Route path="/doku" element={<Doku />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
-export default App; 
+function Daten() {
+  return <div className="page-content"><h2 style={{ fontFamily: 'Arial, sans-serif' }}>Daten-Ansicht</h2><p style={{ fontFamily: 'Arial, sans-serif' }}>Hier könnten Daten angezeigt werden.</p></div>;
+}
+function Logs() {
+  return <div className="page-content"><h2 style={{ fontFamily: 'Arial, sans-serif' }}>Logs</h2><p style={{ fontFamily: 'Arial, sans-serif' }}>Hier könnten Logs angezeigt werden.</p></div>;
+}
+function Pipeline() {
+  return <div className="page-content"><h2 style={{ fontFamily: 'Arial, sans-serif' }}>Pipeline</h2><p style={{ fontFamily: 'Arial, sans-serif' }}>Hier könnte die Pipeline-Ansicht stehen.</p></div>;
+}
+function Doku() {
+  return <div className="page-content"><h2 style={{ fontFamily: 'Arial, sans-serif' }}>Dokumentation</h2><p style={{ fontFamily: 'Arial, sans-serif' }}>Hier könnte die Doku stehen.</p></div>;
+}
+
+export default App;
