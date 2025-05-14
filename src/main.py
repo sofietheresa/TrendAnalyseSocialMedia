@@ -76,27 +76,15 @@ async def verify_api_key(api_key: str = Security(api_key_header)):
 
 # Health Check Endpoint
 @app.get("/health")
-async def health_check(db: Session = Depends(get_db)):
+async def health_check():
     """
-    Health Check Endpunkt für Railway/Render
-    Prüft:
-    1. API ist erreichbar
-    2. Datenbankverbindung funktioniert
-    3. Qdrant-Client ist verfügbar (wenn konfiguriert)
+    Einfacher Health Check Endpunkt für Railway/Render
     """
     try:
-        # Prüfe Datenbankverbindung
-        db.execute("SELECT 1")
-        
-        health_status = {
+        return {
             "status": "healthy",
             "timestamp": datetime.now().isoformat(),
-            "database": "connected",
-            "qdrant": "not_configured" if qdrant_client is None else "connected",
-            "api_version": "1.0.0"
         }
-        
-        return health_status
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
         raise HTTPException(
