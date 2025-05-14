@@ -30,15 +30,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /root/.local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 
 # Copy the application code
-COPY ./src /app/src
-
+COPY ./src /app/src 
+COPY ./start.py /app/start.py
 # Create necessary directories
 RUN mkdir -p /app/data /app/logs /app/models
 
 EXPOSE 8000
 
 # Use a script to wait for the database and then start the application
-CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "start.py"]
 
 
 
