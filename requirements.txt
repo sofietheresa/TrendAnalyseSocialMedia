@@ -10,10 +10,10 @@ pyngrok==7.0.5
 python-dotenv>=1.0.0
 
 # Data Processing and Analysis
-pandas>=2.0.0
-numpy==1.26.2
+pandas>=1.2.0
+numpy>=1.19.2
 sqlalchemy>=2.0.0
-scikit-learn==1.3.2
+scikit-learn>=0.24.0
 
 # Machine Learning and NLP
 sentence-transformers>=2.2.0
@@ -46,3 +46,6 @@ requests==2.31.0
 # Testing
 pytest==7.4.3
 pytest-asyncio==0.21.1
+
+# Deep Learning
+tensorflow>=2.4.0

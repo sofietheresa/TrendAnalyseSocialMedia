@@ -1,8 +1,8 @@
 // src/App.js
 import React, { useState, useEffect } from 'react';
 import './App.css';
-
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import Documentation from './components/Documentation';
 
 function App() {
   // Kalenderfilter State
@@ -142,7 +142,7 @@ function Pipeline() {
   return <div className="page-content"><h2 style={{ fontFamily: 'Arial, sans-serif' }}>Pipeline</h2><p style={{ fontFamily: 'Arial, sans-serif' }}>Hier könnte die Pipeline-Ansicht stehen.</p></div>;
 }
 function Doku() {
-  return <div className="page-content"><h2 style={{ fontFamily: 'Arial, sans-serif' }}>Dokumentation</h2><p style={{ fontFamily: 'Arial, sans-serif' }}>Hier könnte die Doku stehen.</p></div>;
+  return <Documentation />;
 }
 
 export default App;
