@@ -1,26 +1,53 @@
-FROM python:3.11-slim-bullseye
+# Stage 1: Build the React frontend
+FROM node:18-alpine as frontend-builder
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
 
-# Set working directory
+# Stage 2: Build the Python backend
+FROM python:3.11-slim as backend-builder
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Stage 3: Final production image
+FROM python:3.11-slim
 WORKDIR /app
 
-# Systemabhängigkeiten (nur was FastAPI & Modell evtl. braucht)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libnss3 libxcb1 libx11-6 libasound2 libatk1.0-0 libcups2 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Install nginx
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends nginx && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/cache/apt/*
 
-# Pip und Dependencies installieren
-COPY requirements.txt setup.py ./
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -e .
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
 
-# Nur benötigten Quellcode kopieren
-COPY src/ ./src/
+# Copy frontend build
+COPY --from=frontend-builder /app/frontend/build /app/frontend/build
 
-# OPTIONAL: Leeres Verzeichnis vorbereiten für Logs (wird ignoriert)
-RUN mkdir -p logs && chmod -R 777 logs
+# Copy backend
+COPY --from=backend-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY app/ /app/app/
+COPY models/ /app/models/
 
-# Expose FastAPI port
-EXPOSE 10000
+# Create necessary directories for data persistence
+RUN mkdir -p /app/data/processed && \
+    mkdir -p /app/logs && \
+    chown -R www-data:www-data /app/data /app/logs
 
-# Starte die App
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "10000"]
+# Copy the entrypoint script
+COPY docker-entrypoint.sh /
+RUN chmod +x /docker-entrypoint.sh
+
+# Expose port
+EXPOSE 80
+
+# Set environment variables
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+# Run the application
+ENTRYPOINT ["/docker-entrypoint.sh"]

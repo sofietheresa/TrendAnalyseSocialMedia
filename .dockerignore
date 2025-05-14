@@ -1,21 +1,59 @@
-# Bytecode, temporäre & sensible Dateien
-__pycache__/
-*.py[cod]
+# Version control
+.git
+.gitignore
+
+# Dependencies
+node_modules
+__pycache__
+*.pyc
+.pytest_cache
+.coverage
+
+# Data and logs
+data/
+logs/
 *.log
+notebooks/
+schedule/
+
+# Development files
+.env
+.env.*
+*.md
+LICENSE
+tests/
+.vscode/
+.idea/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Documentation
+docs/
+*.pptx
+*.pdf
+*.doc
+*.docx
+
+# Temporary files
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Bytecode, temporäre & sensible Dateien
+*.py[cod]
 *.zip
 *.md
 *.ipynb
-*.pdf
 *.csv
 *.db
-.env
 *.pptx
 
 # Lokale Entwicklungsdaten (nicht ins Image)
-data/
-logs/
 results/
-notebooks/
 docs/
 frontend/
 grafana/
@@ -23,7 +61,6 @@ prometheus/
 src/scheduler/
 
 # Node.js-Zeugs
-node_modules/
 package-lock.json
 package.json
 
