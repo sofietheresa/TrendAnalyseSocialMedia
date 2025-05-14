@@ -14,9 +14,13 @@ function App() {
   ]);
   const [sourceCounts, setSourceCounts] = useState({ Tiktok: 101, Youtube: 102, Reddit: 103 });
 
+  const [fetchError, setFetchError] = useState(false);
   useEffect(() => {
     fetch('/data/processed/exploration_results.json')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Datei nicht gefunden');
+        return res.json();
+      })
       .then(data => {
         if (data.top_topics) {
           setTopics(data.top_topics.slice(0, 5));
@@ -26,12 +30,16 @@ function App() {
         if (data.sources) {
           setSourceCounts(data.sources);
         }
+      })
+      .catch(err => {
+        setFetchError(true);
+        // Dummy-Daten bleiben erhalten
       });
   }, []);
 
   return (
     <Router>
-      <div className="App gradient-bg">
+      <div className="gradient-bg">
         <nav className="app-nav">
           <Link to="/" className="nav-link">Startseite</Link>
           <Link to="/daten" className="nav-link">Daten</Link>
@@ -39,6 +47,11 @@ function App() {
           <Link to="/pipeline" className="nav-link">Pipeline</Link>
           <Link to="/doku" className="nav-link">Doku</Link>
         </nav>
+        {fetchError && (
+          <div style={{ color: 'red', textAlign: 'center', margin: '1em' }}>
+            Hinweis: Es konnten keine aktuellen Daten geladen werden. Dummy-Daten werden angezeigt.
+          </div>
+        )}
         <Routes>
           <Route path="/" element={
             <>
