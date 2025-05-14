@@ -1,4 +1,4 @@
-# Allgemein unnötig im Image
+# Bytecode, temporäre & sensible Dateien
 __pycache__/
 *.py[cod]
 *.log
@@ -11,7 +11,7 @@ __pycache__/
 .env
 *.pptx
 
-# Lokale Daten
+# Lokale Entwicklungsdaten (nicht ins Image)
 data/
 logs/
 results/
@@ -22,7 +22,12 @@ grafana/
 prometheus/
 src/scheduler/
 
-# Node.js
+# Node.js-Zeugs
 node_modules/
 package-lock.json
 package.json
+
+# ❗ Wichtig: diese Ordner/Dateien **nicht** ignorieren (werden fürs Backend benötigt)
+!src/
+!requirements.txt
+!setup.py
