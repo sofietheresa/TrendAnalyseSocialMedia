@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from .middleware import TimeoutMiddleware
 import logging
 import uvicorn
+import os
 
 # Setup logging
 logging.basicConfig(
@@ -56,10 +57,11 @@ async def health_check():
 # app.include_router(router)
 
 if __name__ == "__main__":
+    port = int(os.getenv("PORT", 8000))
     uvicorn.run(
-        "main:app",
+        "app.main:app",
         host="0.0.0.0",
-        port=8000,
+        port=port,
         workers=4,
         timeout_keep_alive=75,
         limit_concurrency=1000,
