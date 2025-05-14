@@ -1,35 +1,26 @@
-# Base image: leichter Python-Slim
-FROM python:3.11-slim
+FROM python:3.11-slim as base
 
-# Set working directory
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
-# Install only essential system dependencies (none hier nötig!)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+# Minimaler Systembedarf
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libnss3 libx11-6 libxcb1 libxcomposite1 libxdamage1 libxrandr2 \
+    libxss1 libasound2 libxext6 libxfixes3 libxkbcommon0 libcups2 \
+    curl && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copy only what’s needed first (für besseren Docker Cache)
+# Nur das Nötigste für ML/NLP
 COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Python requirements
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Nur Quellcode
+COPY ./src /app/src
 
-# Copy only required project folders (nicht das ganze Projekt!)
-COPY app/ ./app/
-COPY models/ ./models/
+# Datenverzeichnisse anlegen
+RUN mkdir -p /app/data /app/logs
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
-
-# Create persistent folders (SQLite/Logs etc.)
-RUN mkdir -p /app/data/processed /app/logs && \
-    chmod -R 777 /app/data /app/logs
-
-# Expose FastAPI port
 EXPOSE 8000
 
-# Start FastAPI with uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
