@@ -343,4 +343,235 @@ body, html, #root {
   text-align: center;
 }
 
+.gradient-bg {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.app-nav {
+  background-color: #2a2253;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #c3cfe2;
+}
+
+.App-header {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.main-title {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  color: #2a2253;
+  margin: 0;
+}
+
+.App-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Filter Section */
+.filter-section {
+  margin-bottom: 2rem;
+}
+
+.calendar-filter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-input {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+.calendar-filter-btn {
+  background-color: #2a2253;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.calendar-filter-btn:hover {
+  background-color: #1a1540;
+}
+
+/* Topics Stack */
+.topics-stack-section {
+  margin: 3rem 0;
+  text-align: center;
+}
+
+.topic-stack {
+  transition: transform 0.3s ease;
+}
+
+.topic-stack:hover {
+  transform: scale(1.05);
+}
+
+/* Post Count Grid */
+.postcount-row {
+  margin-top: 3rem;
+}
+
+.postcount-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.postcount-col {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.postcount-col:hover {
+  transform: translateY(-5px);
+}
+
+.postcount-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2a2253;
+  margin-bottom: 0.5rem;
+}
+
+.postcount-source {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.postcount-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2a2253;
+}
+
+/* Loading Container */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+/* Data Grid */
+.data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.data-item {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Logs Container */
+.logs-container {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.log-entry {
+  padding: 0.75rem;
+  border-bottom: 1px solid #eee;
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+.log-timestamp {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.log-level {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.log-level-info {
+  background-color: #e3f2fd;
+  color: #0d47a1;
+}
+
+.log-level-warning {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.log-level-error {
+  background-color: #ffebee;
+  color: #b71c1c;
+}
+
+.log-message {
+  font-family: monospace;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .app-nav {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .calendar-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .postcount-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .topic-stack {
+    font-size: 2rem !important;
+  }
+}
+
 
