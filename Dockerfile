@@ -1,38 +1,35 @@
+# Base image: leichter Python-Slim
 FROM python:3.11-slim
 
+# Set working directory
 WORKDIR /app
 
-# Install only required system dependencies
+# Install only essential system dependencies (none hier nötig!)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /var/cache/apt/*
+    apt-get install -y --no-install-recommends ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy and install Python requirements
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy only what’s needed first (für besseren Docker Cache)
+COPY requirements.txt ./
 
-# Copy backend code
-COPY app/ /app/app/
-COPY models/ /app/models/
+# Install Python requirements
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Create necessary directories for data persistence
-RUN mkdir -p /app/data/processed && \
-    mkdir -p /app/logs && \
-    chown -R www-data:www-data /app/data /app/logs
+# Copy only required project folders (nicht das ganze Projekt!)
+COPY app/ ./app/
+COPY models/ ./models/
 
 # Set environment variables
-ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
+
+# Create persistent folders (SQLite/Logs etc.)
+RUN mkdir -p /app/data/processed /app/logs && \
+    chmod -R 777 /app/data /app/logs
 
 # Expose FastAPI port
 EXPOSE 8000
 
-# Run the application with optimized settings
-CMD ["uvicorn", "app.main:app", \
-    "--host", "0.0.0.0", \
-    "--port", "8000", \
-    "--workers", "4", \
-    "--timeout-keep-alive", "75", \
-    "--limit-concurrency", "1000", \
-    "--backlog", "2048"]
+# Start FastAPI with uvicorn
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
