@@ -14,12 +14,16 @@ from qdrant_client.http import models
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from fastapi.security import APIKeyHeader
-import sqlite3
-from contextlib import contextmanager
+from sqlalchemy.orm import Session
 from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
+# Import models and database
+from models import get_db, RedditData, TikTokData, YouTubeData
+
+# Modell-Download beim Start
+from src.model_loader import download_models
+
 # Import pipeline components
-from src.db_sync import CREATE_TABLES
 from src.pipelines.steps.data_ingestion import ingest_data
 from src.pipelines.steps.preprocessing import preprocess_data
 from src.pipelines.steps.data_exploration import explore_data
@@ -32,7 +36,14 @@ logger = logging.getLogger(__name__)
 # Initialize Qdrant client
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 COLLECTION_NAME = "social_media_posts"
-EMBEDDING_SIZE = 768  # Default for many transformer models
+EMBEDDING_SIZE = 768
+
+# Modelle beim Start herunterladen
+try:
+    logging.info("Prüfe und lade Modelle falls nötig...")
+    download_models()
+except Exception as e:
+    logging.error(f"Fehler beim Herunterladen der Modelle: {str(e)}")
 
 try:
     qdrant_client = QdrantClient(url=QDRANT_URL)
@@ -43,16 +54,9 @@ except Exception as e:
     qdrant_client = None
     model = None
 
-# Global state for tracking pipeline runs
-pipeline_runs = {}
+app = FastAPI()
 
-app = FastAPI(
-    title="Social Media Analysis API",
-    description="API for analyzing social media trends across different platforms",
-    version="1.0.0"
-)
-
-# Add CORS middleware
+# CORS Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -61,24 +65,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API Key configuration
-API_KEY = os.getenv("API_KEY", None)
-if not API_KEY:
-    logger.warning("API_KEY not set in environment variables!")
-
-api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+# API Key Security
+API_KEY = os.getenv("API_KEY", "your-api-key")
+api_key_header = APIKeyHeader(name="API_KEY")
 
 async def verify_api_key(api_key: str = Security(api_key_header)):
-    if not API_KEY:
-        return None
-    if api_key == API_KEY:
-        return api_key
-    raise HTTPException(
-        status_code=403,
-        detail="Invalid API key"
-    )
+    if api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid API Key")
+    return api_key
 
-# Pydantic models for request/response
+# Pydantic models
 class ScrapeRequest(BaseModel):
     platform: str
     query: Optional[str] = None
@@ -95,315 +91,10 @@ class SearchRequest(BaseModel):
 class PipelineResponse(BaseModel):
     status: str
     message: str
-    run_id: Optional[str] = None
     results: Optional[Dict[str, Any]] = None
 
-def initialize_qdrant_collection():
-    """Initialize Qdrant collection if it doesn't exist."""
-    try:
-        collections = qdrant_client.get_collections().collections
-        collection_names = [collection.name for collection in collections]
-        
-        if COLLECTION_NAME not in collection_names:
-            qdrant_client.create_collection(
-                collection_name=COLLECTION_NAME,
-                vectors_config=models.VectorParams(
-                    size=EMBEDDING_SIZE,
-                    distance=models.Distance.COSINE
-                )
-            )
-            logger.info(f"Created new collection: {COLLECTION_NAME}")
-    except Exception as e:
-        logger.error(f"Failed to initialize Qdrant collection: {str(e)}")
-        raise
-
-def store_posts_in_qdrant(posts: List[Dict[str, Any]]):
-    """Store posts in Qdrant with their embeddings."""
-    try:
-        if not qdrant_client or not model:
-            raise ValueError("Qdrant client or model not initialized")
-
-        # Generate embeddings for all posts
-        texts = [post.get('text', '') for post in posts]
-        embeddings = model.encode(texts)
-
-        # Prepare points for Qdrant
-        points = []
-        for i, post in enumerate(posts):
-            points.append(models.PointStruct(
-                id=i,
-                vector=embeddings[i].tolist(),
-                payload={
-                    'platform': post.get('platform'),
-                    'text': post.get('text'),
-                    'timestamp': post.get('timestamp'),
-                    'engagement': post.get('engagement'),
-                    'sentiment_score': post.get('sentiment_score')
-                }
-            ))
-
-        # Upload points to Qdrant
-        qdrant_client.upsert(
-            collection_name=COLLECTION_NAME,
-            points=points
-        )
-        logger.info(f"Stored {len(points)} posts in Qdrant")
-    except Exception as e:
-        logger.error(f"Failed to store posts in Qdrant: {str(e)}")
-        raise
-
-# Background task to run pipeline steps
-async def run_pipeline_step(step_name: str, data: Optional[Dict[str, Any]] = None):
-    try:
-        run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        pipeline_runs[run_id] = {
-            "status": "running",
-            "step": step_name,
-            "start_time": datetime.now().isoformat(),
-            "error": None
-        }
-
-        if step_name == "scrape":
-            # Implement scraping logic here
-            pass
-        elif step_name == "preprocess":
-            raw_data = ingest_data()
-            processed_data = preprocess_data(raw_data)
-            
-            # Store processed data in Qdrant
-            if qdrant_client and model:
-                store_posts_in_qdrant(processed_data.to_dict('records'))
-            
-            pipeline_runs[run_id]["status"] = "completed"
-            pipeline_runs[run_id]["end_time"] = datetime.now().isoformat()
-            return processed_data
-        elif step_name == "explore":
-            raw_data = ingest_data()
-            processed_data = preprocess_data(raw_data)
-            exploration_results = explore_data(processed_data)
-            pipeline_runs[run_id]["status"] = "completed"
-            pipeline_runs[run_id]["end_time"] = datetime.now().isoformat()
-            return exploration_results
-        elif step_name == "predict":
-            raw_data = ingest_data()
-            processed_data = preprocess_data(raw_data)
-            exploration_results = explore_data(processed_data)
-            predictions = make_predictions(processed_data, exploration_results)
-            pipeline_runs[run_id]["status"] = "completed"
-            pipeline_runs[run_id]["end_time"] = datetime.now().isoformat()
-            return predictions
-    except Exception as e:
-        logger.error(f"Error in pipeline step {step_name}: {str(e)}")
-        pipeline_runs[run_id]["status"] = "failed"
-        pipeline_runs[run_id]["error"] = str(e)
-        pipeline_runs[run_id]["end_time"] = datetime.now().isoformat()
-        raise
-
-@app.get("/", dependencies=[Depends(verify_api_key)])
-async def root():
-    """Root endpoint providing API overview."""
-    return {
-        "name": "Social Media Analysis API",
-        "version": "1.0.0",
-        "endpoints": {
-            "scrape": "/api/scrape",
-            "download": "/api/download/{platform}",
-            "preprocess": "/api/preprocess",
-            "explore": "/api/explore",
-            "predict": "/api/predict",
-            "status": "/api/status/{run_id}",
-            "search": "/api/search"
-        },
-        "documentation": "/docs"
-    }
-
-@app.post("/api/scrape", response_model=PipelineResponse, dependencies=[Depends(verify_api_key)])
-async def scrape_data(request: ScrapeRequest, background_tasks: BackgroundTasks):
-    """Scrape data from specified social media platform."""
-    try:
-        # Validate platform
-        valid_platforms = ["tiktok", "youtube", "reddit"]
-        if request.platform.lower() not in valid_platforms:
-            raise HTTPException(status_code=400, detail=f"Invalid platform. Must be one of {valid_platforms}")
-        
-        # Add scraping task to background tasks
-        run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        background_tasks.add_task(run_pipeline_step, "scrape", request.dict())
-        
-        return PipelineResponse(
-            status="success",
-            message=f"Started scraping {request.platform} data",
-            run_id=run_id
-        )
-    except Exception as e:
-        logger.error(f"Error in scrape endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/api/download/{platform}", response_model=PipelineResponse, dependencies=[Depends(verify_api_key)])
-async def download_data(platform: str):
-    """Download previously scraped data for a specific platform."""
-    try:
-        data_dir = Path("data/raw")
-        if not data_dir.exists():
-            raise HTTPException(status_code=404, detail="No data directory found")
-        
-        platform_file = data_dir / f"{platform}_data.csv"
-        if not platform_file.exists():
-            raise HTTPException(status_code=404, detail=f"No data found for platform: {platform}")
-        
-        return PipelineResponse(
-            status="success",
-            message=f"Data for {platform} is available at {platform_file}",
-            results={"file_path": str(platform_file)}
-        )
-    except Exception as e:
-        logger.error(f"Error in download endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/preprocess", response_model=PipelineResponse, dependencies=[Depends(verify_api_key)])
-async def preprocess_data_endpoint(background_tasks: BackgroundTasks):
-    """Preprocess the raw data."""
-    try:
-        run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        background_tasks.add_task(run_pipeline_step, "preprocess")
-        return PipelineResponse(
-            status="success",
-            message="Started data preprocessing",
-            run_id=run_id
-        )
-    except Exception as e:
-        logger.error(f"Error in preprocess endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/api/explore", response_model=PipelineResponse, dependencies=[Depends(verify_api_key)])
-async def explore_data_endpoint():
-    """Get exploration results."""
-    try:
-        results_file = Path("data/processed/exploration_results.json")
-        if not results_file.exists():
-            raise HTTPException(status_code=404, detail="No exploration results found")
-        
-        # Read and return the actual results
-        with open(results_file, 'r') as f:
-            results = json.load(f)
-        
-        return PipelineResponse(
-            status="success",
-            message="Exploration results retrieved successfully",
-            results=results
-        )
-    except Exception as e:
-        logger.error(f"Error in explore endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/predict", response_model=PipelineResponse, dependencies=[Depends(verify_api_key)])
-async def predict_endpoint(background_tasks: BackgroundTasks):
-    """Run predictions on the processed data."""
-    try:
-        run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        background_tasks.add_task(run_pipeline_step, "predict")
-        return PipelineResponse(
-            status="success",
-            message="Started prediction process",
-            run_id=run_id
-        )
-    except Exception as e:
-        logger.error(f"Error in predict endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/api/status/{run_id}", response_model=PipelineResponse, dependencies=[Depends(verify_api_key)])
-async def get_status(run_id: str):
-    """Get the status of a pipeline run."""
-    try:
-        if run_id not in pipeline_runs:
-            raise HTTPException(status_code=404, detail=f"No run found with ID: {run_id}")
-        
-        run_info = pipeline_runs[run_id]
-        return PipelineResponse(
-            status="success",
-            message=f"Status for run {run_id}",
-            results=run_info
-        )
-    except Exception as e:
-        logger.error(f"Error in status endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/search", response_model=PipelineResponse, dependencies=[Depends(verify_api_key)])
-async def semantic_search(request: SearchRequest):
-    """Perform semantic search on stored posts."""
-    try:
-        if not qdrant_client or not model:
-            raise HTTPException(status_code=500, detail="Qdrant client or model not initialized")
-
-        # Generate query embedding
-        query_embedding = model.encode(request.query)
-
-        # Prepare search parameters
-        search_params = {
-            "query_vector": query_embedding.tolist(),
-            "limit": request.limit,
-            "score_threshold": request.min_score
-        }
-
-        # Add platform filter if specified
-        if request.platform:
-            search_params["query_filter"] = models.Filter(
-                must=[
-                    models.FieldCondition(
-                        key="platform",
-                        match=models.MatchValue(value=request.platform)
-                    )
-                ]
-            )
-
-        # Perform search
-        search_results = qdrant_client.search(
-            collection_name=COLLECTION_NAME,
-            **search_params
-        )
-
-        # Format results
-        results = []
-        for hit in search_results:
-            results.append({
-                "score": hit.score,
-                "text": hit.payload.get("text"),
-                "platform": hit.payload.get("platform"),
-                "timestamp": hit.payload.get("timestamp"),
-                "engagement": hit.payload.get("engagement"),
-                "sentiment_score": hit.payload.get("sentiment_score")
-            })
-
-        return PipelineResponse(
-            status="success",
-            message=f"Found {len(results)} matching posts",
-            results={"matches": results}
-        )
-    except Exception as e:
-        logger.error(f"Error in semantic search: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-    
-# Konfiguration für Datenbank
-DB_PATH = Path("data/social_media.db")
-DATABASE_URL = f"sqlite:///{DB_PATH}"
-
-# Entferne die alte get_db_connection Funktion und behalte nur den Kontext-Manager
-@contextmanager
-def get_db_connection():
-    """Kontext-Manager für sichere Datenbankverbindungen"""
-    db_path = DB_PATH
-    if not db_path.exists():
-        db_path.parent.mkdir(parents=True, exist_ok=True)
-        
-    conn = sqlite3.connect(str(db_path))
-    conn.row_factory = sqlite3.Row
-    try:
-        yield conn
-    finally:
-        conn.close()
-
 @app.post("/sync", dependencies=[Depends(verify_api_key)])
-async def sync_data(request: Request):
+async def sync_data(request: Request, db: Session = Depends(get_db)):
     """Synchronisiere Daten von externen Clients"""
     try:
         payload = await request.json()
@@ -422,80 +113,63 @@ async def sync_data(request: Request):
     stats = {"inserted": 0, "updated": 0, "errors": 0}
     
     try:
-        with get_db_connection() as conn:
-            cursor = conn.cursor()
-            
-            # Stelle sicher, dass die Tabellen existieren
-            for ddl in CREATE_TABLES.values():
-                cursor.execute(ddl)
-            
-            for item in data:
-                platform = item.get("platform")
-                try:
-                    if platform == "reddit":
-                        cursor.execute("""
-                            INSERT INTO reddit_data 
-                            (id, title, text, author, score, created_utc, num_comments, url, subreddit, scraped_at)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                            ON CONFLICT(id) DO UPDATE SET
-                                score=excluded.score,
-                                num_comments=excluded.num_comments
-                            WHERE score != excluded.score OR num_comments != excluded.num_comments
-                        """, (
-                            item.get("id"), item.get("title"), item.get("text"), 
-                            item.get("author"), item.get("score"), item.get("created_utc"),
-                            item.get("num_comments"), item.get("url"), item.get("subreddit"),
-                            item.get("scraped_at")
-                        ))
+        for item in data:
+            platform = item.get("platform")
+            try:
+                if platform == "reddit":
+                    reddit_post = RedditData(
+                        id=item.get("id"),
+                        title=item.get("title"),
+                        text=item.get("text"),
+                        author=item.get("author"),
+                        score=item.get("score"),
+                        created_utc=item.get("created_utc"),
+                        num_comments=item.get("num_comments"),
+                        url=item.get("url"),
+                        subreddit=item.get("subreddit"),
+                        scraped_at=datetime.now()
+                    )
+                    db.merge(reddit_post)
+                    stats["inserted"] += 1
+                
+                elif platform == "tiktok":
+                    tiktok_post = TikTokData(
+                        id=item.get("id"),
+                        description=item.get("description"),
+                        author_username=item.get("author_username"),
+                        author_id=item.get("author_id"),
+                        likes=item.get("likes"),
+                        shares=item.get("shares"),
+                        comments=item.get("comments"),
+                        plays=item.get("plays"),
+                        video_url=item.get("video_url"),
+                        created_time=item.get("created_time"),
+                        scraped_at=datetime.now()
+                    )
+                    db.merge(tiktok_post)
+                    stats["inserted"] += 1
+                
+                elif platform == "youtube":
+                    youtube_post = YouTubeData(
+                        video_id=item.get("video_id"),
+                        title=item.get("title"),
+                        description=item.get("description"),
+                        channel_title=item.get("channel_title"),
+                        view_count=item.get("view_count"),
+                        like_count=item.get("like_count"),
+                        comment_count=item.get("comment_count"),
+                        published_at=item.get("published_at"),
+                        scraped_at=datetime.now()
+                    )
+                    db.merge(youtube_post)
+                    stats["inserted"] += 1
                     
-                    elif platform == "tiktok":
-                        cursor.execute("""
-                            INSERT INTO tiktok_data 
-                            (id, description, author_username, author_id, likes, shares, comments, plays, video_url, created_time, scraped_at)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                            ON CONFLICT(id) DO UPDATE SET
-                                likes=excluded.likes,
-                                shares=excluded.shares,
-                                comments=excluded.comments,
-                                plays=excluded.plays
-                            WHERE likes != excluded.likes OR shares != excluded.shares OR 
-                                  comments != excluded.comments OR plays != excluded.plays
-                        """, (
-                            item.get("id"), item.get("description"), item.get("author_username"),
-                            item.get("author_id"), item.get("likes"), item.get("shares"),
-                            item.get("comments"), item.get("plays"), item.get("video_url"),
-                            item.get("created_time"), item.get("scraped_at")
-                        ))
-                    
-                    elif platform == "youtube":
-                        cursor.execute("""
-                            INSERT INTO youtube_data 
-                            (video_id, title, description, channel_title, view_count, like_count, comment_count, published_at, scraped_at)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                            ON CONFLICT(video_id) DO UPDATE SET
-                                view_count=excluded.view_count,
-                                like_count=excluded.like_count,
-                                comment_count=excluded.comment_count
-                            WHERE view_count != excluded.view_count OR like_count != excluded.like_count OR 
-                                  comment_count != excluded.comment_count
-                        """, (
-                            item.get("video_id"), item.get("title"), item.get("description"),
-                            item.get("channel_title"), item.get("view_count"), item.get("like_count"),
-                            item.get("comment_count"), item.get("published_at"), item.get("scraped_at")
-                        ))
-                    
-                    if cursor.rowcount > 0:
-                        if cursor.rowcount == 1:
-                            stats["inserted"] += 1
-                        else:
-                            stats["updated"] += 1
-                            
-                except Exception as e:
-                    logger.error(f"Fehler beim Verarbeiten von {platform}-Daten: {e}")
-                    stats["errors"] += 1
-                    continue
-            
-            conn.commit()
+            except Exception as e:
+                logger.error(f"Fehler beim Verarbeiten von {platform}-Daten: {e}")
+                stats["errors"] += 1
+                continue
+        
+        db.commit()
         
         return JSONResponse(
             status_code=HTTP_201_CREATED,
@@ -507,6 +181,7 @@ async def sync_data(request: Request):
         )
     
     except Exception as e:
+        db.rollback()
         logger.error(f"Fehler während der Synchronisation: {e}")
         raise HTTPException(
             status_code=500,
@@ -514,29 +189,43 @@ async def sync_data(request: Request):
         )
 
 @app.get("/data", dependencies=[Depends(verify_api_key)])
-async def get_data():
+async def get_data(db: Session = Depends(get_db)):
     """Alle Daten aus allen Plattform-Tabellen abrufen"""
     try:
         all_data = []
         
-        with get_db_connection() as conn:
-            cursor = conn.cursor()
-            
-            for platform, table in {
-                "reddit": "reddit_data",
-                "tiktok": "tiktok_data",
-                "youtube": "youtube_data"
-            }.items():
-                try:
-                    cursor.execute(f"SELECT * FROM {table}")
-                    rows = cursor.fetchall()
-                    for row in rows:
-                        item = dict(row)
-                        item["platform"] = platform  # wichtig fürs syncen
-                        all_data.append(item)
-                except sqlite3.Error as e:
-                    logger.warning(f"Fehler beim Laden von {table}: {e}")
-                    continue
+        # Reddit-Daten
+        reddit_data = db.query(RedditData).all()
+        for item in reddit_data:
+            data = {
+                "platform": "reddit",
+                **item.__dict__
+            }
+            if "_sa_instance_state" in data:
+                del data["_sa_instance_state"]
+            all_data.append(data)
+        
+        # TikTok-Daten
+        tiktok_data = db.query(TikTokData).all()
+        for item in tiktok_data:
+            data = {
+                "platform": "tiktok",
+                **item.__dict__
+            }
+            if "_sa_instance_state" in data:
+                del data["_sa_instance_state"]
+            all_data.append(data)
+        
+        # YouTube-Daten
+        youtube_data = db.query(YouTubeData).all()
+        for item in youtube_data:
+            data = {
+                "platform": "youtube",
+                **item.__dict__
+            }
+            if "_sa_instance_state" in data:
+                del data["_sa_instance_state"]
+            all_data.append(data)
         
         return {"data": all_data}
     
@@ -547,25 +236,5 @@ async def get_data():
             detail=f"Datenbankfehler: {str(e)}"
         )
 
-@app.get("/logs", dependencies=[Depends(verify_api_key)])
-async def get_logs():
-    logs_dir = Path("logs")
-    if not logs_dir.exists():
-        raise HTTPException(status_code=404, detail="Logs directory not found")
-    
-    # Logic to retrieve and return logs
-    return JSONResponse(content={"message": "Logs retrieved successfully"})
-
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request, exc):
-    """Global exception handler for HTTP exceptions."""
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"status": "error", "message": exc.detail}
-    )
-
 if __name__ == "__main__":
-    # Initialize Qdrant collection on startup
-    if qdrant_client:
-        initialize_qdrant_collection()
-    uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True) 
+    uvicorn.run(app, host="0.0.0.0", port=8000) 

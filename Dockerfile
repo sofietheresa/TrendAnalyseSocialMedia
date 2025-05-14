@@ -1,25 +1,38 @@
-FROM python:3.11-slim as base
+FROM python:3.11-slim-bullseye as builder
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+
 WORKDIR /app
 
-# Minimaler Systembedarf
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libnss3 libx11-6 libxcb1 libxcomposite1 libxdamage1 libxrandr2 \
-    libxss1 libasound2 libxext6 libxfixes3 libxkbcommon0 libcups2 \
-    curl && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Nur das Nötigste für ML/NLP
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
 
-# Nur Quellcode
+FROM python:3.11-slim-bullseye as runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Nur die absolut notwendigen System-Dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Kopiere nur die installierten Python-Packages
+COPY --from=builder /root/.local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+
+# Kopiere den Anwendungscode
 COPY ./src /app/src
 
-# Datenverzeichnisse anlegen
-RUN mkdir -p /app/data /app/logs
+# Erstelle notwendige Verzeichnisse
+RUN mkdir -p /app/data /app/logs /app/models
 
 EXPOSE 8000
 
