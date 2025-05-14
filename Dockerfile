@@ -20,20 +20,22 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Nur die absolut notwendigen System-Dependencies
+# Install PostgreSQL client libraries and other essential dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
+    postgresql-client \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Kopiere nur die installierten Python-Packages
+# Copy only the installed Python packages
 COPY --from=builder /root/.local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 
-# Kopiere den Anwendungscode
+# Copy the application code
 COPY ./src /app/src
 
-# Erstelle notwendige Verzeichnisse
+# Create necessary directories
 RUN mkdir -p /app/data /app/logs /app/models
 
 EXPOSE 8000
 
+# Use a script to wait for the database and then start the application
 CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]

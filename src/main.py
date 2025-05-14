@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 # Import models and database
-from models import get_db, RedditData, TikTokData, YouTubeData
+from models import get_db, RedditData, TikTokData, YouTubeData, init_db, Base, engine
 
 # Modell-Download beim Start
 from src.model_loader import download_models
@@ -32,6 +32,15 @@ from src.pipelines.steps.predictions import make_predictions
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Initialize database tables at startup
+try:
+    logger.info("Initializing database tables...")
+    init_db()
+    logger.info("Database tables initialized successfully")
+except Exception as e:
+    logger.error(f"Failed to initialize database: {str(e)}")
+    raise
 
 # Initialize Qdrant client
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
@@ -57,9 +66,10 @@ except Exception as e:
 app = FastAPI()
 
 # CORS Middleware
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -76,14 +86,24 @@ async def verify_api_key(api_key: str = Security(api_key_header)):
 
 # Health Check Endpoint
 @app.get("/health")
-async def health_check():
+async def health_check(db: Session = Depends(get_db)):
     """
-    Einfacher Health Check Endpunkt für Railway/Render
+    Health Check Endpunkt für Railway mit Datenbankprüfung
     """
     try:
+        # Check database connection
+        db.execute("SELECT 1")
+        
+        # Check if tables exist
+        for table in [RedditData, TikTokData, YouTubeData]:
+            if not engine.dialect.has_table(engine, table.__tablename__):
+                raise Exception(f"Table {table.__tablename__} does not exist")
+        
         return {
             "status": "healthy",
             "timestamp": datetime.now().isoformat(),
+            "database": "connected",
+            "environment": os.getenv("ENVIRONMENT", "production")
         }
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
