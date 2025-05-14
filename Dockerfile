@@ -1,38 +1,26 @@
-FROM python:3.11-slim
+FROM python:3.11-slim as base
 
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
-# Install only required system dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /var/cache/apt/*
+# Minimaler Systembedarf
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libnss3 libx11-6 libxcb1 libxcomposite1 libxdamage1 libxrandr2 \
+    libxss1 libasound2 libxext6 libxfixes3 libxkbcommon0 libcups2 \
+    curl && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copy and install Python requirements
-COPY requirements.txt .
+# Nur das Nötigste für ML/NLP
+COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend code
-COPY app/ /app/app/
-COPY models/ /app/models/
+# Nur Quellcode
+COPY ./src /app/src
 
-# Create necessary directories for data persistence
-RUN mkdir -p /app/data/processed && \
-    mkdir -p /app/logs && \
-    chown -R www-data:www-data /app/data /app/logs
+# Datenverzeichnisse anlegen
+RUN mkdir -p /app/data /app/logs
 
-# Set environment variables
-ENV PYTHONPATH=/app
-ENV PYTHONUNBUFFERED=1
-
-# Expose FastAPI port
 EXPOSE 8000
 
-# Run the application with optimized settings
-CMD ["uvicorn", "app.main:app", \
-    "--host", "0.0.0.0", \
-    "--port", "8000", \
-    "--workers", "4", \
-    "--timeout-keep-alive", "75", \
-    "--limit-concurrency", "1000", \
-    "--backlog", "2048"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]

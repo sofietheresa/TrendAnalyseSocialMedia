@@ -1,66 +1,20 @@
-# Version control
-.git
-.gitignore
-
-# Dependencies
-node_modules
-__pycache__
+__pycache__/
 *.pyc
-.pytest_cache
-.coverage
-
-# Frontend (not needed)
+*.pyo
+*.pyd
+*.db
+*.csv
+*.log
+*.ipynb
+*.pdf
+notebooks/
+docs/
 frontend/
-nginx.conf
-*.js
-*.jsx
-*.ts
-*.tsx
-*.css
-*.html
-
-# Data and logs (mounted as volumes)
+grafana/
+prometheus/
+results/
 data/
 logs/
-*.log
-notebooks/
-schedule/
-
-# Development files
-.env
-.env.*
-*.md
-LICENSE
-tests/
-.vscode/
-.idea/
-
-# Build artifacts
-build/
-dist/
-*.egg-info/
-
-# Documentation
-docs/
-*.pptx
-*.pdf
-*.doc
-*.docx
-
-# Temporary files
-*.swp
-*.swo
-.DS_Store
-Thumbs.db
-
-# Data files
-*.csv
-*.json
-*.db
-*.sqlite
-*.zip
-
-# Keep only necessary backend files
-!app/
-!models/
-!requirements.txt
+*.pt
+*.onnx
+*.h5
