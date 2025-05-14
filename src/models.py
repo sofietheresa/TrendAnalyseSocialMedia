@@ -51,7 +51,12 @@ class YouTubeData(Base):
 
 # Datenbankverbindung
 def get_db_url():
-    """Gibt die Datenbank-URL basierend auf den Umgebungsvariablen zurück"""
+    """Gibt die Datenbank-URL zurück"""
+    # Verwende direkt die DATABASE_URL wenn vorhanden (Railway)
+    if "DATABASE_URL" in os.environ:
+        return os.environ["DATABASE_URL"]
+    
+    # Fallback für lokale Entwicklung
     DB_USER = os.getenv("POSTGRES_USER", "postgres")
     DB_PASS = os.getenv("POSTGRES_PASSWORD", "postgres")
     DB_HOST = os.getenv("POSTGRES_HOST", "localhost")
