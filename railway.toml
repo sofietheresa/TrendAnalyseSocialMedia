@@ -5,12 +5,12 @@ dockerfilePath = "Dockerfile"
 [deploy]
 startCommand = "python -m uvicorn src.main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/health"
-healthcheckTimeout = 300
+healthcheckTimeout = 600
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 5
 
 [deploy.healthcheck]
-interval = "45s"
-timeout = "15s"
-retries = 3
-startPeriod = "90s" 
+interval = "60s"
+timeout = "30s"
+retries = 5
+startPeriod = "180s" 

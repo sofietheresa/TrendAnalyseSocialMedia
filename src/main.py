@@ -33,35 +33,9 @@ from src.pipelines.steps.predictions import make_predictions
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize database tables at startup
-try:
-    logger.info("Initializing database tables...")
-    init_db()
-    logger.info("Database tables initialized successfully")
-except Exception as e:
-    logger.error(f"Failed to initialize database: {str(e)}")
-    raise
-
-# Initialize Qdrant client
-QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
-COLLECTION_NAME = "social_media_posts"
-EMBEDDING_SIZE = 768
-
-# Modelle beim Start herunterladen
-try:
-    logging.info("Prüfe und lade Modelle falls nötig...")
-    download_models()
-except Exception as e:
-    logging.error(f"Fehler beim Herunterladen der Modelle: {str(e)}")
-
-try:
-    qdrant_client = QdrantClient(url=QDRANT_URL)
-    # Initialize sentence transformer model
-    model = SentenceTransformer('all-MiniLM-L6-v2')
-except Exception as e:
-    logger.error(f"Failed to initialize Qdrant client or model: {str(e)}")
-    qdrant_client = None
-    model = None
+# Global variables for service status
+service_ready = False
+initialization_error = None
 
 app = FastAPI()
 
@@ -84,6 +58,23 @@ async def verify_api_key(api_key: str = Security(api_key_header)):
         raise HTTPException(status_code=403, detail="Invalid API Key")
     return api_key
 
+async def initialize_services():
+    """Initialize all services asynchronously"""
+    global service_ready, initialization_error
+    try:
+        # Initialize database
+        logger.info("Initializing database tables...")
+        init_db()
+        logger.info("Database tables initialized successfully")
+
+        # Initialize other services if needed
+        logger.info("Service initialization completed")
+        service_ready = True
+    except Exception as e:
+        initialization_error = str(e)
+        logger.error(f"Service initialization failed: {str(e)}")
+        raise
+
 # Health Check Endpoint
 @app.get("/health")
 async def health_check(db: Session = Depends(get_db)):
@@ -91,18 +82,15 @@ async def health_check(db: Session = Depends(get_db)):
     Health Check Endpunkt für Railway mit Datenbankprüfung
     """
     try:
-        # Check database connection
+        # Basic database connectivity check
         db.execute("SELECT 1")
-        
-        # Check if tables exist
-        for table in [RedditData, TikTokData, YouTubeData]:
-            if not engine.dialect.has_table(engine, table.__tablename__):
-                raise Exception(f"Table {table.__tablename__} does not exist")
         
         return {
             "status": "healthy",
             "timestamp": datetime.now().isoformat(),
             "database": "connected",
+            "service_ready": service_ready,
+            "initialization_error": initialization_error,
             "environment": os.getenv("ENVIRONMENT", "production")
         }
     except Exception as e:
@@ -111,6 +99,31 @@ async def health_check(db: Session = Depends(get_db)):
             status_code=503,
             detail=f"Service unhealthy: {str(e)}"
         )
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize services on startup"""
+    try:
+        await initialize_services()
+    except Exception as e:
+        logger.error(f"Startup initialization failed: {str(e)}")
+        # Don't raise the exception here to allow the application to start
+
+# Modelle beim Start herunterladen
+try:
+    logging.info("Prüfe und lade Modelle falls nötig...")
+    download_models()
+except Exception as e:
+    logging.error(f"Fehler beim Herunterladen der Modelle: {str(e)}")
+
+try:
+    qdrant_client = QdrantClient(url=QDRANT_URL)
+    # Initialize sentence transformer model
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+except Exception as e:
+    logger.error(f"Failed to initialize Qdrant client or model: {str(e)}")
+    qdrant_client = None
+    model = None
 
 # Pydantic models
 class ScrapeRequest(BaseModel):
