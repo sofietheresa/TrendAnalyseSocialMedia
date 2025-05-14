@@ -15,7 +15,6 @@ RUN pip install --no-cache-dir --upgrade pip \
 
 # Nur benötigten Quellcode kopieren
 COPY src/ ./src/
-COPY models/ ./models/
 
 # OPTIONAL: Leeres Verzeichnis vorbereiten für Logs (wird ignoriert)
 RUN mkdir -p logs && chmod -R 777 logs
