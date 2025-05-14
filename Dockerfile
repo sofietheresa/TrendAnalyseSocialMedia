@@ -38,6 +38,7 @@ RUN mkdir -p /app/data /app/logs /app/models
 EXPOSE 8000
 
 # Use a script to wait for the database and then start the application
-CMD sh -c "uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"
+CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
 
 
