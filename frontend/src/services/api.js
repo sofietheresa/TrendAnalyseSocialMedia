@@ -1,11 +1,58 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_KEY = process.env.REACT_APP_API_KEY;
 
+// Axios-Instanz mit Standardkonfiguration
 const api = axios.create({
-    baseURL: API_BASE_URL,
-    timeout: 15000,
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+        'API_KEY': API_KEY
+    }
 });
+
+// Error Handler
+api.interceptors.response.use(
+    response => response,
+    error => {
+        console.error('API Error:', error.response?.data || error.message);
+        return Promise.reject(error);
+    }
+);
+
+// API-Funktionen
+export const fetchSocialMediaData = async () => {
+    try {
+        const response = await api.get('/data');
+        return response.data.data;
+    } catch (error) {
+        console.error('Error fetching social media data:', error);
+        throw error;
+    }
+};
+
+export const fetchTrendAnalysis = async (platform = null) => {
+    try {
+        const params = platform ? { platform } : {};
+        const response = await api.get('/trends', { params });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching trend analysis:', error);
+        throw error;
+    }
+};
+
+export const searchContent = async (query, platform = null) => {
+    try {
+        const params = { query, ...(platform && { platform }) };
+        const response = await api.get('/search', { params });
+        return response.data;
+    } catch (error) {
+        console.error('Error searching content:', error);
+        throw error;
+    }
+};
 
 export const fetchTopics = async (startDate, endDate) => {
     try {
@@ -134,17 +181,5 @@ export const fetchPredictions = async () => {
         }
     }
 };
-
-// Interceptor für globale Fehlerbehandlung
-api.interceptors.response.use(
-    response => response,
-    error => {
-        if (error.response?.status === 404) {
-            console.error('Resource not found:', error.config.url);
-            return Promise.reject(new Error('Die angeforderten Daten wurden nicht gefunden'));
-        }
-        return Promise.reject(error);
-    }
-);
 
 export default api; 

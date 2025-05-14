@@ -5,6 +5,9 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Alert, Spinner } from 'react-bootstrap';
 import Documentation from './components/Documentation';
 import { fetchTopics, fetchAnalysisData } from './services/api';
+import { DataProvider } from './context/DataContext';
+import Navigation from './components/Navigation';
+import Dashboard from './components/Dashboard';
 
 function App() {
   const [startDateTime, setStartDateTime] = useState("");
@@ -50,108 +53,12 @@ function App() {
 
   return (
     <Router>
-      <div className="gradient-bg">
-        <nav className="app-nav">
-          <Link to="/" className="nav-link">Startseite</Link>
-          <Link to="/daten" className="nav-link">Daten</Link>
-          <Link to="/logs" className="nav-link">Logs</Link>
-          <Link to="/pipeline" className="nav-link">Pipeline</Link>
-          <Link to="/doku" className="nav-link">Doku</Link>
-        </nav>
-
-        {error && (
-          <Alert variant="danger" className="m-3">
-            {error}
-          </Alert>
-        )}
-
-        <Routes>
-          <Route path="/" element={
-            <>
-              <header className="App-header">
-                <h1 className="main-title">SOCIAL MEDIA Trend Analysis</h1>
-              </header>
-              <main className="App-main">
-                <section className="filter-section">
-                  <form className="calendar-filter" onSubmit={handleFilterSubmit}>
-                    <label>
-                      Von:
-                      <input
-                        type="datetime-local"
-                        value={startDateTime}
-                        onChange={e => setStartDateTime(e.target.value)}
-                        className="calendar-input"
-                      />
-                    </label>
-                    <span className="calendar-separator">bis</span>
-                    <label>
-                      Bis:
-                      <input
-                        type="datetime-local"
-                        value={endDateTime}
-                        onChange={e => setEndDateTime(e.target.value)}
-                        className="calendar-input"
-                      />
-                    </label>
-                    <button type="submit" className="calendar-filter-btn">
-                      Filtern
-                    </button>
-                  </form>
-                </section>
-
-                {loading ? (
-                  <div className="loading-container">
-                    <Spinner animation="border" role="status">
-                      <span className="visually-hidden">Laden...</span>
-                    </Spinner>
-                  </div>
-                ) : (
-                  <>
-                    <section className="topics-stack-section">
-                      {topics.slice(0, 3).map((topic, i) => (
-                        <div
-                          key={topic.topic}
-                          className={`topic-stack topic-stack-${i+1}`}
-                          style={{
-                            fontFamily: 'Arial, sans-serif',
-                            fontWeight: i === 0 ? 900 : 700,
-                            fontSize: i === 0 ? '3.2rem' : i === 1 ? '2.4rem' : '2rem',
-                            opacity: i === 0 ? 1 : i === 1 ? 0.7 : 0.5,
-                            textAlign: 'center',
-                            color: '#2a2253',
-                            margin: 0,
-                            marginBottom: '0.2em',
-                            letterSpacing: '0.01em',
-                            lineHeight: 1.1
-                          }}
-                        >
-                          {topic.topic}
-                        </div>
-                      ))}
-                    </section>
-
-                    <section className="postcount-row">
-                      <div className="postcount-grid">
-                        {Object.entries(sourceCounts).slice(0, 3).map(([quelle, anzahl], i) => (
-                          <div key={quelle} className="postcount-col">
-                            <div className="postcount-number">{String(i+1).padStart(2, '0')}</div>
-                            <div className="postcount-source">{quelle}</div>
-                            <div className="postcount-value">{anzahl}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </section>
-                  </>
-                )}
-              </main>
-            </>
-          } />
-          <Route path="/daten" element={<DataView />} />
-          <Route path="/logs" element={<LogView />} />
-          <Route path="/pipeline" element={<Pipeline />} />
-          <Route path="/doku" element={<Documentation />} />
-        </Routes>
-      </div>
+      <DataProvider>
+        <div className="App">
+          <Navigation />
+          <Dashboard />
+        </div>
+      </DataProvider>
     </Router>
   );
 }

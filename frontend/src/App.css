@@ -574,4 +574,144 @@ body, html, #root {
   }
 }
 
+/* Navbar Styles */
+.navbar {
+  background: #1a1a2e;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.nav-brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.nav-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.error-badge {
+  background: #ff4444;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.update-badge {
+  color: #aaa;
+  font-size: 0.875rem;
+}
+
+/* Dashboard Styles */
+.dashboard {
+  padding: 2rem;
+}
+
+.dashboard h1 {
+  margin-bottom: 2rem;
+  color: #1a1a2e;
+}
+
+.platform-card {
+  height: 100%;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.platform-card.reddit {
+  border-top: 4px solid #ff4500;
+}
+
+.platform-card.tiktok {
+  border-top: 4px solid #00f2ea;
+}
+
+.platform-card.youtube {
+  border-top: 4px solid #ff0000;
+}
+
+.platform-stats {
+  margin-top: 1rem;
+}
+
+.post-preview {
+  padding: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.post-preview:last-child {
+  border-bottom: none;
+}
+
+.post-preview h6 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.post-preview small {
+  color: #666;
+}
+
+/* Loading and Error States */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+}
+
+.error-container {
+  padding: 2rem;
+  text-align: center;
+  color: #ff4444;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  .nav-info {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .dashboard {
+    padding: 1rem;
+  }
+}
+
 
