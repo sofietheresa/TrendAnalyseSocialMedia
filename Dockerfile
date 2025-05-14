@@ -5,12 +5,16 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
+# Install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy application code
 COPY ./src /app/src
-COPY start.py /app/start.py
+COPY start.sh /app/start.sh
 
+# Expose the port
 EXPOSE 8000
 
-CMD ["python", "start.py"]
+# Set the entrypoint to the start script
+CMD ["./start.sh"]
