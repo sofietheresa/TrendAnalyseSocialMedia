@@ -9,7 +9,17 @@ __pycache__
 .pytest_cache
 .coverage
 
-# Data and logs
+# Frontend (not needed)
+frontend/
+nginx.conf
+*.js
+*.jsx
+*.ts
+*.tsx
+*.css
+*.html
+
+# Data and logs (mounted as volumes)
 data/
 logs/
 *.log
@@ -43,28 +53,14 @@ docs/
 .DS_Store
 Thumbs.db
 
-# Bytecode, temporäre & sensible Dateien
-*.py[cod]
-*.zip
-*.md
-*.ipynb
+# Data files
 *.csv
+*.json
 *.db
-*.pptx
+*.sqlite
+*.zip
 
-# Lokale Entwicklungsdaten (nicht ins Image)
-results/
-docs/
-frontend/
-grafana/
-prometheus/
-src/scheduler/
-
-# Node.js-Zeugs
-package-lock.json
-package.json
-
-# ❗ Wichtig: diese Ordner/Dateien **nicht** ignorieren (werden fürs Backend benötigt)
-!src/
+# Keep only necessary backend files
+!app/
+!models/
 !requirements.txt
-!setup.py
