@@ -9,6 +9,7 @@ __pycache__/
 *.csv
 *.db
 .env
+*.pptx
 
 # Lokale Daten
 data/
@@ -19,6 +20,7 @@ docs/
 frontend/
 grafana/
 prometheus/
+src/scheduler/
 
 # Node.js
 node_modules/
