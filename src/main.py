@@ -58,47 +58,13 @@ async def verify_api_key(api_key: str = Security(api_key_header)):
         raise HTTPException(status_code=403, detail="Invalid API Key")
     return api_key
 
-async def initialize_services():
-    """Initialize all services asynchronously"""
-    global service_ready, initialization_error
-    try:
-        # Initialize database
-        logger.info("Initializing database tables...")
-        init_db()
-        logger.info("Database tables initialized successfully")
-
-        # Initialize other services if needed
-        logger.info("Service initialization completed")
-        service_ready = True
-    except Exception as e:
-        initialization_error = str(e)
-        logger.error(f"Service initialization failed: {str(e)}")
-        raise
-
-# Health Check Endpoint
+# Simple Health Check Endpoint
 @app.get("/health")
-async def health_check(db: Session = Depends(get_db)):
+async def health_check():
     """
-    Health Check Endpunkt für Railway mit Datenbankprüfung
+    Simple health check endpoint that always returns OK
     """
-    try:
-        # Basic database connectivity check
-        db.execute("SELECT 1")
-        
-        return {
-            "status": "healthy",
-            "timestamp": datetime.now().isoformat(),
-            "database": "connected",
-            "service_ready": service_ready,
-            "initialization_error": initialization_error,
-            "environment": os.getenv("ENVIRONMENT", "production")
-        }
-    except Exception as e:
-        logger.error(f"Health check failed: {str(e)}")
-        raise HTTPException(
-            status_code=503,
-            detail=f"Service unhealthy: {str(e)}"
-        )
+    return {"status": "healthy"}
 
 @app.on_event("startup")
 async def startup_event():
