@@ -3,8 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from .middleware import TimeoutMiddleware
 import logging
-import uvicorn
-import os
 
 # Setup logging
 logging.basicConfig(
@@ -54,16 +52,4 @@ async def health_check():
 
 # Import and include your API routes here
 # from .routes import router
-# app.include_router(router)
-
-if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8000))
-    uvicorn.run(
-        "app.main:app",
-        host="0.0.0.0",
-        port=port,
-        workers=4,
-        timeout_keep_alive=75,
-        limit_concurrency=1000,
-        backlog=2048
-    ) 
+# app.include_router(router) 
