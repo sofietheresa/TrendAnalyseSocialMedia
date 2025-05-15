@@ -1,3 +1,59 @@
+/* Debugging styles */
+.app-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+  text-align: center;
+}
+
+.debug-message {
+  background-color: #ff6b6b;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.app-content {
+  padding: 20px;
+}
+
+.app-footer {
+  background-color: #f8f9fa;
+  padding: 10px;
+  text-align: center;
+  margin-top: 20px;
+  border-top: 1px solid #ddd;
+}
+
+.debug-dashboard {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.debug-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  border-radius: 5px;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.debug-data {
+  margin-top: 15px;
+}
+
+.debug-data pre {
+  background-color: #f1f1f1;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
 html, body, #root {
   height: 100%;
   margin: 0;

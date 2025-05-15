@@ -3,41 +3,83 @@ import axios from 'axios';
 // API URL configuration with Railway deployment URL
 const API_URL = process.env.REACT_APP_API_URL || 
                 'https://trendanalysesocialmedia-production.up.railway.app';
-const API_KEY = process.env.REACT_APP_API_KEY;
 
-// Axios-Instanz mit Standardkonfiguration
+console.log('API_URL set to:', API_URL);
+
+// Axios-Instanz mit Standardkonfiguration und Debug-Info
 const api = axios.create({
     baseURL: API_URL,
     headers: {
-        'Content-Type': 'application/json',
-        'API_KEY': API_KEY
-    }
+        'Content-Type': 'application/json'
+    },
+    // Add longer timeout for debugging
+    timeout: 30000,
+    // Enable CORS with credentials
+    withCredentials: false
 });
 
-// Error Handler
-api.interceptors.response.use(
-    response => response,
+// Detailed Error Handler
+api.interceptors.request.use(
+    config => {
+        console.log(`🚀 Making ${config.method.toUpperCase()} request to: ${config.baseURL}${config.url}`);
+        return config;
+    },
     error => {
-        console.error('API Error:', error.response?.data || error.message);
+        console.error('❌ Request error:', error);
         return Promise.reject(error);
     }
 );
 
-// API-Funktionen
-export const fetchSocialMediaData = async () => {
+api.interceptors.response.use(
+    response => {
+        console.log(`✅ Response from ${response.config.url}:`, response.status);
+        return response;
+    },
+    error => {
+        console.error('❌ API Error Details:', {
+            url: error.config?.url,
+            method: error.config?.method,
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message
+        });
+        return Promise.reject(error);
+    }
+);
+
+// Helper function for better error handling
+const apiCall = async (endpoint, method = 'get', data = null, options = {}) => {
     try {
-        const response = await api.get('/data');
-        return response.data.data;
+        const config = { 
+            ...options,
+            method,
+            url: endpoint,
+            data: method !== 'get' ? data : undefined,
+            params: method === 'get' ? data : undefined
+        };
+        
+        const response = await api(config);
+        return response.data;
     } catch (error) {
-        console.error('Error fetching social media data:', error);
-        throw error;
+        console.error(`Failed API call to ${endpoint}:`, error);
+        
+        // Enhance error message with details
+        const enhancedError = new Error(
+            `API Error (${error.response?.status || 'network'}): ${error.message}`
+        );
+        enhancedError.originalError = error;
+        enhancedError.status = error.response?.status;
+        enhancedError.data = error.response?.data;
+        
+        throw enhancedError;
     }
 };
 
+// API-Funktionen mit verbessertem Error-Handling
 export const fetchScraperStatus = async () => {
+    console.log("Fetching scraper status...");
     try {
-        const response = await api.get('/api/scraper-status');
-        return response.data;
+        return await apiCall('/api/scraper-status');
     } catch (error) {
         console.error('Error fetching scraper status:', error);
         throw error;
@@ -45,11 +87,21 @@ export const fetchScraperStatus = async () => {
 };
 
 export const fetchDailyStats = async () => {
+    console.log("Fetching daily stats...");
     try {
-        const response = await api.get('/api/daily-stats');
-        return response.data;
+        return await apiCall('/api/daily-stats');
     } catch (error) {
         console.error('Error fetching daily stats:', error);
+        throw error;
+    }
+};
+
+// Other API functions using the enhanced apiCall helper
+export const fetchSocialMediaData = async () => {
+    try {
+        return await apiCall('/data');
+    } catch (error) {
+        console.error('Error fetching social media data:', error);
         throw error;
     }
 };
