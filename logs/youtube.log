@@ -180,3 +180,7 @@ Traceback (most recent call last):
     sock.connect((self.host, self.port))
     ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
 TimeoutError: [WinError 10060] A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond
+2025-05-15 14:31:23,268 [INFO] Starting YouTube scraping for region DE...
+2025-05-15 14:31:24,131 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-15 14:31:24,132 [INFO] Found 50 trending videos
+2025-05-15 14:31:26,873 [INFO] Successfully stored 50 YouTube videos in the database

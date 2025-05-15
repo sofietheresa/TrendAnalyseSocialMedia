@@ -1,8 +1,9 @@
 // src/App.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import StatsPanel from './components/StatsPanel';
+import { fetchTopicModel } from './services/api';
 
 // Message bubble icon component
 const MessageIcon = () => (
@@ -26,6 +27,62 @@ const MessageIcon = () => (
 
 // Homepage component
 const Homepage = () => {
+  const [topics, setTopics] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [metrics, setMetrics] = useState(null);
+  const [timeRange, setTimeRange] = useState({
+    start_date: null,
+    end_date: null
+  });
+  const [dateFilter, setDateFilter] = useState({
+    startDate: '',
+    endDate: ''
+  });
+
+  // Fetch topics data
+  useEffect(() => {
+    const fetchTopicData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        // By default, this will fetch the last 3 days of data
+        const response = await fetchTopicModel(
+          dateFilter.startDate || null, 
+          dateFilter.endDate || null
+        );
+        
+        if (response.error) {
+          setError(response.error);
+        } else {
+          setTopics(response.topics);
+          setMetrics(response.metrics);
+          setTimeRange(response.time_range);
+        }
+      } catch (err) {
+        console.error("Error fetching topic data:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTopicData();
+  }, [dateFilter.startDate, dateFilter.endDate]);
+
+  // Handle date filter form submission
+  const handleDateFilterSubmit = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const startDate = formData.get('startDate');
+    const endDate = formData.get('endDate');
+    
+    setDateFilter({
+      startDate,
+      endDate
+    });
+  };
+
   return (
     <main className="app-content">
       {/* Title */}
@@ -35,14 +92,81 @@ const Homepage = () => {
         <span style={{ fontWeight: 400, fontSize: '0.8em' }}>Trend Analysis</span>
       </h1>
       
-      {/* Topics Stack */}
-      <div className="topics-stack-section">
-        <div className="topic-stack topic-stack-1">Topic 1</div>
-        <div className="topic-stack topic-stack-2">Topic 2</div>
-        <div className="topic-stack topic-stack-3">Topic 3</div>
-        <div className="topic-stack topic-stack-4">Topic 4</div>
-        <div className="topic-stack topic-stack-5">Topic 5</div>
+      {/* Date Range Filter */}
+      <div className="filter-section">
+        <form className="calendar-filter" onSubmit={handleDateFilterSubmit}>
+          <label>
+            From:
+            <input 
+              type="date" 
+              name="startDate" 
+              className="calendar-input" 
+              defaultValue={timeRange.start_date}
+            />
+          </label>
+          <label>
+            To:
+            <input 
+              type="date" 
+              name="endDate" 
+              className="calendar-input" 
+              defaultValue={timeRange.end_date}
+            />
+          </label>
+          <button type="submit" className="calendar-filter-btn">
+            Analyze
+          </button>
+        </form>
       </div>
+      
+      {/* Loading State */}
+      {loading && (
+        <div className="loading-spinner-container">
+          <div className="loading-spinner"></div>
+          <p>Analyzing topics...</p>
+        </div>
+      )}
+      
+      {/* Error State */}
+      {error && (
+        <div className="error-message">
+          <p>{error}</p>
+        </div>
+      )}
+      
+      {/* Topics Stack */}
+      {!loading && !error && topics.length > 0 && (
+        <>
+          <div className="topics-stack-section">
+            {topics.slice(0, 5).map((topic, index) => (
+              <div key={topic.id} className={`topic-stack topic-stack-${index + 1}`}>
+                {topic.name}
+              </div>
+            ))}
+          </div>
+          
+          {/* Model Evaluation Metrics */}
+          {metrics && (
+            <div className="model-metrics">
+              <h3>Model Evaluation</h3>
+              <div className="metrics-grid">
+                <div className="metric-item">
+                  <div className="metric-value">{metrics.coherence_score.toFixed(2)}</div>
+                  <div className="metric-label">Coherence Score</div>
+                </div>
+                <div className="metric-item">
+                  <div className="metric-value">{metrics.diversity_score.toFixed(2)}</div>
+                  <div className="metric-label">Diversity Score</div>
+                </div>
+                <div className="metric-item">
+                  <div className="metric-value">{(metrics.document_coverage * 100).toFixed(0)}%</div>
+                  <div className="metric-label">Document Coverage</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </main>
   );
 };

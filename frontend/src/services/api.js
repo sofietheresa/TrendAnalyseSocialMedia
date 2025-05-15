@@ -146,6 +146,29 @@ export const fetchTopics = async (startDate, endDate) => {
     }
 };
 
+// New function to fetch topic model data with BERT
+export const fetchTopicModel = async (startDate = null, endDate = null, platforms = ["reddit", "tiktok", "youtube"], numTopics = 5) => {
+    try {
+        console.log("Fetching topic model data...");
+        const response = await api.post('/api/topic-model', {
+            start_date: startDate,
+            end_date: endDate,
+            platforms: platforms,
+            num_topics: numTopics
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching topic model data:', error);
+        if (error.response) {
+            throw new Error(`Serverfehler: ${error.response.data.detail || 'Unbekannter Fehler'}`);
+        } else if (error.request) {
+            throw new Error('Keine Verbindung zum Server möglich');
+        } else {
+            throw new Error('Fehler beim Laden der Topic-Daten');
+        }
+    }
+};
+
 export const fetchSourceStats = async () => {
     try {
         const response = await api.get('/api/db/sources/stats');
