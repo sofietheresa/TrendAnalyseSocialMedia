@@ -169,6 +169,115 @@ const StatsPanel = () => {
       youtube: getLatestDate(dailyStats.youtube)
     };
   };
+
+  /**
+   * Get the most recent update date for each platform
+   * Prioritizes scraperStatus data but falls back to dailyStats if needed
+   */
+  const getLastUpdateDates = () => {
+    // Default to null for all platforms
+    const result = { reddit: null, tiktok: null, youtube: null };
+    
+    // Try to get data from scraperStatus first (most accurate source)
+    if (scraperStatus) {
+      if (scraperStatus.reddit?.last_update) {
+        result.reddit = new Date(scraperStatus.reddit.last_update);
+      }
+      
+      if (scraperStatus.tiktok?.last_update) {
+        result.tiktok = new Date(scraperStatus.tiktok.last_update);
+      }
+      
+      if (scraperStatus.youtube?.last_update) {
+        result.youtube = new Date(scraperStatus.youtube.last_update);
+      }
+    }
+    
+    // Fall back to dailyStats if needed and available
+    if (dailyStats) {
+      // Helper to get latest date from platform data
+      const getLatestDate = (platformData) => {
+        if (!platformData || platformData.length === 0) return null;
+        
+        // Sort posts by date in descending order to get the most recent
+        const sortedPosts = [...platformData].sort((a, b) => 
+          new Date(b.date) - new Date(a.date)
+        );
+        
+        // Return the date of the most recent post
+        return sortedPosts[0].date ? new Date(sortedPosts[0].date) : null;
+      };
+      
+      // Only use dailyStats values if scraperStatus didn't provide a value
+      if (!result.reddit && dailyStats.reddit.length > 0) {
+        result.reddit = getLatestDate(dailyStats.reddit);
+      }
+      
+      if (!result.tiktok && dailyStats.tiktok.length > 0) {
+        result.tiktok = getLatestDate(dailyStats.tiktok);
+      }
+      
+      if (!result.youtube && dailyStats.youtube.length > 0) {
+        result.youtube = getLatestDate(dailyStats.youtube);
+      }
+    }
+    
+    return result;
+  };
+
+  /**
+   * Get the most recent update date for each platform
+   * Combines data from scraperStatus (preferred) and dailyStats (fallback)
+   * to provide the most accurate timestamp possible
+   */
+  const getLastUpdateDates = () => {
+    // Default to null for all platforms
+    const result = { reddit: null, tiktok: null, youtube: null };
+    
+    // First try to get timestamps from scraperStatus (most reliable)
+    if (scraperStatus) {
+      if (scraperStatus.reddit?.last_update) {
+        result.reddit = new Date(scraperStatus.reddit.last_update);
+      }
+      
+      if (scraperStatus.tiktok?.last_update) {
+        result.tiktok = new Date(scraperStatus.tiktok.last_update);
+      }
+      
+      if (scraperStatus.youtube?.last_update) {
+        result.youtube = new Date(scraperStatus.youtube.last_update);
+      }
+    }
+    
+    // Fall back to dailyStats if needed
+    if (dailyStats) {
+      const getLatestDateFromData = (platformData) => {
+        if (!platformData || platformData.length === 0) return null;
+        
+        // Sort by date descending to get most recent first
+        const sortedData = [...platformData].sort((a, b) => 
+          new Date(b.date) - new Date(a.date)
+        );
+        
+        return sortedData[0].date ? new Date(sortedData[0].date) : null;
+      };
+      
+      // Only use dailyStats if we don't already have a value from scraperStatus
+      if (!result.reddit && dailyStats.reddit && dailyStats.reddit.length > 0) {
+        result.reddit = getLatestDateFromData(dailyStats.reddit);
+      }
+      
+      if (!result.tiktok && dailyStats.tiktok && dailyStats.tiktok.length > 0) {
+        result.tiktok = getLatestDateFromData(dailyStats.tiktok);
+      }
+      
+      if (!result.youtube && dailyStats.youtube && dailyStats.youtube.length > 0) {
+        result.youtube = getLatestDateFromData(dailyStats.youtube);
+      }
+    }
+    
+    return result;
+  };
   
   // Chart configuration options
   const chartOptions = {
