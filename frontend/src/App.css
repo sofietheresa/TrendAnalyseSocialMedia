@@ -145,8 +145,8 @@ html, body, #root {
 .app-nav {
   display: flex;
   justify-content: center;
-  gap: 60px;
-  padding: 40px 0 20px 0;
+  gap: 20px;
+  padding: 30px 0 20px 0;
   background: transparent;
   font-family: 'Sora', Arial, sans-serif;
   font-size: 1.2rem;
@@ -163,13 +163,21 @@ html, body, #root {
   background: none;
   border: none;
   margin: 0;
-  padding: 0;
-  transition: color 0.2s;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
 }
 
 .nav-link:hover {
   color: #e750ae;
   text-decoration: none;
+}
+
+.active-nav-link {
+  font-weight: 700;
+  color: white !important;
+  background-color: rgba(147, 100, 235, 0.7);
+  box-shadow: 0 2px 10px rgba(147, 100, 235, 0.3);
 }
 
 .main-title {

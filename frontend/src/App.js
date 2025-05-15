@@ -392,49 +392,43 @@ function App() {
         <nav className="app-nav">
           <Link 
             to="/" 
-            className="nav-link" 
+            className={`nav-link ${activePage === 'home' ? 'active-nav-link' : ''}`} 
             onClick={() => setActivePage('home')}
-            style={{ fontWeight: activePage === 'home' ? 700 : 400 }}
           >
             Startseite
           </Link>
           <Link 
             to="/pipeline" 
-            className="nav-link" 
+            className={`nav-link ${activePage === 'pipeline' ? 'active-nav-link' : ''}`} 
             onClick={() => setActivePage('pipeline')}
-            style={{ fontWeight: activePage === 'pipeline' ? 700 : 400 }}
           >
             Pipeline
           </Link>
           <Link 
             to="/stats" 
-            className="nav-link" 
+            className={`nav-link ${activePage === 'stats' ? 'active-nav-link' : ''}`} 
             onClick={() => setActivePage('stats')}
-            style={{ fontWeight: activePage === 'stats' ? 700 : 400 }}
           >
             Statistiken
           </Link>
           <Link 
             to="/data" 
-            className="nav-link" 
+            className={`nav-link ${activePage === 'data' ? 'active-nav-link' : ''}`} 
             onClick={() => setActivePage('data')}
-            style={{ fontWeight: activePage === 'data' ? 700 : 400 }}
           >
             Data
           </Link>
           <Link 
             to="/evaluation" 
-            className="nav-link" 
+            className={`nav-link ${activePage === 'evaluation' ? 'active-nav-link' : ''}`} 
             onClick={() => setActivePage('evaluation')}
-            style={{ fontWeight: activePage === 'evaluation' ? 700 : 400 }}
           >
             Modell-Evaluation
           </Link>
           <Link 
             to="/docs" 
-            className="nav-link" 
+            className={`nav-link ${activePage === 'docs' ? 'active-nav-link' : ''}`} 
             onClick={() => setActivePage('docs')}
-            style={{ fontWeight: activePage === 'docs' ? 700 : 400 }}
           >
             Doku
           </Link>
