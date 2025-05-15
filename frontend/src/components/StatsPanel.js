@@ -79,8 +79,8 @@ const StatsPanel = () => {
             const entry = dailyStats.reddit.find(item => item.date === date);
             return entry ? entry.count : 0;
           }),
-          borderColor: '#FF4500',
-          backgroundColor: 'rgba(255, 69, 0, 0.1)',
+          borderColor: '#d1343a',
+          backgroundColor: 'rgba(209, 52, 58, 0.1)',
           tension: 0.3,
         },
         {
@@ -89,8 +89,8 @@ const StatsPanel = () => {
             const entry = dailyStats.tiktok.find(item => item.date === date);
             return entry ? entry.count : 0;
           }),
-          borderColor: '#00F2EA',
-          backgroundColor: 'rgba(0, 242, 234, 0.1)',
+          borderColor: '#2e6cdb',
+          backgroundColor: 'rgba(46, 108, 219, 0.1)',
           tension: 0.3,
         },
         {
@@ -99,11 +99,39 @@ const StatsPanel = () => {
             const entry = dailyStats.youtube.find(item => item.date === date);
             return entry ? entry.count : 0;
           }),
-          borderColor: '#FF0000',
-          backgroundColor: 'rgba(255, 0, 0, 0.1)',
+          borderColor: '#edaf4f',
+          backgroundColor: 'rgba(237, 175, 79, 0.1)',
           tension: 0.3,
         },
       ],
+    };
+  };
+
+  // Calculate the actual total posts from daily stats
+  const calculateTotalPosts = () => {
+    if (!dailyStats) return { reddit: 0, tiktok: 0, youtube: 0 };
+    
+    return {
+      reddit: dailyStats.reddit.reduce((total, item) => total + item.count, 0),
+      tiktok: dailyStats.tiktok.reduce((total, item) => total + item.count, 0),
+      youtube: dailyStats.youtube.reduce((total, item) => total + item.count, 0)
+    };
+  };
+
+  // Get the most recent update date for each platform
+  const getLastUpdateDates = () => {
+    if (!dailyStats) return { reddit: null, tiktok: null, youtube: null };
+    
+    return {
+      reddit: dailyStats.reddit.length > 0 
+        ? new Date(Math.max(...dailyStats.reddit.map(item => new Date(item.date)))) 
+        : null,
+      tiktok: dailyStats.tiktok.length > 0 
+        ? new Date(Math.max(...dailyStats.tiktok.map(item => new Date(item.date)))) 
+        : null,
+      youtube: dailyStats.youtube.length > 0 
+        ? new Date(Math.max(...dailyStats.youtube.map(item => new Date(item.date)))) 
+        : null
     };
   };
   
@@ -118,7 +146,8 @@ const StatsPanel = () => {
           font: {
             family: 'Sora, Arial, sans-serif',
             size: 14
-          }
+          },
+          color: '#232252'
         }
       },
       title: {
@@ -128,7 +157,8 @@ const StatsPanel = () => {
           family: 'Sora, Arial, sans-serif',
           size: 18,
           weight: 'bold'
-        }
+        },
+        color: '#232252'
       },
     },
     scales: {
@@ -139,18 +169,20 @@ const StatsPanel = () => {
         ticks: {
           font: {
             family: 'Sora, Arial, sans-serif'
-          }
+          },
+          color: '#232252'
         }
       },
       y: {
         beginAtZero: true,
         grid: {
-          color: 'rgba(200, 200, 200, 0.2)'
+          color: 'rgba(46, 108, 219, 0.1)'
         },
         ticks: {
           font: {
             family: 'Sora, Arial, sans-serif'
-          }
+          },
+          color: '#232252'
         }
       }
     }
@@ -175,6 +207,8 @@ const StatsPanel = () => {
   }
 
   const chartData = prepareChartData();
+  const totalPosts = calculateTotalPosts();
+  const lastUpdateDates = getLastUpdateDates();
 
   return (
     <div className="stats-panel">
@@ -190,12 +224,12 @@ const StatsPanel = () => {
               <div className="stats-details">
                 <div className="stats-item">
                   <span className="stats-label">Total Posts:</span>
-                  <span className="stats-value">{data.total_posts}</span>
+                  <span className="stats-value">{totalPosts[platform] || 0}</span>
                 </div>
                 <div className="stats-item">
                   <span className="stats-label">Last Update:</span>
                   <span className="stats-value">
-                    {data.last_update ? new Date(data.last_update).toLocaleString() : 'Never'}
+                    {lastUpdateDates[platform] ? lastUpdateDates[platform].toLocaleDateString() : 'Never'}
                   </span>
                 </div>
               </div>
@@ -206,6 +240,20 @@ const StatsPanel = () => {
 
       <div className="daily-stats-section">
         <h2>Daily Statistics</h2>
+        <div className="stats-summary">
+          <div className="summary-item reddit">
+            <div className="summary-value">{totalPosts.reddit}</div>
+            <div className="summary-label">Reddit Posts</div>
+          </div>
+          <div className="summary-item tiktok">
+            <div className="summary-value">{totalPosts.tiktok}</div>
+            <div className="summary-label">TikTok Videos</div>
+          </div>
+          <div className="summary-item youtube">
+            <div className="summary-value">{totalPosts.youtube}</div>
+            <div className="summary-label">YouTube Videos</div>
+          </div>
+        </div>
         <div className="chart-container">
           {chartData ? (
             <Line data={chartData} options={chartOptions} height={300} />

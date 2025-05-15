@@ -324,3 +324,15 @@ HINT:  Ensure that no rows proposed for insertion within the same command have d
 2025-05-15 11:14:57,057 [INFO] Found 126 unique posts out of 129 total posts
 2025-05-15 11:14:57,057 [INFO] Found 126 unique posts out of 129 total posts
 2025-05-15 11:14:57,057 [INFO] Found 126 unique posts out of 129 total posts
+2025-05-15 14:12:49,477 [INFO] Starting Reddit scraping...
+2025-05-15 14:12:49,678 [INFO] Successfully connected to Reddit API
+2025-05-15 14:12:49,678 [INFO] Scraping subreddit: r/all
+2025-05-15 14:12:51,524 [INFO] Found 6 posts in r/all
+2025-05-15 14:12:51,524 [INFO] Scraping subreddit: r/popular
+2025-05-15 14:12:53,158 [INFO] Found 6 posts in r/popular
+2025-05-15 14:12:53,159 [INFO] Scraping subreddit: r/trendingreddits
+2025-05-15 14:12:54,280 [INFO] Found 21 posts in r/trendingreddits
+2025-05-15 14:12:54,281 [INFO] Scraping subreddit: r/trendingsubreddits
+2025-05-15 14:12:56,961 [INFO] Found 100 posts in r/trendingsubreddits
+2025-05-15 14:12:56,962 [INFO] Found 130 unique posts out of 133 total posts
+2025-05-15 14:14:16,068 [INFO] Successfully processed 130 Reddit posts (4 inserted, 126 updated)

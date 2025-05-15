@@ -17,7 +17,14 @@
 }
 
 .app-content {
-  padding: 20px;
+  flex: 1;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 80vh;
 }
 
 .app-footer {
@@ -58,11 +65,11 @@ html, body, #root {
   height: 100%;
   margin: 0;
   font-family: 'Sora', Arial, sans-serif;
-  background: radial-gradient(ellipse 80% 50% at 50% 20%, #fff 0%, #fcecff 70%),
-              radial-gradient(ellipse 80% 80% at 70% 90%, #e2edff 0%, #f8e4ff 70%),
-              linear-gradient(135deg, #fcecff 0%, #e2edff 100%);
+  background: radial-gradient(ellipse 80% 50% at 50% 20%, #ffffff 0%, #90caf7 70%),
+              radial-gradient(ellipse 80% 80% at 70% 90%, #9364eb 0%, #e750ae 70%),
+              linear-gradient(135deg, #f8986f 0%, #232252 100%);
   background-blend-mode: screen;
-  color: #232946;
+  color: #232252;
 }
 
 .App {
@@ -146,7 +153,7 @@ html, body, #root {
 
 .nav-link {
   text-decoration: none;
-  color: #232946;
+  color: #232252;
   font-family: 'Sora', Arial, sans-serif;
   font-weight: 400;
   font-size: 1.1rem;
@@ -158,7 +165,7 @@ html, body, #root {
 }
 
 .nav-link:hover {
-  color: #7d7db0;
+  color: #e750ae;
   text-decoration: none;
 }
 
@@ -166,8 +173,8 @@ html, body, #root {
   font-family: 'Sora', Arial, sans-serif;
   font-size: 4rem;
   font-weight: 700;
-  color: #232946;
-  margin: 0.2em 0;
+  color: #232252;
+  margin: 0 0 1.5em 0;
   text-align: center;
   letter-spacing: 0.01em;
   line-height: 1.1;
@@ -183,12 +190,15 @@ html, body, #root {
   letter-spacing: 0.01em;
 }
 
+/* Topics stack styling */
 .topics-stack-section {
-  margin-top: 2em;
+  margin-top: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.3em;
+  margin-bottom: 0;
+  position: relative;
 }
 
 .topic-stack {
@@ -202,21 +212,35 @@ html, body, #root {
 .topic-stack-1 {
   font-size: 4.5rem;
   font-weight: 700;
-  color: #232946;
+  color: #232252;
 }
 
 .topic-stack-2 {
   font-size: 3.6rem;
   font-weight: 500;
-  color: #4b4b8f;
-  opacity: 0.72;
+  color: #2e6cdb;
+  opacity: 0.9;
 }
 
 .topic-stack-3 {
   font-size: 2.8rem;
   font-weight: 300;
-  color: #7d7db0;
-  opacity: 0.5;
+  color: #9364eb;
+  opacity: 0.8;
+}
+
+.topic-stack-4 {
+  font-size: 2.4rem;
+  font-weight: 300;
+  color: #e750ae;
+  opacity: 0.7;
+}
+
+.topic-stack-5 {
+  font-size: 2rem;
+  font-weight: 300;
+  color: #f8986f;
+  opacity: 0.6;
 }
 
 .postcount-row {
@@ -387,7 +411,7 @@ html, body, #root {
   font-family: 'Sora', Arial, sans-serif;
   font-size: 5rem;
   font-weight: 300;
-  color: #b09cff;
+  color: #e750ae;
   margin-bottom: 5px;
   line-height: 1;
 }
@@ -395,7 +419,7 @@ html, body, #root {
 .platform-name {
   font-family: 'Sora', Arial, sans-serif;
   font-size: 1.3rem;
-  color: #232946;
+  color: #232252;
   text-align: center;
   text-decoration: underline;
 }
@@ -832,7 +856,7 @@ html, body, #root {
 .stats-panel h2 {
   font-family: 'Sora', Arial, sans-serif;
   font-weight: 700;
-  color: #232946;
+  color: #232252;
   margin-bottom: 20px;
   font-size: 1.8rem;
 }
@@ -857,15 +881,15 @@ html, body, #root {
 }
 
 .status-card.reddit {
-  border-left-color: #FF4500;
+  border-left-color: #d1343a;
 }
 
 .status-card.tiktok {
-  border-left-color: #00F2EA;
+  border-left-color: #2e6cdb;
 }
 
 .status-card.youtube {
-  border-left-color: #FF0000;
+  border-left-color: #edaf4f;
 }
 
 .status-card h3 {
@@ -874,6 +898,7 @@ html, body, #root {
   font-size: 1.3rem;
   margin-top: 0;
   margin-bottom: 15px;
+  color: #232252;
 }
 
 .status-indicator {
@@ -886,13 +911,13 @@ html, body, #root {
 }
 
 .status-indicator.active {
-  background-color: rgba(52, 211, 153, 0.15);
-  color: #10B981;
+  background-color: rgba(144, 202, 247, 0.2);
+  color: #2e6cdb;
 }
 
 .status-indicator.inactive {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: #EF4444;
+  background-color: rgba(209, 52, 58, 0.15);
+  color: #d1343a;
 }
 
 .stats-details {
@@ -912,7 +937,7 @@ html, body, #root {
 
 .stats-value {
   font-weight: 600;
-  color: #232946;
+  color: #232252;
 }
 
 /* Daily Stats Section */
@@ -940,9 +965,9 @@ html, body, #root {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(176, 156, 255, 0.3);
+  border: 3px solid rgba(147, 100, 235, 0.3);
   border-radius: 50%;
-  border-top-color: #b09cff;
+  border-top-color: #9364eb;
   animation: spin 1s ease-in-out infinite;
   margin-bottom: 15px;
 }
@@ -955,10 +980,10 @@ html, body, #root {
 
 /* Error State */
 .stats-error {
-  background-color: rgba(239, 68, 68, 0.1);
+  background-color: rgba(209, 52, 58, 0.1);
   padding: 20px;
   border-radius: 12px;
-  color: #EF4444;
+  color: #d1343a;
   text-align: center;
   margin: 20px 0;
 }
@@ -983,9 +1008,10 @@ html, body, #root {
   text-align: center;
   padding: 20px;
   margin-top: 40px;
-  color: #64748B;
+  color: #232252;
   font-family: 'Sora', Arial, sans-serif;
   font-size: 0.9rem;
+  font-weight: 300;
 }
 
 /* Page title styling */
@@ -993,7 +1019,7 @@ html, body, #root {
   font-family: 'Sora', Arial, sans-serif;
   font-size: 2.5rem;
   font-weight: 700;
-  color: #232946;
+  color: #232252;
   margin: 1em 0 1.5em 0;
   text-align: center;
 }
@@ -1012,6 +1038,57 @@ html, body, #root {
 .placeholder-content p {
   font-size: 1.2rem;
   color: #64748B;
+}
+
+/* Stats Summary Section */
+.stats-summary {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.summary-item {
+  text-align: center;
+  padding: 15px 25px;
+  border-radius: 12px;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  min-width: 140px;
+  margin: 10px;
+  border-top: 5px solid transparent;
+}
+
+.summary-item.reddit {
+  border-top-color: #d1343a;
+}
+
+.summary-item.tiktok {
+  border-top-color: #2e6cdb;
+}
+
+.summary-item.youtube {
+  border-top-color: #edaf4f;
+}
+
+.summary-value {
+  font-family: 'Sora', Arial, sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #232252;
+  margin-bottom: 5px;
+}
+
+.summary-label {
+  font-family: 'Sora', Arial, sans-serif;
+  font-size: 0.9rem;
+  color: #64748B;
+  font-weight: 500;
+}
+
+/* Logo styling */
+.logo-container {
+  margin: 20px 0;
 }
 
 

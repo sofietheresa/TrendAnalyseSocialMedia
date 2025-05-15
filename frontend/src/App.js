@@ -11,14 +11,14 @@ const MessageIcon = () => (
       d="M60 0C26.9 0 0 24.1 0 53.8C0 83.5 26.9 107.6 60 107.6C93.1 107.6 120 83.5 120 53.8C120 24.1 93.1 0 60 0Z" 
       fill="url(#paint0_linear)" 
     />
-    <circle cx="40" cy="54" r="8" fill="#FFFFFF" fillOpacity="0.8" />
-    <circle cx="60" cy="54" r="8" fill="#FFFFFF" fillOpacity="0.8" />
-    <circle cx="80" cy="54" r="8" fill="#FFFFFF" fillOpacity="0.8" />
+    <circle cx="40" cy="54" r="8" fill="#ffffff" fillOpacity="0.9" />
+    <circle cx="60" cy="54" r="8" fill="#ffffff" fillOpacity="0.9" />
+    <circle cx="80" cy="54" r="8" fill="#ffffff" fillOpacity="0.9" />
     <defs>
       <linearGradient id="paint0_linear" x1="10" y1="10" x2="110" y2="110" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#FF73F4" />
-        <stop offset="0.5" stopColor="#E283FF" />
-        <stop offset="1" stopColor="#FFC4E7" />
+        <stop stopColor="#9364eb" />
+        <stop offset="0.5" stopColor="#e750ae" />
+        <stop offset="1" stopColor="#f8986f" />
       </linearGradient>
     </defs>
   </svg>
@@ -35,34 +35,13 @@ const Homepage = () => {
         <span style={{ fontWeight: 400, fontSize: '0.8em' }}>Trend Analysis</span>
       </h1>
       
-      {/* Message Icon */}
-      <div className="logo-container">
-        <MessageIcon />
-      </div>
-      
       {/* Topics Stack */}
       <div className="topics-stack-section">
         <div className="topic-stack topic-stack-1">Topic 1</div>
         <div className="topic-stack topic-stack-2">Topic 2</div>
         <div className="topic-stack topic-stack-3">Topic 3</div>
-      </div>
-      
-      {/* Platform Sections */}
-      <div className="platforms-container">
-        <div className="platform-item">
-          <div className="platform-number">01</div>
-          <div className="platform-name">Tiktok</div>
-        </div>
-        
-        <div className="platform-item">
-          <div className="platform-number">02</div>
-          <div className="platform-name">Youtube</div>
-        </div>
-        
-        <div className="platform-item">
-          <div className="platform-number">03</div>
-          <div className="platform-name">Reddit</div>
-        </div>
+        <div className="topic-stack topic-stack-4">Topic 4</div>
+        <div className="topic-stack topic-stack-5">Topic 5</div>
       </div>
     </main>
   );
