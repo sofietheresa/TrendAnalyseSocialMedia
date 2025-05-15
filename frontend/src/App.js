@@ -1,107 +1,158 @@
 // src/App.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './App.css';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Alert, Spinner } from 'react-bootstrap';
-import { fetchScraperStatus, fetchDailyStats } from './services/api';
-import Dashboard from './components/Dashboard';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import StatsPanel from './components/StatsPanel';
+
+// Message bubble icon component
+const MessageIcon = () => (
+  <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path 
+      d="M60 0C26.9 0 0 24.1 0 53.8C0 83.5 26.9 107.6 60 107.6C93.1 107.6 120 83.5 120 53.8C120 24.1 93.1 0 60 0Z" 
+      fill="url(#paint0_linear)" 
+    />
+    <circle cx="40" cy="54" r="8" fill="#FFFFFF" fillOpacity="0.8" />
+    <circle cx="60" cy="54" r="8" fill="#FFFFFF" fillOpacity="0.8" />
+    <circle cx="80" cy="54" r="8" fill="#FFFFFF" fillOpacity="0.8" />
+    <defs>
+      <linearGradient id="paint0_linear" x1="10" y1="10" x2="110" y2="110" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#FF73F4" />
+        <stop offset="0.5" stopColor="#E283FF" />
+        <stop offset="1" stopColor="#FFC4E7" />
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
+// Homepage component
+const Homepage = () => {
+  return (
+    <main className="app-content">
+      {/* Title */}
+      <h1 className="main-title">
+        <span style={{ fontWeight: 900, letterSpacing: '0.03em' }}>SOCIAL MEDIA</span>
+        <br />
+        <span style={{ fontWeight: 400, fontSize: '0.8em' }}>Trend Analysis</span>
+      </h1>
+      
+      {/* Message Icon */}
+      <div className="logo-container">
+        <MessageIcon />
+      </div>
+      
+      {/* Topics Stack */}
+      <div className="topics-stack-section">
+        <div className="topic-stack topic-stack-1">Topic 1</div>
+        <div className="topic-stack topic-stack-2">Topic 2</div>
+        <div className="topic-stack topic-stack-3">Topic 3</div>
+      </div>
+      
+      {/* Platform Sections */}
+      <div className="platforms-container">
+        <div className="platform-item">
+          <div className="platform-number">01</div>
+          <div className="platform-name">Tiktok</div>
+        </div>
+        
+        <div className="platform-item">
+          <div className="platform-number">02</div>
+          <div className="platform-name">Youtube</div>
+        </div>
+        
+        <div className="platform-item">
+          <div className="platform-number">03</div>
+          <div className="platform-name">Reddit</div>
+        </div>
+      </div>
+    </main>
+  );
+};
+
+// Stats page component
+const StatsPage = () => {
+  return (
+    <main className="app-content">
+      <h1 className="page-title">Statistics Overview</h1>
+      <StatsPanel />
+    </main>
+  );
+};
+
+// Simple placeholder for other pages
+const PlaceholderPage = ({ title }) => (
+  <main className="app-content">
+    <h1 className="page-title">{title}</h1>
+    <div className="placeholder-content">
+      <p>This page is under construction.</p>
+    </div>
+  </main>
+);
 
 function App() {
-  // Basic, reliable UI that doesn't depend on complex data fetching initially
+  const [activePage, setActivePage] = useState('home');
+
   return (
     <Router>
       <div className="App">
-        <header className="app-header">
-          <h1>Social Media Trend Analysis</h1>
-          <div className="debug-message">Debug Mode: Basic Layout</div>
-        </header>
+        {/* Navigation */}
+        <nav className="app-nav">
+          <Link 
+            to="/" 
+            className="nav-link" 
+            onClick={() => setActivePage('home')}
+            style={{ fontWeight: activePage === 'home' ? 700 : 400 }}
+          >
+            Startseite
+          </Link>
+          <Link 
+            to="/pipeline" 
+            className="nav-link" 
+            onClick={() => setActivePage('pipeline')}
+            style={{ fontWeight: activePage === 'pipeline' ? 700 : 400 }}
+          >
+            Pipeline
+          </Link>
+          <Link 
+            to="/stats" 
+            className="nav-link" 
+            onClick={() => setActivePage('stats')}
+            style={{ fontWeight: activePage === 'stats' ? 700 : 400 }}
+          >
+            Statistiken
+          </Link>
+          <Link 
+            to="/logs" 
+            className="nav-link" 
+            onClick={() => setActivePage('logs')}
+            style={{ fontWeight: activePage === 'logs' ? 700 : 400 }}
+          >
+            Logs
+          </Link>
+          <Link 
+            to="/docs" 
+            className="nav-link" 
+            onClick={() => setActivePage('docs')}
+            style={{ fontWeight: activePage === 'docs' ? 700 : 400 }}
+          >
+            Doku
+          </Link>
+        </nav>
         
-        <main className="app-content">
-          <DebugDashboard />
-        </main>
+        {/* Page Routes */}
+        <Routes>
+          <Route path="/" element={<Homepage />} />
+          <Route path="/stats" element={<StatsPage />} />
+          <Route path="/pipeline" element={<PlaceholderPage title="Pipeline" />} />
+          <Route path="/logs" element={<PlaceholderPage title="Logs" />} />
+          <Route path="/docs" element={<PlaceholderPage title="Documentation" />} />
+        </Routes>
         
+        {/* Footer */}
         <footer className="app-footer">
           <p>© 2025 TrendAnalyseSocialMedia</p>
         </footer>
       </div>
     </Router>
-  );
-}
-
-// Simple debug component to show basic UI
-function DebugDashboard() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [data, setData] = useState(null);
-
-  useEffect(() => {
-    const testConnection = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        console.log("Testing API connection...");
-        
-        // Try to fetch data with error handling
-        try {
-          const scraperStatus = await fetchScraperStatus();
-          const dailyStats = await fetchDailyStats();
-          setData({ status: scraperStatus, stats: dailyStats });
-          console.log("API connection successful:", { scraperStatus, dailyStats });
-        } catch (err) {
-          console.error("API connection failed:", err);
-          setError(`API connection failed: ${err.message}`);
-        }
-      } catch (err) {
-        console.error("General error:", err);
-        setError(`General error: ${err.message}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    testConnection();
-  }, []);
-
-  return (
-    <div className="debug-dashboard">
-      <h2>Debug Dashboard</h2>
-      
-      {loading && (
-        <div className="debug-section">
-          <h3>Loading data...</h3>
-          <Spinner animation="border" />
-        </div>
-      )}
-      
-      {error && (
-        <div className="debug-section">
-          <h3>Error</h3>
-          <Alert variant="danger">{error}</Alert>
-        </div>
-      )}
-      
-      {!loading && !error && data && (
-        <div className="debug-section">
-          <h3>Connection Successful</h3>
-          <p>API is responding correctly.</p>
-          
-          <div className="debug-data">
-            <h4>Scraper Status:</h4>
-            <pre>{JSON.stringify(data.status, null, 2)}</pre>
-            
-            <h4>Daily Stats:</h4>
-            <pre>{JSON.stringify(data.stats, null, 2)}</pre>
-          </div>
-        </div>
-      )}
-      
-      {!loading && !error && !data && (
-        <div className="debug-section">
-          <h3>No Data</h3>
-          <p>API responded without errors but no data was returned.</p>
-        </div>
-      )}
-    </div>
   );
 }
 
