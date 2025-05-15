@@ -17,17 +17,26 @@ const DataPage = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
         console.log(`Fetching ${activeTab} data with limit ${limit}...`);
         const result = await fetchRecentData(activeTab, limit);
         console.log('Result received:', result);
         
-        if (result && Array.isArray(result.data)) {
+        // Handle different possible response structures
+        if (result && result.data && Array.isArray(result.data)) {
           setData(prevData => ({
             ...prevData,
             [activeTab]: result.data
           }));
+        } else if (result && Array.isArray(result)) {
+          // If the API directly returns an array
+          setData(prevData => ({
+            ...prevData,
+            [activeTab]: result
+          }));
         } else {
           console.warn('Received invalid data format:', result);
+          setError(`Invalid data format received from server. Please try again later.`);
           setData(prevData => ({
             ...prevData,
             [activeTab]: []

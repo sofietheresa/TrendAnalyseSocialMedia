@@ -359,3 +359,7 @@ ConnectionAbortedError: [WinError 10053] An established connection was aborted b
 2025-05-15 16:33:02,586 [INFO] Successfully fetched trending videos from YouTube API
 2025-05-15 16:33:02,587 [INFO] Found 50 trending videos
 2025-05-15 16:33:05,363 [INFO] Successfully stored 50 YouTube videos in the database
+2025-05-15 16:49:51,107 [INFO] Starting YouTube scraping for region DE...
+2025-05-15 16:49:51,538 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-15 16:49:51,538 [INFO] Found 50 trending videos
+2025-05-15 16:49:54,185 [INFO] Successfully stored 50 YouTube videos in the database

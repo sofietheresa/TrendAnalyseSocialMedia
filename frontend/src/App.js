@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import StatsPanel from './components/StatsPanel';
 import DataPage from './components/DataPage';
 import Documentation from './components/Documentation';
+import ModelEvaluation from './components/ModelEvaluation';
 import { fetchTopicModel } from './services/api';
 
 // Message bubble icon component
@@ -32,7 +33,6 @@ const Homepage = () => {
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [metrics, setMetrics] = useState(null);
   const [timeRange, setTimeRange] = useState({
     start_date: null,
     end_date: null
@@ -41,6 +41,7 @@ const Homepage = () => {
     startDate: '',
     endDate: ''
   });
+  const [topicCounts, setTopicCounts] = useState({});
 
   // Fetch topics data
   useEffect(() => {
@@ -64,12 +65,16 @@ const Homepage = () => {
         } else {
           if (Array.isArray(response.topics)) {
             setTopics(response.topics);
+            
+            // Process topic counts by date if available
+            if (response.topic_counts_by_date) {
+              setTopicCounts(response.topic_counts_by_date);
+            }
           } else {
             console.warn("Invalid topics format:", response.topics);
             setTopics([]);
           }
           
-          setMetrics(response.metrics);
           setTimeRange(response.time_range || {
             start_date: null,
             end_date: null
@@ -99,6 +104,28 @@ const Homepage = () => {
       startDate,
       endDate
     });
+  };
+
+  // Render topic post counts by date
+  const renderTopicPostCounts = (topicId) => {
+    if (!topicCounts[topicId]) return null;
+    
+    // Sort dates
+    const dates = Object.keys(topicCounts[topicId]).sort();
+    
+    return (
+      <div className="topic-post-counts">
+        <h4>Posts per Day</h4>
+        <div className="post-counts-grid">
+          {dates.map(date => (
+            <div key={date} className="post-count-item">
+              <div className="post-count-date">{new Date(date).toLocaleDateString()}</div>
+              <div className="post-count-value">{topicCounts[topicId][date]}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -154,7 +181,7 @@ const Homepage = () => {
       
       {/* Topics Stack */}
       {!loading && !error && topics && topics.length > 0 ? (
-        <>
+        <div className="topics-container">
           <div className="topics-stack-section">
             {topics.slice(0, 5).map((topic, index) => (
               <div key={topic.id || index} className={`topic-stack topic-stack-${index + 1}`}>
@@ -163,27 +190,16 @@ const Homepage = () => {
             ))}
           </div>
           
-          {/* Model Evaluation Metrics */}
-          {metrics && (
-            <div className="model-metrics">
-              <h3>Model Evaluation</h3>
-              <div className="metrics-grid">
-                <div className="metric-item">
-                  <div className="metric-value">{(metrics.coherence_score || 0).toFixed(2)}</div>
-                  <div className="metric-label">Coherence Score</div>
-                </div>
-                <div className="metric-item">
-                  <div className="metric-value">{(metrics.diversity_score || 0).toFixed(2)}</div>
-                  <div className="metric-label">Diversity Score</div>
-                </div>
-                <div className="metric-item">
-                  <div className="metric-value">{((metrics.document_coverage || 0) * 100).toFixed(0)}%</div>
-                  <div className="metric-label">Document Coverage</div>
-                </div>
+          {/* Topic Post Counts */}
+          <div className="topic-post-counts-section">
+            {topics.slice(0, 5).map((topic, index) => topic.id && topicCounts[topic.id] ? (
+              <div key={topic.id} className="topic-post-counts-card">
+                <h3 className={`topic-name topic-name-${index + 1}`}>{topic.name || `Topic ${index + 1}`}</h3>
+                {renderTopicPostCounts(topic.id)}
               </div>
-            </div>
-          )}
-        </>
+            ) : null)}
+          </div>
+        </div>
       ) : !loading && !error ? (
         <div className="no-data-message">
           <p>No trending topics found for the selected time period.</p>
@@ -255,6 +271,14 @@ function App() {
             Data
           </Link>
           <Link 
+            to="/evaluation" 
+            className="nav-link" 
+            onClick={() => setActivePage('evaluation')}
+            style={{ fontWeight: activePage === 'evaluation' ? 700 : 400 }}
+          >
+            Modell-Evaluation
+          </Link>
+          <Link 
             to="/docs" 
             className="nav-link" 
             onClick={() => setActivePage('docs')}
@@ -270,6 +294,7 @@ function App() {
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/pipeline" element={<PlaceholderPage title="Pipeline" />} />
           <Route path="/data" element={<DataPage />} />
+          <Route path="/evaluation" element={<ModelEvaluation />} />
           <Route path="/docs" element={<Documentation />} />
         </Routes>
         

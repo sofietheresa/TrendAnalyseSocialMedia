@@ -79,7 +79,19 @@ const apiCall = async (endpoint, method = 'get', data = null, options = {}) => {
 export const fetchScraperStatus = async () => {
     console.log("Fetching scraper status...");
     try {
-        return await apiCall('/api/scraper-status');
+        const response = await apiCall('/api/scraper-status');
+        console.log("Scraper status raw response:", response);
+        
+        // If the API returns "running" as a string "true", convert it to a boolean
+        if (response) {
+            Object.keys(response).forEach(platform => {
+                if (response[platform] && response[platform].running === "true") {
+                    response[platform].running = true;
+                }
+            });
+        }
+        
+        return response;
     } catch (error) {
         console.error('Error fetching scraper status:', error);
         throw error;
@@ -107,7 +119,28 @@ export const fetchRecentData = async (platform = 'reddit', limit = 10) => {
         console.log(`Received ${platform} data:`, response);
         
         if (response.data) {
-            return response.data;
+            // If response.data is an array, return it directly wrapped in an object
+            if (Array.isArray(response.data)) {
+                return { data: response.data };
+            }
+            // If response.data.data exists and is an array, return the response as is
+            else if (response.data.data && Array.isArray(response.data.data)) {
+                return response.data;
+            }
+            // Otherwise, try to parse the data intelligently
+            else {
+                console.warn('Response format not recognized:', response.data);
+                
+                // If response.data contains any array property, use that
+                for (const key in response.data) {
+                    if (Array.isArray(response.data[key]) && response.data[key].length > 0) {
+                        console.log(`Found array data in property "${key}"`);
+                        return { data: response.data[key] };
+                    }
+                }
+                
+                return { data: [] };
+            }
         } else {
             console.warn('Empty response from API');
             return { data: [] };
