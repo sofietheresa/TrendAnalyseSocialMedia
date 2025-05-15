@@ -2,7 +2,7 @@ import React from 'react';
 import { Card } from 'react-bootstrap';
 import { Line } from 'react-chartjs-2';
 import {
-    Chart as ChartJS,
+    Chart,
     CategoryScale,
     LinearScale,
     PointElement,
@@ -12,7 +12,7 @@ import {
     Legend
 } from 'chart.js';
 
-ChartJS.register(
+Chart.register(
     CategoryScale,
     LinearScale,
     PointElement,
