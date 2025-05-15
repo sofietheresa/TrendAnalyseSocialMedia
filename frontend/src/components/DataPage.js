@@ -197,9 +197,6 @@ const DataPage = () => {
             </div>
           ) : (
             <>
-              <div className="data-count">
-                Showing {data[activeTab].length} items
-              </div>
               {data[activeTab].map((item, index) => (
                 <div key={index} className="data-card">
                   <div className="data-header">

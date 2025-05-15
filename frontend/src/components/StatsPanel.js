@@ -146,20 +146,27 @@ const StatsPanel = () => {
 
   /**
    * Get the most recent update date for each platform
+   * Uses the most recent post's timestamp for each platform
    */
   const getLastUpdateDates = () => {
     if (!dailyStats) return { reddit: null, tiktok: null, youtube: null };
     
+    const getLatestDate = (platformData) => {
+      if (!platformData || platformData.length === 0) return null;
+      
+      // Sort posts by date in descending order to get the most recent
+      const sortedPosts = [...platformData].sort((a, b) => 
+        new Date(b.date) - new Date(a.date)
+      );
+      
+      // Return the date of the most recent post
+      return sortedPosts[0].date ? new Date(sortedPosts[0].date) : null;
+    };
+    
     return {
-      reddit: dailyStats.reddit.length > 0 
-        ? new Date(Math.max(...dailyStats.reddit.map(item => new Date(item.date)))) 
-        : null,
-      tiktok: dailyStats.tiktok.length > 0 
-        ? new Date(Math.max(...dailyStats.tiktok.map(item => new Date(item.date)))) 
-        : null,
-      youtube: dailyStats.youtube.length > 0 
-        ? new Date(Math.max(...dailyStats.youtube.map(item => new Date(item.date)))) 
-        : null
+      reddit: getLatestDate(dailyStats.reddit),
+      tiktok: getLatestDate(dailyStats.tiktok),
+      youtube: getLatestDate(dailyStats.youtube)
     };
   };
   
