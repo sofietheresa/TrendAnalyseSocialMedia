@@ -1,1 +1,1 @@
-web: cd app && python start.py 
+web: cd app && python railway.py 
