@@ -2,52 +2,47 @@ import asyncio
 import os
 import logging
 from logging.handlers import RotatingFileHandler
-from TikTokApi import TikTokApi  # Changed from tiktokapipy
+from TikTokApi import TikTokApi
 from dotenv import load_dotenv
 from pathlib import Path
 import psycopg2
 from psycopg2.extras import execute_values
-import urllib.parse
 from datetime import datetime
 import traceback
 
+# Load environment variables
 load_dotenv()
 
-# Setup paths
+# Setup paths and logging
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 LOG_DIR = BASE_DIR / "logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-# Logging setup with rotation
+# Configure logger with file and console handlers
+logger = logging.getLogger("tiktok_scraper")
+logger.setLevel(logging.INFO)
+
+# File handler with rotation
 log_handler = RotatingFileHandler(
     LOG_DIR / "tiktok.log",
     maxBytes=1024*1024,  # 1MB
     backupCount=5
 )
-log_handler.setFormatter(logging.Formatter(
-    "%(asctime)s [%(levelname)s] %(message)s"
-))
-logger = logging.getLogger("tiktok_scraper")
-logger.setLevel(logging.INFO)
+log_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
 logger.addHandler(log_handler)
 
-# Also add console handler for immediate feedback
+# Console handler for immediate feedback
 console_handler = logging.StreamHandler()
-console_handler.setFormatter(logging.Formatter(
-    "%(asctime)s [%(levelname)s] %(message)s"
-))
+console_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
 logger.addHandler(console_handler)
 
 def get_db_connection():
-    """
-    Create a connection to the main database specified in DATABASE_URL
-    """
+    """Create a connection to the database specified in DATABASE_URL"""
     url = os.getenv("DATABASE_URL")
     if not url:
         raise ValueError("DATABASE_URL environment variable not set")
     
     try:
-        # Connect directly to the main database (railway)
         conn = psycopg2.connect(url)
         return conn
     except Exception as e:
@@ -55,16 +50,24 @@ def get_db_connection():
         raise
 
 async def trending_videos():
+    """
+    Scrape trending videos from TikTok and store in the database
+    
+    Uses the TikTokApi library to fetch trending videos and saves
+    them to the PostgreSQL database. Handles duplicates via primary key.
+    """
+    # Check if MS_TOKEN is available
     ms_token = os.getenv("MS_TOKEN")
     if not ms_token:
         logger.error("MS_TOKEN missing. Please check your .env file.")
         return
 
+    # Get browser configuration
     browser = os.getenv("TIKTOK_BROWSER", "chromium")
     logger.info(f"Using browser: {browser}")
     
     try:
-        # Use TikTokApi as shown in the reference
+        # Initialize TikTok API and create session
         logger.info("Creating TikTok API session...")
         
         async with TikTokApi() as api:
@@ -78,8 +81,8 @@ async def trending_videos():
             
             logger.info("TikTok API session created successfully")
             logger.info("Loading trending videos from TikTok...")
-            print("===== Fetching trending videos from TikTok =====")
 
+            # Fetch and process trending videos
             data = []
             seen_video_ids = set()  # Track unique video IDs
             video_count = 0
@@ -98,6 +101,7 @@ async def trending_videos():
                     video_count += 1
                     logger.debug(f"Processing video {video_count}: {video_id}")
                     
+                    # Extract relevant data
                     data.append({
                         "id": video_id,
                         "description": info.get("desc"),
@@ -118,13 +122,11 @@ async def trending_videos():
 
             if not data:
                 logger.warning("No videos found.")
-                print("===== No videos found =====")
                 return
 
-            print(f"===== Found {len(data)} unique trending videos =====")
             logger.info(f"Found {len(data)} unique videos, attempting to store in database...")
 
-            # Store in PostgreSQL
+            # Store data in PostgreSQL
             if data:
                 with get_db_connection() as conn:
                     with conn.cursor() as cur:
@@ -150,12 +152,11 @@ async def trending_videos():
                         cur.execute("SELECT COUNT(*) FROM tiktok_data")
                         count_before = cur.fetchone()[0]
                         
-                        # Insert data one by one to handle duplicates better
+                        # Insert data with conflict handling
                         inserted = 0
                         updated = 0
                         for post in data:
                             try:
-                                # Try to insert
                                 cur.execute("""
                                     INSERT INTO public.tiktok_data (
                                         id, description, author_username, author_id,
@@ -195,21 +196,33 @@ async def trending_videos():
                                 logger.error(f"Error inserting video {post['id']}: {str(e)}")
                                 continue
                         
-                        # Get count after insertion
-                        cur.execute("SELECT COUNT(*) FROM tiktok_data")
-                        count_after = cur.fetchone()[0]
-                        
+                        # Commit changes and log results
                         conn.commit()
                         
-                        print(f"===== Inserted {inserted} new videos and updated {updated} existing videos in the database =====")
-                        print(f"===== Total videos in database: {count_after} =====")
-                        logger.info(f"Successfully processed {len(data)} videos ({inserted} inserted, {updated} updated)")
+                        logger.info(f"Successfully processed TikTok videos: {inserted} new, {updated} updated")
+                        logger.info(f"Total videos in database: {count_before + inserted}")
 
     except Exception as e:
-        error_msg = f"Error during TikTok scraping: {type(e).__name__}: {e}"
-        print(error_msg)
-        logger.error(error_msg)
+        logger.error(f"Error in TikTok scraper: {str(e)}")
         logger.error(traceback.format_exc())
+        
+        # Update status record to show error
+        try:
+            with get_db_connection() as conn:
+                with conn.cursor() as cur:
+                    now = datetime.now()
+                    
+                    cur.execute("""
+                        INSERT INTO public.tiktok_data 
+                        (id, description, author_username, author_id, likes, shares, comments, plays, video_url, created_time, scraped_at)
+                        VALUES ('status_update', %s, 'TikTokScraper', '0', 0, 0, 0, 0, 'https://example.com', 0, %s)
+                        ON CONFLICT (id) DO UPDATE SET 
+                            description = EXCLUDED.description,
+                            scraped_at = EXCLUDED.scraped_at
+                    """, (f"Error: {str(e)}", now))
+                    conn.commit()
+        except Exception as status_error:
+            logger.error(f"Error updating status: {str(status_error)}")
 
 if __name__ == "__main__":
     asyncio.run(trending_videos())

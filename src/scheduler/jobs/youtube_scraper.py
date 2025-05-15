@@ -3,67 +3,53 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from dotenv import load_dotenv
 from googleapiclient.discovery import build
-import pandas as pd
 import os
 from datetime import datetime, timedelta
 import psycopg2
 from psycopg2.extras import execute_values
-import urllib.parse
 
-print("Starting YouTube scraper script...")
-print(f"Current working directory: {os.getcwd()}")
+# Load environment variables
+load_dotenv()
 
-# Setup paths
+# Setup paths and logging
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 LOG_DIR = BASE_DIR / "logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
-print(f"BASE_DIR: {BASE_DIR}")
-print(f"LOG_DIR: {LOG_DIR}")
 
-# Logging setup with rotation
+# Configure logger with file and console handlers
+logger = logging.getLogger("youtube_scraper")
+logger.setLevel(logging.INFO)
+
+# File handler with rotation
 log_handler = RotatingFileHandler(
     LOG_DIR / "youtube.log",
     maxBytes=1024*1024,  # 1MB
     backupCount=5
 )
-log_handler.setFormatter(logging.Formatter(
-    "%(asctime)s [%(levelname)s] %(message)s"
-))
-logger = logging.getLogger("youtube_scraper")
-logger.setLevel(logging.INFO)
+log_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
 logger.addHandler(log_handler)
 
-# Also add console handler for immediate feedback
+# Console handler for immediate feedback
 console_handler = logging.StreamHandler()
-console_handler.setFormatter(logging.Formatter(
-    "%(asctime)s [%(levelname)s] %(message)s"
-))
+console_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
 logger.addHandler(console_handler)
 
-# Load environment variables
-load_dotenv()
-
-# YouTube API
+# Initialize YouTube API
 API_KEY = os.getenv("YT_KEY")
 if not API_KEY:
     error_msg = "No YT_KEY found. Please check .env file."
-    print(error_msg)
     logger.error(error_msg)
     raise EnvironmentError("YT_KEY missing")
-
 
 youtube = build("youtube", "v3", developerKey=API_KEY)
 
 def get_db_connection():
-    """
-    Create a connection to the main database specified in DATABASE_URL
-    """
+    """Create a connection to the database specified in DATABASE_URL"""
     url = os.getenv("DATABASE_URL")
     if not url:
         raise ValueError("DATABASE_URL environment variable not set")
     
     try:
-        # Connect directly to the main database (railway)
         conn = psycopg2.connect(url)
         return conn
     except Exception as e:
@@ -71,7 +57,7 @@ def get_db_connection():
         raise
 
 def should_scrape():
-    """Check if enough time has passed since the last scrape"""
+    """Check if enough time has passed since the last scrape (6 hours)"""
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cur:
@@ -93,10 +79,7 @@ def should_scrape():
                     )
                 """)
                 
-                cur.execute("""
-                    SELECT MAX(scraped_at) as last_scrape
-                    FROM public.youtube_data
-                """)
+                cur.execute("SELECT MAX(scraped_at) as last_scrape FROM public.youtube_data")
                 result = cur.fetchone()
                 
                 if not result or not result[0]:
@@ -105,24 +88,21 @@ def should_scrape():
                 last_scrape = result[0]
                 time_since_last = datetime.now() - last_scrape
                 
-                # Return True if it's been more than 6 hours since the last scrape
+                # Return True if it's been more than 6 hours since last scrape
                 return time_since_last > timedelta(hours=6)
     except Exception as e:
         logger.warning(f"Error checking last scrape time: {e}")
         return True
 
 def update_status(error_message=None):
-    """Aktualisiert den YouTube-Scraper-Status in der Datenbank"""
+    """Update YouTube scraper status in the database"""
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cur:
                 now = datetime.now()
                 today = now.date()
                 
-                if error_message:
-                    description = f"YouTube API Error: {error_message}"
-                else:
-                    description = "YouTube Status Update"
+                description = f"YouTube API Error: {error_message}" if error_message else "YouTube Status Update"
                 
                 cur.execute("""
                     INSERT INTO public.youtube_data 
@@ -140,18 +120,24 @@ def update_status(error_message=None):
         return False
 
 def scrape_youtube_trending(region="DE", max_results=50):
-    # Auch wenn should_scrape False zurückgibt, müssen wir den Status aktualisieren
+    """
+    Scrape trending videos from YouTube and store in the database
+    
+    Args:
+        region: Country code for region-specific trends (default: DE)
+        max_results: Maximum number of videos to fetch (default: 50)
+    """
+    # Check if we should run scraping now
     should_run = should_scrape()
     if not should_run:
-        print("Skipping scrape - not enough time has passed since last scrape")
+        logger.info("Skipping scrape - not enough time has passed since last scrape")
         update_status()
         return
     
-    print(f"Starting YouTube scraping for region {region}, looking for {max_results} videos...")
+    logger.info(f"Starting YouTube scraping for region {region}, looking for {max_results} videos...")
         
     try:
-        logger.info(f"Starting YouTube scraping for region {region}...")
-
+        # Fetch videos from YouTube API
         try:
             request = youtube.videos().list(
                 part="snippet,statistics",
@@ -160,15 +146,14 @@ def scrape_youtube_trending(region="DE", max_results=50):
                 maxResults=max_results
             )
             response = request.execute()
-            print("Successfully fetched trending videos from YouTube API")
             logger.info("Successfully fetched trending videos from YouTube API")
         except Exception as e:
             error_msg = f"Error fetching trending videos from YouTube API: {str(e)}"
-            print(error_msg)
             logger.error(error_msg)
             update_status(str(e))
             return
 
+        # Process video data
         videos = []
         scrape_time = datetime.now()
         today_date = scrape_time.date()
@@ -192,13 +177,13 @@ def scrape_youtube_trending(region="DE", max_results=50):
             })
 
         video_count = len(videos)
-        print(f"===== Found {video_count} trending videos =====")
         logger.info(f"Found {video_count} trending videos")
 
+        # Store videos in database
         if videos:
             with get_db_connection() as conn:
                 with conn.cursor() as cur:
-                    # Create table if it doesn't exist
+                    # Create table if it doesn't exist (redundant but safe)
                     cur.execute("""
                         CREATE TABLE IF NOT EXISTS youtube_data (
                             video_id VARCHAR(50),
@@ -220,7 +205,7 @@ def scrape_youtube_trending(region="DE", max_results=50):
                     cur.execute("SELECT COUNT(*) FROM youtube_data WHERE trending_date = %s", (today_date,))
                     count_before = cur.fetchone()[0]
                     
-                    # Insert data
+                    # Insert data with conflict handling
                     insert_query = """
                         INSERT INTO youtube_data (
                             video_id, title, description, channel_title,
@@ -262,18 +247,15 @@ def scrape_youtube_trending(region="DE", max_results=50):
                     
                     conn.commit()
                     
-                    print(f"===== Inserted {new_videos} new videos and updated {updated_videos} existing videos in the database =====")
                     logger.info(f"Inserted {new_videos} new videos and updated {updated_videos} existing videos in the database")
 
-            print(f"===== Successfully stored {video_count} YouTube videos in the database =====")
             logger.info(f"Successfully stored {video_count} YouTube videos in the database")
 
     except Exception as e:
         error_msg = f"Error during YouTube scraping: {e}"
-        print(error_msg)
         logger.error(error_msg)
         logger.exception("Detailed error:")
-        # Aktualisiere den Status bei Fehlern
+        # Update status on errors
         update_status(str(e))
 
 if __name__ == "__main__":

@@ -23,25 +23,30 @@ ChartJS.register(
   Legend
 );
 
+/**
+ * StatsPanel Component
+ * 
+ * Displays statistics about scraped social media data with charts and metrics
+ */
 const StatsPanel = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [scraperStatus, setScraperStatus] = useState(null);
   const [dailyStats, setDailyStats] = useState(null);
 
+  // Fetch data on component mount and periodically
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
-        console.log("Fetching data for stats panel...");
         
+        // Fetch data from API
         const status = await fetchScraperStatus();
         const stats = await fetchDailyStats();
         
         setScraperStatus(status);
         setDailyStats(stats);
-        console.log("Data fetched successfully:", { status, stats });
       } catch (err) {
         console.error("Error fetching data:", err);
         setError(`Failed to load data: ${err.message}`);
@@ -57,7 +62,10 @@ const StatsPanel = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Prepare chart data
+  /**
+   * Prepare chart data from daily stats
+   * Creates datasets for each platform with consistent formatting
+   */
   const prepareChartData = () => {
     if (!dailyStats) return null;
     
@@ -67,7 +75,7 @@ const StatsPanel = () => {
       platformData.forEach(item => allDates.add(item.date));
     });
     
-    // Sort dates
+    // Sort dates chronologically
     const sortedDates = Array.from(allDates).sort();
     
     return {
@@ -107,7 +115,9 @@ const StatsPanel = () => {
     };
   };
 
-  // Calculate the actual total posts from daily stats
+  /**
+   * Calculate the total posts from all dailyStats data
+   */
   const calculateTotalPosts = () => {
     if (!dailyStats) return { reddit: 0, tiktok: 0, youtube: 0 };
     
@@ -118,7 +128,9 @@ const StatsPanel = () => {
     };
   };
 
-  // Calculate today's posts
+  /**
+   * Calculate today's posts for each platform
+   */
   const calculateTodaysPosts = () => {
     if (!dailyStats) return { reddit: 0, tiktok: 0, youtube: 0 };
     
@@ -132,7 +144,9 @@ const StatsPanel = () => {
     };
   };
 
-  // Get the most recent update date for each platform
+  /**
+   * Get the most recent update date for each platform
+   */
   const getLastUpdateDates = () => {
     if (!dailyStats) return { reddit: null, tiktok: null, youtube: null };
     
@@ -149,7 +163,7 @@ const StatsPanel = () => {
     };
   };
   
-  // Chart options
+  // Chart configuration options
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -202,93 +216,78 @@ const StatsPanel = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="stats-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading statistics...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="stats-error">
-        <h3>Error Loading Data</h3>
-        <p>{error}</p>
-      </div>
-    );
-  }
-
-  const chartData = prepareChartData();
+  // Calculate statistics for display
   const totalPosts = calculateTotalPosts();
   const todaysPosts = calculateTodaysPosts();
   const lastUpdateDates = getLastUpdateDates();
+  const chartData = prepareChartData();
 
   return (
     <div className="stats-panel">
-      <div className="scraper-status-section">
-        <h2>Scraper Status</h2>
-        <div className="status-cards">
-          {scraperStatus && Object.entries(scraperStatus).map(([platform, data]) => (
-            <div key={platform} className={`status-card ${platform}`}>
-              <h3>{platform.charAt(0).toUpperCase() + platform.slice(1)}</h3>
-              <div className={`status-indicator ${data.running ? 'active' : 'inactive'}`}>
-                {data.running ? 'Active' : 'Inactive'}
-              </div>
-              <div className="stats-details">
-                <h4>Today's Stats</h4>
-                <div className="stats-item">
-                  <span className="stats-value" style={{ fontSize: '2rem', fontWeight: '700', display: 'block', textAlign: 'center' }}>{todaysPosts[platform] || 0}</span>
-                </div>
-                
-                <h4>Overall Statistics</h4>
-                <div className="stats-item">
-                  <span className="stats-label">Total Posts:</span>
-                  <span className="stats-value">{totalPosts[platform] || 0}</span>
-                </div>
-                <div className="stats-item">
-                  <span className="stats-label">Last Update:</span>
-                  <span className="stats-value">
-                    {lastUpdateDates[platform] ? lastUpdateDates[platform].toLocaleString(undefined, {
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    }) : 'Never'}
+      <h2 className="stats-heading">Social Media Monitoring</h2>
+      
+      {loading ? (
+        <div className="loading-spinner-container">
+          <div className="loading-spinner"></div>
+          <p>Loading statistics...</p>
+        </div>
+      ) : error ? (
+        <div className="error-message">
+          <p>{error}</p>
+        </div>
+      ) : (
+        <>
+          {/* Chart Section */}
+          <div className="chart-container">
+            {chartData && (
+              <Line 
+                data={chartData} 
+                options={chartOptions}
+                height={300}
+              />
+            )}
+          </div>
+
+          {/* Platform Stats */}
+          <div className="platform-stats-container">
+            {['reddit', 'tiktok', 'youtube'].map(platform => (
+              <div key={platform} className={`platform-card ${platform}`}>
+                <div className="platform-header">
+                  <h3>{platform.charAt(0).toUpperCase() + platform.slice(1)}</h3>
+                  <span className={`status-indicator ${scraperStatus && scraperStatus[platform]?.running ? 'active' : 'inactive'}`}>
+                    {scraperStatus && scraperStatus[platform]?.running ? 'Active' : 'Inactive'}
                   </span>
                 </div>
+                
+                <div className="stats-content">
+                  <div className="stats-item">
+                    <span className="stats-label">Total Posts:</span>
+                    <span className="stats-value">{totalPosts[platform].toLocaleString()}</span>
+                  </div>
+                  
+                  <div className="stats-item">
+                    <span className="stats-label">Today's Posts:</span>
+                    <span className="stats-value">{todaysPosts[platform]}</span>
+                  </div>
+                  
+                  <div className="stats-item">
+                    <span className="stats-label">Last Update:</span>
+                    <span className="stats-value">
+                      {lastUpdateDates[platform] ? lastUpdateDates[platform].toLocaleString(undefined, {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : 'Never'}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="daily-stats-section">
-        <h2>Daily Statistics</h2>
-        <div className="stats-summary">
-          <div className="summary-item reddit">
-            <div className="summary-value">{totalPosts.reddit}</div>
-            <div className="summary-label">Reddit Posts</div>
+            ))}
           </div>
-          <div className="summary-item tiktok">
-            <div className="summary-value">{totalPosts.tiktok}</div>
-            <div className="summary-label">TikTok Videos</div>
-          </div>
-          <div className="summary-item youtube">
-            <div className="summary-value">{totalPosts.youtube}</div>
-            <div className="summary-label">YouTube Videos</div>
-          </div>
-        </div>
-        <div className="chart-container">
-          {chartData ? (
-            <Line data={chartData} options={chartOptions} height={300} />
-          ) : (
-            <p>No data available for chart</p>
-          )}
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 };

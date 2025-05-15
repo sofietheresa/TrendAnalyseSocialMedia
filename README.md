@@ -1,158 +1,158 @@
-Hier ist eine überarbeitete Version der README-Datei inklusive Architekturgrafik, die du direkt einbinden kannst:
+# 📈 TrendAnalyseSocialMedia
 
----
-
-# 📈 Social Media Trend Analysis
-
-Ein modernes Analyseframework für aktuelle Trends auf TikTok, YouTube und Reddit – mit MLOps, Dashboard, Scheduler & Vektor-DB.
+Eine moderne Webanwendung zur Analyse von Social Media Trends auf TikTok, YouTube und Reddit.
 
 ## 🚀 Features
 
-- 🛰️ **Daten-Ingestion** von TikTok, YouTube & Reddit
-- 🤖 **ML-Pipeline mit ZenML**: Sentiment & Trendanalyse
-- 📊 **Interaktive Dashboards** via Streamlit
-- 🧠 **Vektorspeicherung** in Qdrant + semantische Suche
-- 🗃️ **SQLite** für strukturierte Rohdaten
-- 🔁 **Scheduler + Orchestration** via ZenML
-- 📡 **Monitoring** mit Prometheus & Grafana
-- 🔗 **REST-API** (FastAPI) für Externe Dienste
+- 🔍 Automatisches **Scraping** von TikTok, YouTube und Reddit
+- 📊 **Interaktives Dashboard** zur Visualisierung der Trends
+- 📅 **Tägliche Statistiken** über gesammelte Inhalte
+- 🔄 **Scheduler** für regelmäßige Datenerfassung
+- 📱 **Responsives Frontend** für Desktop und Mobile
+- 🗄️ **PostgreSQL Datenbank** für strukturierte Datenspeicherung
+- ☁️ **Railway Deployment** für einfache Cloud-Bereitstellung
 
-## 🧩 Architektur
+## 📦 Projektstruktur
 
-![Architektur](./docs/architecture.png)
-
-> **Hinweis:** Die Architektur zeigt den Datenfluss vom Scraping bis zur Vektor-Datenbank.
-
-## ⚙️ Tech Stack
-
-**Backend:**
-
-- Python 3.11, FastAPI, ZenML, NLTK, TensorFlow
-- SQLite, Qdrant
-
-**Frontend:**
-
-- Streamlit
-
-**Orchestration & Container:**
-
-- ZenML Pipelines
-- Podman statt Docker
-- Optional: Docker Compose / systemd
-
-**Monitoring:**
-
-- Prometheus + Grafana
-
----
+```
+├── src/                  # Backend-Code
+│   ├── scheduler/        # Scheduler-Komponenten
+│   │   ├── jobs/         # Individuelle Scraper
+│   │   │   ├── reddit_scraper.py
+│   │   │   ├── tiktok_scraper.py
+│   │   │   └── youtube_scraper.py
+│   │   └── main_scraper.py  # Hauptscheduler
+│   ├── main.py           # FastAPI Hauptanwendung
+│   ├── db_connection.py  # Datenbankverbindung
+│   └── models.py         # Datenmodelle
+├── app/                  # Railway-Deployment
+│   ├── main.py           # API Anwendung
+│   ├── railway.py        # Railway Starter
+│   └── run_railway.sh    # Start-Skript
+├── frontend/             # React Frontend
+│   ├── src/              # Frontend-Quellcode
+│   │   ├── components/   # React-Komponenten
+│   │   ├── services/     # API-Dienste
+│   │   └── App.js        # Hauptkomponente
+│   └── package.json      # NPM-Konfiguration
+├── requirements.txt      # Python-Abhängigkeiten
+├── Procfile              # Railway-Konfiguration
+└── railway.toml          # Railway-Deployment-Konfiguration
+```
 
 ## 🛠️ Installation
 
 ### Voraussetzungen
 
 - Python 3.11+
-- Node.js 16+ (nur bei React-Frontend)
-- Podman (alternativ: Docker)
-- Optional: `make`, `poetry`, `zenml`
+- Node.js 16+ (für das React-Frontend)
+- PostgreSQL-Datenbank
 
 ### 1. Repository klonen
 
 ```bash
-git clone https://github.com/yourname/trend-analyse-social-media.git
-cd trend-analyse-social-media
+git clone https://github.com/yourusername/TrendAnalyseSocialMedia.git
+cd TrendAnalyseSocialMedia
 ```
 
 ### 2. Python-Abhängigkeiten installieren
 
 ```bash
 python -m venv venv
-source venv/bin/activate
-pip install -e .
+source venv/bin/activate  # Unter Windows: venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-### 3. Umgebungsvariablen anlegen
+### 3. Umgebungsvariablen einrichten
+
+Erstellen Sie eine `.env` Datei im Hauptverzeichnis:
+
+```env
+DATABASE_URL=postgresql://username:password@host:port/dbname
+REDDIT_ID=your_reddit_client_id
+REDDIT_SECRET=your_reddit_client_secret
+YT_KEY=your_youtube_api_key
+MS_TOKEN=your_tiktok_ms_token
+```
+
+### 4. Frontend-Abhängigkeiten installieren
 
 ```bash
-cp .env.example .env
-# API-Keys und Pfade eintragen
+cd frontend
+npm install
 ```
 
----
+## 🚀 Anwendung starten
 
-## 📦 Verwendung
-
-### Web-Dashboard (Streamlit)
+### Backend lokal ausführen
 
 ```bash
-make streamlit
+# API starten
+make start
+
+# Oder direkt:
+uvicorn src.main:app --reload
 ```
 
-Zeigt:
-
-- Linecharts (Postanzahl über Zeit)
-- Seiten für Reddit, TikTok, YouTube
-- Orchestrator-Seite mit ZenML Stack-Infos & Triggern
-
-### FastAPI starten
+### Scraper ausführen
 
 ```bash
-make start-api
+# Alle Scraper einmalig ausführen
+make run-scrapers
+
+# Oder einzeln:
+make run-reddit
+make run-tiktok
+make run-youtube
+
+# Scheduler für periodisches Scraping starten
+make run-scheduler
 ```
 
-**API-Endpunkte:**
-
-- `GET /api/docs`
-- `POST /api/run-pipeline`
-- `GET /api/status`
-
----
-
-## 🧪 Pipelines & ZenML
-
-- Starte Pipelines über UI oder CLI (`zenml run`)
-- Nutze `zenml describe` zur Analyse des Stacks
-- Vektor-Embeddings landen in Qdrant
-
----
-
-## 📈 Monitoring mit Grafana
-
-1. Prometheus über `docker-compose` starten
-2. Grafana öffnen unter `http://localhost:3000`
-3. Login: admin/admin
-4. Dashboard für Metriken wie:
-
-   - Pipeline-Durchläufe
-   - Fehlerraten
-   - Latenz / Dauer
-   - Speicherlast
-
----
-
-## 📁 Projektstruktur
+### Frontend starten
 
 ```bash
-├── src/
-│   ├── steps/               # ZenML Steps
-│   ├── scheduler/           # Zeitgesteuerte Tasks
-│   ├── api/                 # FastAPI App
-├── frontend/
-│   ├── app.py               # Streamlit-Frontend
-│   ├── public/              # Optional: React UI
-├── notebooks/               # Explorative Analyse
-├── qdrant_storage/          # Vektor-DB
-├── data/                    # SQLite-Datenbank
-├── logs/                    # Logdateien
-├── Dockerfile               # Build-Spezifikation
-└── zenml_pipeline.py        # Haupt-Pipeline
+make start-frontend
+
+# Oder direkt:
+cd frontend && npm start
 ```
 
----
+## 📊 Frontend-Komponenten
 
-## 🔐 Sicherheit & Produktion
+Die Anwendung besteht aus zwei Hauptseiten:
 
-- Nutze `Podman` mit Rootless-Containern
-- Setze Nginx reverse proxy mit TLS ein
-- Verwende `.env` für Secrets (nicht committen!)
-- Monitoring via Grafana & Prometheus
-- Backups per `tar czf backup.tar.gz data/ qdrant_storage/`
+1. **Dashboard** - Zeigt Statistiken und Trends an
+   - Tägliche Post-Anzahl pro Plattform
+   - Scraper-Status (aktiv/inaktiv)
+   - Gesamtstatistiken
+
+2. **Daten-Ansicht** - Zeigt die neuesten Inhalte pro Plattform
+   - Filterung nach Plattform (Reddit, TikTok, YouTube)
+   - Einstellbare Anzahl an angezeigten Einträgen
+   - Sortierung nach Datum (neueste zuerst)
+
+## 🔄 Deployment
+
+Die Anwendung ist für das Deployment auf Railway konfiguriert:
+
+```bash
+# Railway-Deployment
+railway up
+```
+
+Die Konfiguration ist in `railway.toml` und `Procfile` definiert.
+
+## 🧪 Entwicklung
+
+Für die Entwicklung stehen Makefile-Befehle zur Verfügung:
+
+```bash
+# Typische Entwicklungsbefehle
+make install            # Abhängigkeiten installieren
+make clean              # Temporäre Dateien aufräumen
+```
+
+## 📄 Lizenz
+
+Dieses Projekt ist lizenziert unter der MIT-Lizenz.

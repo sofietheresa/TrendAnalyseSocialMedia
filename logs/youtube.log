@@ -987,3 +987,12 @@ LINE 4: ...le.com', '2025-05-15T20:09:56.673658'::timestamp, '2025-05-1...
 2025-05-15 20:18:59,285 [INFO] Found 50 trending videos
 2025-05-15 20:19:01,958 [INFO] Successfully stored 50 YouTube videos in the database
 2025-05-15 20:25:44,473 [INFO] YouTube status updated in database
+2025-05-15 20:35:47,460 [INFO] Starting YouTube scraping for region DE...
+2025-05-15 20:35:47,714 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-15 20:35:47,714 [INFO] Found 50 trending videos
+2025-05-15 20:35:50,347 [INFO] Successfully stored 50 YouTube videos in the database
+2025-05-15 20:42:53,773 [INFO] YouTube status updated in database
+2025-05-15 20:52:39,077 [INFO] Starting YouTube scraping for region DE...
+2025-05-15 20:52:39,381 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-15 20:52:39,382 [INFO] Found 50 trending videos
+2025-05-15 20:52:42,141 [INFO] Successfully stored 50 YouTube videos in the database
