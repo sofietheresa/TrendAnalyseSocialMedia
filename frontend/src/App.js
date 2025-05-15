@@ -100,6 +100,9 @@ const Homepage = () => {
   const processTopicTrends = (topTopics, countsByDate) => {
     if (!topTopics || !countsByDate) return;
     
+    console.log("Processing trends for topics:", topTopics);
+    console.log("With counts by date:", countsByDate);
+    
     // Get all unique dates across all topics
     const allDates = new Set();
     
@@ -107,16 +110,23 @@ const Homepage = () => {
     topTopics.forEach(topic => {
       if (topic.id && countsByDate[topic.id]) {
         Object.keys(countsByDate[topic.id]).forEach(date => allDates.add(date));
+      } else {
+        console.warn("Topic missing id or no counts available:", topic);
       }
     });
     
     // Sort dates chronologically
     const sortedDates = Array.from(allDates).sort();
     
+    if (sortedDates.length === 0) {
+      console.warn("No dates found for any topics");
+      return;
+    }
+    
     // Prepare chart data
     const trendsData = {
       labels: sortedDates.map(date => new Date(date).toLocaleDateString('de-DE')),
-      datasets: topTopics.map((topic, index) => {
+      datasets: topTopics.filter(topic => topic.id && countsByDate[topic.id]).map((topic, index) => {
         // Generate colors based on index
         const colors = [
           '#232252', // dark blue
@@ -126,12 +136,23 @@ const Homepage = () => {
           '#f8986f'  // orange
         ];
         
+        // Check if this topic has any non-zero counts
+        const hasData = sortedDates.some(date => 
+          topic.id && 
+          countsByDate[topic.id] && 
+          countsByDate[topic.id][date] && 
+          countsByDate[topic.id][date] > 0
+        );
+        
+        console.log(`Topic ${topic.name || index} has data: ${hasData}`);
+        
         return {
           label: topic.name || `Topic ${index + 1}`,
           data: sortedDates.map(date => {
-            return topic.id && countsByDate[topic.id] && countsByDate[topic.id][date] 
+            const count = topic.id && countsByDate[topic.id] && countsByDate[topic.id][date] 
               ? countsByDate[topic.id][date] 
               : 0;
+            return count;
           }),
           borderColor: colors[index % colors.length],
           backgroundColor: `${colors[index % colors.length]}22`, // Add transparency
@@ -141,6 +162,7 @@ const Homepage = () => {
       })
     };
     
+    console.log("Generated trends data:", trendsData);
     setTopicTrends(trendsData);
   };
 
@@ -244,14 +266,7 @@ const Homepage = () => {
     }
   };
 
-  return (
-    <main className="app-content">
-      {/* Title - Moved higher with more spacing */}
-      <h1 className="main-title" style={{ marginTop: '-40px', marginBottom: '40px' }}>
-        <span style={{ fontWeight: 900, letterSpacing: '0.03em' }}>SOCIAL MEDIA</span>
-        <br />
-        <span style={{ fontWeight: 400, fontSize: '0.8em' }}>Trend Analysis</span>
-      </h1>
+    return (    <main className="app-content">      {/* Title with proper margin for fixed navbar */}      <h1 className="main-title" style={{ marginTop: '20px', marginBottom: '40px' }}>        <span style={{ fontWeight: 900, letterSpacing: '0.03em' }}>SOCIAL MEDIA</span>        <br />        <span style={{ fontWeight: 400, fontSize: '0.8em' }}>Trend Analysis</span>      </h1>
       
       {/* Date Range Filter - Position unchanged */}
       <div className="filter-section">
@@ -394,7 +409,7 @@ function App() {
           <div className="app-nav-title">
             <Link to="/" onClick={() => setActivePage('home')}>
               <span className="nav-title-text">SOCIAL MEDIA</span>
-              <span className="nav-subtitle-text">Trend Analysis</span>
+              <span className="nav-subtitle-text">TRENDANALYSE</span>
             </Link>
           </div>
           

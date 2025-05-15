@@ -25,6 +25,7 @@
   justify-content: center;
   text-align: center;
   min-height: 80vh;
+  margin-top: 100px; /* Add space for the fixed navbar */
 }
 
 .app-footer {
@@ -72,7 +73,9 @@ html, body, #root {
               radial-gradient(ellipse 80% 80% at 70% 90%, #9364eb 0%, #e750ae 70%),
               linear-gradient(135deg, #f8986f 0%, #232252 100%);
   background-blend-mode: screen;
+  background-attachment: fixed;
   color: #232252;
+  overflow-x: hidden;
 }
 
 .App {
@@ -147,14 +150,19 @@ html, body, #root {
   justify-content: space-between;
   align-items: center;
   padding: 20px 40px;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.85);
   font-family: 'Sora', Arial, sans-serif;
   font-size: 1.2rem;
   font-weight: 400;
   letter-spacing: 0.01em;
-  max-width: 1400px;
-  margin: 0 auto;
   width: 100%;
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 15px rgba(0,0,0,0.05);
 }
 
 .app-nav-title {
@@ -171,16 +179,16 @@ html, body, #root {
 .nav-title-text {
   font-family: 'Sora', Arial, sans-serif;
   font-weight: 900;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   color: #232252;
   letter-spacing: 0.03em;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .nav-subtitle-text {
   font-family: 'Sora', Arial, sans-serif;
-  font-weight: 400;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 1rem;
   color: #232252;
   letter-spacing: 0.01em;
 }
@@ -198,24 +206,21 @@ html, body, #root {
   font-family: 'Sora', Arial, sans-serif;
   font-weight: 400;
   font-size: 1.1rem;
-  background: none;
-  border: none;
-  margin: 0;
+  position: relative;
   padding: 8px 16px;
   border-radius: 6px;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .nav-link:hover {
-  color: #e750ae;
-  text-decoration: none;
+  background-color: rgba(46, 108, 219, 0.1);
 }
 
 .active-nav-link {
-  font-weight: 700;
   color: white !important;
-  background-color: rgba(147, 100, 235, 0.7);
-  box-shadow: 0 2px 10px rgba(147, 100, 235, 0.3);
+  background-color: #232252;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(35, 34, 82, 0.2);
 }
 
 .main-title {

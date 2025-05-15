@@ -2449,3 +2449,72 @@ prawcore.exceptions.ResponseException: received 401 HTTP response
 2025-05-15 21:15:40,060 [INFO] Found 100 posts in r/trendingsubreddits
 2025-05-15 21:15:40,060 [INFO] Found 130 unique posts out of 133 total posts
 2025-05-15 21:16:56,527 [INFO] Successfully processed 130 Reddit posts (0 inserted, 130 updated)
+2025-05-15 21:24:45,477 [INFO] Starting Reddit scraping...
+2025-05-15 21:24:45,477 [INFO] Connecting to Reddit API with ID: jl1Te...
+2025-05-15 21:24:45,478 [INFO] Successfully connected to Reddit API
+2025-05-15 21:24:45,478 [INFO] Scraping subreddit: r/all
+2025-05-15 21:24:47,473 [INFO] Found 2 posts in r/all
+2025-05-15 21:24:47,474 [INFO] Scraping subreddit: r/popular
+2025-05-15 21:24:48,773 [INFO] Found 10 posts in r/popular
+2025-05-15 21:24:48,773 [INFO] Scraping subreddit: r/trendingreddits
+2025-05-15 21:24:49,688 [INFO] Found 21 posts in r/trendingreddits
+2025-05-15 21:24:49,688 [INFO] Scraping subreddit: r/trendingsubreddits
+2025-05-15 21:24:51,939 [INFO] Found 100 posts in r/trendingsubreddits
+2025-05-15 21:24:51,939 [INFO] Found 130 unique posts out of 133 total posts
+2025-05-15 21:26:07,288 [INFO] Successfully processed 130 Reddit posts (0 inserted, 130 updated)
+2025-05-15 21:33:17,823 [INFO] Starting Reddit scraping...
+2025-05-15 21:33:17,824 [INFO] Connecting to Reddit API with ID: jl1Te...
+2025-05-15 21:33:17,825 [INFO] Successfully connected to Reddit API
+2025-05-15 21:33:17,825 [INFO] Scraping subreddit: r/all
+2025-05-15 21:33:19,392 [INFO] Found 2 posts in r/all
+2025-05-15 21:33:19,393 [INFO] Scraping subreddit: r/popular
+2025-05-15 21:33:20,722 [INFO] Found 11 posts in r/popular
+2025-05-15 21:33:20,723 [INFO] Scraping subreddit: r/trendingreddits
+2025-05-15 21:33:21,741 [INFO] Found 21 posts in r/trendingreddits
+2025-05-15 21:33:21,742 [INFO] Scraping subreddit: r/trendingsubreddits
+2025-05-15 21:33:24,208 [INFO] Found 100 posts in r/trendingsubreddits
+2025-05-15 21:33:24,208 [INFO] Found 131 unique posts out of 134 total posts
+2025-05-15 21:37:40,245 [INFO] Successfully processed 131 Reddit posts (1 inserted, 130 updated)
+2025-05-15 21:42:17,121 [INFO] Starting Reddit scraping...
+2025-05-15 21:42:17,122 [INFO] Connecting to Reddit API with ID: jl1Te...
+2025-05-15 21:42:17,123 [INFO] Successfully connected to Reddit API
+2025-05-15 21:42:17,123 [INFO] Scraping subreddit: r/all
+2025-05-15 21:42:18,890 [INFO] Found 2 posts in r/all
+2025-05-15 21:42:18,890 [INFO] Scraping subreddit: r/popular
+2025-05-15 21:42:20,155 [INFO] Found 10 posts in r/popular
+2025-05-15 21:42:20,156 [INFO] Scraping subreddit: r/trendingreddits
+2025-05-15 21:42:21,058 [INFO] Found 22 posts in r/trendingreddits
+2025-05-15 21:42:21,058 [INFO] Scraping subreddit: r/trendingsubreddits
+2025-05-15 21:42:23,093 [INFO] Found 100 posts in r/trendingsubreddits
+2025-05-15 21:42:23,093 [INFO] Found 131 unique posts out of 134 total posts
+2025-05-15 21:43:11,054 [ERROR] Error processing post 1kna31f: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+2025-05-15 21:43:11,054 [ERROR] Database error: connection already closed
+2025-05-15 21:43:11,055 [ERROR] Detailed error:
+Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\reddit_scraper.py", line 174, in scrape_reddit
+    inserted = 0
+            ^^^^
+    ...<22 lines>...
+                post["score"],
+    
+psycopg2.OperationalError: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\reddit_scraper.py", line 208, in scrape_reddit
+    inserted += 1
+    ^^^^^^^^^^^
+psycopg2.InterfaceError: connection already closed

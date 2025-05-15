@@ -1002,3 +1002,34 @@ LINE 4: ...le.com', '2025-05-15T20:09:56.673658'::timestamp, '2025-05-1...
 2025-05-15 21:09:28,922 [INFO] Found 50 trending videos
 2025-05-15 21:09:31,634 [INFO] Successfully stored 50 YouTube videos in the database
 2025-05-15 21:17:37,941 [INFO] YouTube status updated in database
+2025-05-15 21:26:13,259 [INFO] Starting YouTube scraping for region DE...
+2025-05-15 21:26:13,599 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-15 21:26:13,600 [INFO] Found 50 trending videos
+2025-05-15 21:26:16,333 [INFO] Successfully stored 50 YouTube videos in the database
+2025-05-15 21:43:52,150 [INFO] Starting YouTube scraping for region DE...
+2025-05-15 21:43:52,519 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-15 21:43:52,519 [INFO] Found 50 trending videos
+2025-05-15 21:44:39,470 [ERROR] Error during YouTube scraping: connection already closed
+2025-05-15 21:44:39,471 [ERROR] Detailed error:
+Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\youtube_scraper.py", line 233, in scrape_youtube_trending
+    video["url"],
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\psycopg2\extras.py", line 1299, in execute_values
+    cur.execute(b''.join(parts))
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+psycopg2.OperationalError: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\youtube_scraper.py", line 183, in scrape_youtube_trending
+    if videos:
+             ^
+psycopg2.InterfaceError: connection already closed
+2025-05-15 21:45:04,577 [ERROR] Error updating YouTube status: connection already closed

@@ -418,3 +418,52 @@ TypeError: 'TikTokAPI' object does not support the asynchronous context manager 
 2025-05-15 21:17:17,391 [INFO] Loading trending videos from TikTok...
 2025-05-15 21:17:22,696 [INFO] Found 42 unique videos, attempting to store in database...
 2025-05-15 21:17:33,262 [INFO] Successfully processed 42 videos (18 inserted, 24 updated)
+2025-05-15 21:26:09,248 [INFO] TikTok status updated in database
+2025-05-15 21:26:09,250 [INFO] Starting TikTok scraping...
+2025-05-15 21:26:09,251 [ERROR] Error during TikTok scraping: 'TikTokAPI' object does not support the asynchronous context manager protocol
+2025-05-15 21:26:11,163 [INFO] TikTok status updated in database
+2025-05-15 21:37:40,249 [INFO] Using browser: chromium
+2025-05-15 21:37:40,249 [INFO] Creating TikTok API session...
+2025-05-15 21:38:00,260 [INFO] TikTok API session created successfully
+2025-05-15 21:38:00,260 [INFO] Loading trending videos from TikTok...
+2025-05-15 21:38:02,278 [INFO] Found 30 unique videos, attempting to store in database...
+2025-05-15 21:39:05,482 [ERROR] Error inserting video 7482456999746227499: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+2025-05-15 21:39:05,482 [ERROR] Error inserting video 7489631619788098838: cursor already closed
+2025-05-15 21:39:05,483 [ERROR] Error inserting video 7479130387642469650: cursor already closed
+2025-05-15 21:39:05,483 [ERROR] Error inserting video 7504251289061117202: cursor already closed
+2025-05-15 21:39:05,483 [ERROR] Error inserting video 7476419423251729686: cursor already closed
+2025-05-15 21:39:05,484 [ERROR] Error inserting video 7494696063702404374: cursor already closed
+2025-05-15 21:39:05,484 [ERROR] Error inserting video 7485396935742885151: cursor already closed
+2025-05-15 21:39:05,484 [ERROR] Error inserting video : cursor already closed
+2025-05-15 21:39:05,485 [ERROR] Error inserting video 7504352996625501462: cursor already closed
+2025-05-15 21:39:05,485 [ERROR] Error inserting video 7503158931053743382: cursor already closed
+2025-05-15 21:39:05,485 [ERROR] Error inserting video 7474166239930174742: cursor already closed
+2025-05-15 21:39:05,486 [ERROR] Error inserting video 7499763497350499586: cursor already closed
+2025-05-15 21:39:05,486 [ERROR] Error inserting video 7478823658165751062: cursor already closed
+2025-05-15 21:39:05,486 [ERROR] Error inserting video 7504258595861613870: cursor already closed
+2025-05-15 21:39:05,486 [ERROR] Error inserting video 7478728535738371350: cursor already closed
+2025-05-15 21:39:05,486 [ERROR] Error inserting video 7486656100180299038: cursor already closed
+2025-05-15 21:39:05,486 [ERROR] Error inserting video 7479456244944751894: cursor already closed
+2025-05-15 21:39:05,656 [ERROR] Error during TikTok scraping: InterfaceError: connection already closed
+2025-05-15 21:39:05,657 [ERROR] Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\tiktok_scraper.py", line 199, in trending_videos
+    # Commit changes and log results
+psycopg2.InterfaceError: cursor already closed
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\tiktok_scraper.py", line 129, in trending_videos
+    # Store data in PostgreSQL
+psycopg2.InterfaceError: connection already closed
+
+2025-05-15 21:43:42,895 [ERROR] Error updating TikTok status: connection already closed
+2025-05-15 21:43:42,895 [INFO] Starting TikTok scraping...
+2025-05-15 21:43:42,895 [ERROR] Error during TikTok scraping: 'TikTokAPI' object does not support the asynchronous context manager protocol
+2025-05-15 21:43:45,883 [INFO] TikTok status updated in database
