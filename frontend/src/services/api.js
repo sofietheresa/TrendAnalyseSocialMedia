@@ -1,25 +1,26 @@
 import axios from 'axios';
 
-// API URL configuration with Railway deployment URL
+// API URL configuration - sicherstellen, dass die Railway URL verwendet wird
 const API_URL = process.env.REACT_APP_API_URL || 
-                'https://trendanalysesocialmedia-production.up.railway.app';
+               'https://trendanalysesocialmedia-production.up.railway.app';
 
 console.log('API_URL set to:', API_URL);
 
-// Axios-Instanz mit Standardkonfiguration und Debug-Info
+// Verbesserte Axios-Konfiguration
 const api = axios.create({
     baseURL: API_URL,
     headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',  // Verhindert Caching von Antworten
     },
-    // Add longer timeout for debugging
-    timeout: 30000,
+    // Longer timeout for potentially slow connections
+    timeout: 45000,
     // Disable CORS credentials since we're using proxy
     withCredentials: false
 });
 
 // Clearly mark if mock data is being used for visibility
-export const useMockApi = process.env.REACT_APP_USE_MOCK_API === 'true';
+export const useMockApi = false; // Mock API explizit deaktivieren
 console.log('Using mock API:', useMockApi);
 
 // Create a global state for tracking mock data usage
@@ -37,52 +38,16 @@ export const setMockDataStatus = (isMockData) => {
 // Get the current mock data status
 export const getMockDataStatus = () => usingMockData;
 
-// Dynamically import mock data handlers only if needed
-let mockDataHandlers = null;
-if (useMockApi) {
+// Improved retry/connection logic
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second between retries
+
+// Helper function for API calls with better retry logic
+const apiCall = async (endpoint, method = 'get', data = null, options = {}, retries = MAX_RETRIES) => {
     try {
-        // Dynamic import for mock data
-        import('../mock-api/handlers').then(module => {
-            mockDataHandlers = module.default;
-            console.log('Mock data handlers loaded successfully');
-        });
-    } catch (error) {
-        console.error('Failed to load mock data handlers:', error);
-    }
-}
-
-// Detailed Error Handler
-api.interceptors.request.use(
-    config => {
-        console.log(`🚀 Making ${config.method.toUpperCase()} request to: ${config.baseURL}${config.url}`);
-        return config;
-    },
-    error => {
-        console.error('❌ Request error:', error);
-        return Promise.reject(error);
-    }
-);
-
-api.interceptors.response.use(
-    response => {
-        console.log(`✅ Response from ${response.config.url}:`, response.status);
-        return response;
-    },
-    error => {
-        console.error('❌ API Error Details:', {
-            url: error.config?.url,
-            method: error.config?.method,
-            status: error.response?.status,
-            data: error.response?.data,
-            message: error.message
-        });
-        return Promise.reject(error);
-    }
-);
-
-// Helper function for better error handling
-const apiCall = async (endpoint, method = 'get', data = null, options = {}) => {
-    try {
+        // Reset mock data status
+        setMockDataStatus(false);
+        
         const config = { 
             ...options,
             method,
@@ -95,6 +60,15 @@ const apiCall = async (endpoint, method = 'get', data = null, options = {}) => {
         return response.data;
     } catch (error) {
         console.error(`Failed API call to ${endpoint}:`, error);
+        
+        if (retries > 0) {
+            console.log(`Retrying API call to ${endpoint}, ${retries} attempts left...`);
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+            return apiCall(endpoint, method, data, options, retries - 1);
+        }
+        
+        // Only use mock data if all retries failed
+        setMockDataStatus(true);
         
         // Enhance error message with details
         const enhancedError = new Error(
@@ -141,95 +115,95 @@ export const fetchDailyStats = async () => {
     }
 };
 
-// New function to fetch recent social media data
-export const fetchRecentData = async (platform = 'reddit', limit = 10, retryCount = 3) => {
+// New function to fetch recent social media data with improved reliability
+export const fetchRecentData = async (platform = 'reddit', limit = 10) => {
     console.log(`Fetching recent ${platform} data (limit: ${limit})...`);
     
     try {
         // Always reset mock data status at start of request
         setMockDataStatus(false);
         
-        // Make the API request with proper error handling
-        console.log(`Request URL: ${API_URL}/api/recent-data?platform=${platform}&limit=${limit}`);
-        const response = await api.get(`/api/recent-data`, { 
-            params: { platform, limit } 
-        });
-        
-        console.log(`Received ${platform} data:`, response);
-        
-        // Process the response data
-        if (response.data) {
-            // If response.data is an array, return it directly wrapped in an object
-            if (Array.isArray(response.data)) {
-                return { data: response.data };
-            }
-            // If response.data.data exists and is an array, return the response as is
-            else if (response.data.data && Array.isArray(response.data.data)) {
-                return response.data;
-            }
-            // Otherwise, try to parse the data intelligently
-            else {
-                console.log('Processing response data type:', typeof response.data);
+        // Try direct API call first with proper retry mechanism
+        for (let retry = 0; retry < MAX_RETRIES; retry++) {
+            try {
+                console.log(`API attempt ${retry + 1}/${MAX_RETRIES} for ${platform} data`);
                 
-                // If response.data contains any array property, use that
-                for (const key in response.data) {
-                    if (Array.isArray(response.data[key]) && response.data[key].length > 0) {
-                        console.log(`Found array data in property "${key}"`);
-                        return { data: response.data[key] };
+                // Make the API request
+                const response = await api.get(`/api/recent-data`, { 
+                    params: { platform, limit },
+                    // Increase timeout for this specific request
+                    timeout: 60000
+                });
+                
+                console.log(`Successfully fetched ${platform} data:`, response.status);
+                
+                // Process the response data
+                if (response.data) {
+                    // If response.data is an array, return it directly wrapped in an object
+                    if (Array.isArray(response.data)) {
+                        return { data: response.data };
+                    }
+                    // If response.data.data exists and is an array, return the response as is
+                    else if (response.data.data && Array.isArray(response.data.data)) {
+                        return response.data;
+                    }
+                    // Otherwise, try to parse the data intelligently
+                    else {
+                        console.log('Processing response data type:', typeof response.data);
+                        
+                        // If response.data contains any array property, use that
+                        for (const key in response.data) {
+                            if (Array.isArray(response.data[key]) && response.data[key].length > 0) {
+                                console.log(`Found array data in property "${key}"`);
+                                return { data: response.data[key] };
+                            }
+                        }
+                        
+                        // If no array property found but response.data is an object
+                        if (typeof response.data === 'object') {
+                            console.log('Response data is an object without arrays, returning as single item array');
+                            return { data: [response.data] };
+                        }
+                        
+                        return { data: [] };
                     }
                 }
                 
-                // If no array property found but response.data is an object
-                if (typeof response.data === 'object') {
-                    console.log('Response data is an object without arrays, returning as single item array');
-                    return { data: [response.data] };
-                }
+                // If we get here, we didn't find usable data
+                throw new Error('No usable data in API response');
                 
-                return { data: [] };
+            } catch (error) {
+                if (retry < MAX_RETRIES - 1) {
+                    // Wait before retry with increasing delay
+                    const delay = RETRY_DELAY * (retry + 1);
+                    console.log(`Waiting ${delay}ms before retrying ${platform} data...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                } else {
+                    // Last retry failed, propagate the error
+                    throw error;
+                }
             }
-        } else {
-            console.warn('Empty response from API');
-            return { data: [] };
         }
+        
+        // This should never be reached due to the throw in the final retry
+        throw new Error('Failed to fetch data after all retries');
+        
     } catch (error) {
-        console.error(`Error fetching recent ${platform} data:`, error);
+        console.error(`Error fetching ${platform} data after all retries:`, error);
         
-        // Log more details about the error
-        if (error.response) {
-            console.error('Error response:', {
-                status: error.response.status,
-                statusText: error.response.statusText,
-                data: error.response.data
-            });
-        }
+        // Set mock data status to true since we're using mock data
+        setMockDataStatus(true);
         
-        // Retry logic for connection issues - the server might be catching up
-        if (retryCount > 0) {
-            console.log(`Retrying ${platform} data fetch, ${retryCount} attempts left...`);
-            
-            // Wait 1 second before retrying
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Retry with one less retry attempt
-            return fetchRecentData(platform, limit, retryCount - 1);
-        }
-        
-        // If all retries failed, try to load mock data
-        console.warn(`Could not fetch ${platform} data after retries, loading mock data...`);
-        
+        // Last resort: use mock data
         try {
-            // Set mock data status to true since we're using mock data
-            setMockDataStatus(true);
-            
-            // Import mock data dynamically
             const { getMockData } = await import('../mock-api/data');
             const mockData = getMockData(platform, limit);
-            console.log(`Loaded mock data for ${platform}:`, mockData);
+            console.warn(`Using MOCK DATA for ${platform} as fallback due to API failure`);
             
             return { 
                 data: mockData, 
                 isMockData: true,
-                message: `Using mock data for ${platform} (API unavailable)`
+                message: `Using mock data for ${platform} (API unavailable after ${MAX_RETRIES} retries)`
             };
         } catch (mockError) {
             console.error(`Failed to load mock data for ${platform}:`, mockError);

@@ -6,12 +6,18 @@
 const { spawn } = require('child_process');
 const path = require('path');
 const http = require('http');
+const https = require('https');
 const fs = require('fs');
 
-// Check if the API server is available
-const testApiConnection = (url, timeoutMs = 3000) => {
+// Check if the API server is available with improved reliability
+const testApiConnection = (url, timeoutMs = 5000) => {
   return new Promise((resolve) => {
-    const req = http.get(url, (res) => {
+    // Determine http module based on protocol
+    const protocol = url.startsWith('https') ? https : http;
+    
+    console.log(`Testing connection to ${url}...`);
+    
+    const req = protocol.get(url, { timeout: timeoutMs }, (res) => {
       if (res.statusCode === 200) {
         console.log('✅ API server is available');
         resolve(true);
@@ -37,18 +43,18 @@ const testApiConnection = (url, timeoutMs = 3000) => {
 // Set up environment variables
 const setupEnvironment = async () => {
   // Get API URL from environment or use default
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  const apiUrl = process.env.REACT_APP_API_URL || 'https://trendanalysesocialmedia-production.up.railway.app';
   const mockApiUrl = 'http://localhost:3001';
   
-  console.log(`⚙️ Checking API server at: ${apiUrl}`);
+  console.log(`⚙️ Testing API server availability at: ${apiUrl}`);
   
-  // More aggressive approach to verify API availability
-  // Try multiple endpoints and make multiple attempts
+  // Forcefully prefer real API
   let apiAvailable = false;
   
   // Try multiple health endpoints with multiple attempts
-  const healthEndpoints = ['/health', '/api/health', '/railway-health'];
-  const maxRetries = 3;
+  const healthEndpoints = ['/health', '/api/health', '/railway-health', '/api/scraper-status'];
+  const maxRetries = 5; // Increase retries
+  const timeout = 8000;  // Increase timeout
   
   for (const endpoint of healthEndpoints) {
     if (apiAvailable) break;
@@ -58,17 +64,18 @@ const setupEnvironment = async () => {
       
       try {
         // Try with a longer timeout
-        const isAvailable = await testApiConnection(`${apiUrl}${endpoint}`, 5000);
+        const isAvailable = await testApiConnection(`${apiUrl}${endpoint}`, timeout);
         if (isAvailable) {
           apiAvailable = true;
           console.log(`✅ API server is available at ${apiUrl}${endpoint}`);
           break;
         }
         
-        // Wait before retry
+        // Wait before retry with increasing delay
         if (attempt < maxRetries - 1) {
-          console.log('Waiting before retry...');
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          const delay = 1000 * (attempt + 1); // Increasing delay
+          console.log(`Waiting ${delay}ms before retry...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
         }
       } catch (error) {
         console.error(`Error checking API availability: ${error.message}`);
@@ -76,16 +83,12 @@ const setupEnvironment = async () => {
     }
   }
   
-  if (!apiAvailable) {
-    console.warn('⚠️ API server is not available after multiple attempts');
-  }
-  
   // Set environment variables for child processes
   const env = {
     ...process.env,
     REACT_APP_API_URL: apiUrl,
     REACT_APP_MOCK_API_URL: mockApiUrl,
-    REACT_APP_USE_MOCK_API: String(!apiAvailable)
+    REACT_APP_USE_MOCK_API: 'false' // Force to use real API and handle fallback in code
   };
   
   return { env, apiAvailable };

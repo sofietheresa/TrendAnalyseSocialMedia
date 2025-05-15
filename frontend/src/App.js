@@ -468,13 +468,6 @@ function App() {
             {/* Navigation Links */}
             <div className="nav-links-container">
               <Link 
-                to="/" 
-                className={`nav-link ${activePage === 'home' ? 'active-nav-link' : ''}`} 
-                onClick={() => setActivePage('home')}
-              >
-                Startseite
-              </Link>
-              <Link 
                 to="/pipeline" 
                 className={`nav-link ${activePage === 'pipeline' ? 'active-nav-link' : ''}`} 
                 onClick={() => setActivePage('pipeline')}
