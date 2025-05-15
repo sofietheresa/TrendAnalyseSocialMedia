@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Spinner } from 'react-bootstrap';
+import { Card, Row, Col, Spinner, Alert } from 'react-bootstrap';
 import ScraperStatus from './ScraperStatus';
 import DailyStats from './DailyStats';
 
@@ -15,18 +15,28 @@ const Dashboard = () => {
             setError(null);
 
             // Fetch scraper status
+            console.log('Fetching scraper status...');
             const statusResponse = await fetch('/api/scraper-status');
+            if (!statusResponse.ok) {
+                throw new Error(`HTTP error! status: ${statusResponse.status}`);
+            }
             const statusData = await statusResponse.json();
+            console.log('Scraper status data:', statusData);
 
             // Fetch daily stats
+            console.log('Fetching daily stats...');
             const statsResponse = await fetch('/api/daily-stats');
+            if (!statsResponse.ok) {
+                throw new Error(`HTTP error! status: ${statsResponse.status}`);
+            }
             const statsData = await statsResponse.json();
+            console.log('Daily stats data:', statsData);
 
             setScraperStatus(statusData);
             setDailyStats(statsData);
         } catch (err) {
-            setError('Fehler beim Laden der Daten');
             console.error('Error fetching data:', err);
+            setError(`Fehler beim Laden der Daten: ${err.message}`);
         } finally {
             setLoading(false);
         }
@@ -41,7 +51,7 @@ const Dashboard = () => {
 
     if (loading) {
         return (
-            <div className="loading-container">
+            <div className="loading-container d-flex justify-content-center align-items-center" style={{ minHeight: '200px' }}>
                 <Spinner animation="border" role="status">
                     <span className="visually-hidden">Laden...</span>
                 </Spinner>
@@ -52,7 +62,10 @@ const Dashboard = () => {
     if (error) {
         return (
             <div className="error-container">
-                <p>Fehler beim Laden der Daten: {error}</p>
+                <Alert variant="danger">
+                    <Alert.Heading>Fehler beim Laden der Daten</Alert.Heading>
+                    <p>{error}</p>
+                </Alert>
             </div>
         );
     }
