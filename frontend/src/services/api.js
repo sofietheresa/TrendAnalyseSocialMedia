@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+// API URL configuration with Railway deployment URL
+const API_URL = process.env.REACT_APP_API_URL || 
+                'https://trendanalysesocialmedia-production.up.railway.app';
 const API_KEY = process.env.REACT_APP_API_KEY;
 
 // Axios-Instanz mit Standardkonfiguration
@@ -28,6 +30,26 @@ export const fetchSocialMediaData = async () => {
         return response.data.data;
     } catch (error) {
         console.error('Error fetching social media data:', error);
+        throw error;
+    }
+};
+
+export const fetchScraperStatus = async () => {
+    try {
+        const response = await api.get('/api/scraper-status');
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching scraper status:', error);
+        throw error;
+    }
+};
+
+export const fetchDailyStats = async () => {
+    try {
+        const response = await api.get('/api/daily-stats');
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching daily stats:', error);
         throw error;
     }
 };

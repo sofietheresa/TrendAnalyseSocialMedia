@@ -35,7 +35,9 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "https://trendanalysesocialmedia.vercel.app",
-        "https://trendanalysesocialmedia-production.up.railway.app"
+        "https://trendanalysesocialmedia-production.up.railway.app",
+        "https://trendanalysesocialmedia-frontend.vercel.app",
+        "*"  # Allow all origins temporarily for debugging
     ],
     allow_credentials=True,
     allow_methods=["*"],

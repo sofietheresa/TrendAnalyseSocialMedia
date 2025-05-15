@@ -2,11 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Spinner, Alert } from 'react-bootstrap';
 import ScraperStatus from './ScraperStatus';
 import DailyStats from './DailyStats';
-
-// Lokale Entwicklung verwendet Port 5000, Produktion verwendet die Umgebungsvariable
-const API_BASE_URL = process.env.NODE_ENV === 'development' 
-    ? 'https://trendanalysesocialmedia-production.up.railway.app' 
-    : (process.env.REACT_APP_API_URL || 'https://trendanalysesocialmedia-production.up.railway.app');
+import { fetchScraperStatus, fetchDailyStats } from '../services/api';
 
 const Dashboard = () => {
     const [scraperStatus, setScraperStatus] = useState(null);
@@ -19,26 +15,13 @@ const Dashboard = () => {
             setLoading(true);
             setError(null);
 
-            console.log('Fetching data from:', `${API_BASE_URL}/api/scraper-status`);
+            console.log('Fetching scraper status and daily stats');
 
-            // Fetch scraper status
-            const statusResponse = await fetch(`${API_BASE_URL}/api/scraper-status`);
-            if (!statusResponse.ok) {
-                const errorText = await statusResponse.text();
-                console.error('Status response error:', errorText);
-                throw new Error(`HTTP error! status: ${statusResponse.status}`);
-            }
-            const statusData = await statusResponse.json();
+            // Fetch data using our API service functions
+            const statusData = await fetchScraperStatus();
             console.log('Received status data:', statusData);
 
-            // Fetch daily stats
-            const statsResponse = await fetch(`${API_BASE_URL}/api/daily-stats`);
-            if (!statsResponse.ok) {
-                const errorText = await statsResponse.text();
-                console.error('Stats response error:', errorText);
-                throw new Error(`HTTP error! status: ${statsResponse.status}`);
-            }
-            const statsData = await statsResponse.json();
+            const statsData = await fetchDailyStats();
             console.log('Received stats data:', statsData);
 
             setScraperStatus(statusData);
