@@ -1,1 +1,1 @@
-web: pip install -r requirements.txt && cd app && python railway.py 
+web: pip install -r requirements.txt && cd app && chmod +x run_railway.sh && ./run_railway.sh 
