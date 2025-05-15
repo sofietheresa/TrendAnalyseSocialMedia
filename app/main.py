@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, text
 import os
@@ -588,4 +588,106 @@ async def get_topic_model(request: TopicModelRequest):
         }
     except Exception as e:
         logger.error(f"Fehler im Topic-Model-Endpunkt: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/recent-data")
+async def get_recent_data(
+    platform: str = Query("reddit", description="Platform to get data from (reddit, tiktok, youtube)"),
+    limit: int = Query(10, ge=1, le=100, description="Maximum number of records to return")
+):
+    """
+    Returns the most recent content from the specified platform
+    
+    Args:
+        platform: One of 'reddit', 'tiktok', or 'youtube'
+        limit: Maximum number of records to return (1-100)
+    """
+    logger.info(f"Recent data endpoint called for platform: {platform}, limit: {limit}")
+    
+    try:
+        # Validate inputs
+        if platform not in ["reddit", "tiktok", "youtube"]:
+            raise HTTPException(status_code=400, detail="Invalid platform. Must be one of: reddit, tiktok, youtube")
+        
+        # Cap limit to prevent excessive data requests
+        limit = min(int(limit), 100)
+        
+        # Get database connection
+        db = get_db_connection()
+        
+        # Set up query based on platform
+        table_name = None
+        query = None
+        
+        if platform == "reddit":
+            table_name = "reddit_data"
+            query = """
+                SELECT id, title, text, author, 
+                       COALESCE(created_utc, 0) as created_at, 
+                       COALESCE(url, '') as url, 
+                       scraped_at
+                FROM reddit_data
+                ORDER BY scraped_at DESC
+                LIMIT :limit
+            """
+        elif platform == "tiktok":
+            table_name = "tiktok_data"
+            query = """
+                SELECT id, description as text, author_username as author,
+                       COALESCE(created_time, 0) as created_at, 
+                       COALESCE(video_url, '') as url, 
+                       scraped_at
+                FROM tiktok_data
+                ORDER BY scraped_at DESC
+                LIMIT :limit
+            """
+        elif platform == "youtube":
+            table_name = "youtube_data"
+            query = """
+                SELECT video_id as id, title, description as text, 
+                       channel_title as author, published_at as created_at, 
+                       COALESCE(url, '') as url, scraped_at, trending_date
+                FROM youtube_data
+                ORDER BY scraped_at DESC
+                LIMIT :limit
+            """
+        
+        # Verify table exists
+        with db.connect() as conn:
+            check_query = f"""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = '{table_name}'
+                )
+            """
+            result = conn.execute(text(check_query))
+            table_exists = result.scalar()
+            
+            if not table_exists:
+                logger.warning(f"Table {table_name} does not exist")
+                return {"data": []}
+            
+            # Execute query
+            logger.debug(f"Executing query: {query}")
+            result = conn.execute(text(query), {"limit": limit})
+            
+            # Process results
+            data = []
+            for row in result:
+                item = {}
+                for column, value in row._mapping.items():
+                    # Handle datetime objects
+                    if isinstance(value, datetime):
+                        item[column] = value.isoformat()
+                    else:
+                        item[column] = value
+                data.append(item)
+            
+            logger.info(f"Retrieved {len(data)} records for {platform}")
+            return {"data": data}
+    
+    except Exception as e:
+        logger.error(f"Error retrieving recent {platform} data: {str(e)}")
+        logger.exception("Detailed error:")
         raise HTTPException(status_code=500, detail=str(e)) 
