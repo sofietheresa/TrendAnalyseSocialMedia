@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getMockDataStatus } from '../services/api';
+import { getMockDataStatus, useMockApi } from '../services/api';
 
 /**
  * Component that displays a notification when mock data is being used
@@ -33,8 +33,9 @@ const MockDataNotification = () => {
     <div
       style={{
         position: 'fixed',
-        bottom: '15px',
-        right: '15px',
+        top: '80px', // Position below navbar
+        left: '50%',
+        transform: 'translateX(-50%)',
         backgroundColor: '#f8d7da',
         color: '#842029',
         borderRadius: '5px',
@@ -42,15 +43,29 @@ const MockDataNotification = () => {
         fontSize: '14px',
         boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
         zIndex: 1000,
-        maxWidth: '300px',
-        border: '1px solid #f5c2c7'
+        maxWidth: '500px',
+        border: '1px solid #f5c2c7',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center'
       }}
     >
-      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
-        ⚠️ Mock-Daten in Verwendung
-      </div>
       <div>
-        API-Verbindung nicht verfügbar. Es werden Testdaten angezeigt, bis die Verbindung wiederhergestellt ist.
+        <div style={{ fontWeight: 'bold', marginBottom: '5px', fontSize: '16px' }}>
+          ⚠️ ENTWICKLUNGSMODUS: Mock-Daten in Verwendung
+        </div>
+        <div>
+          {useMockApi ? (
+            <span>
+              Die Anwendung verwendet derzeit Testdaten, da die echten API-Endpunkte noch entwickelt werden.
+            </span>
+          ) : (
+            <span>
+              API-Verbindung nicht verfügbar. Es werden Testdaten angezeigt, bis die Verbindung wiederhergestellt ist.
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

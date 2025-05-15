@@ -1104,3 +1104,28 @@ psycopg2.InterfaceError: connection already closed
 2025-05-15 22:58:18,157 [INFO] Successfully fetched trending videos from YouTube API
 2025-05-15 22:58:18,157 [INFO] Found 50 trending videos
 2025-05-15 22:58:20,741 [INFO] Successfully stored 50 YouTube videos in the database
+2025-05-15 23:15:04,723 [INFO] Starting YouTube scraping for region DE...
+2025-05-15 23:15:05,014 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-15 23:15:05,014 [INFO] Found 50 trending videos
+2025-05-15 23:15:07,645 [INFO] Successfully stored 50 YouTube videos in the database
+2025-05-15 23:31:52,649 [INFO] Starting YouTube scraping for region DE...
+2025-05-15 23:31:53,037 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-15 23:31:53,037 [INFO] Found 50 trending videos
+2025-05-15 23:31:55,758 [INFO] Successfully stored 50 YouTube videos in the database
+2025-05-15 23:39:07,320 [ERROR] Database connection error: connection to server at "caboose.proxy.rlwy.net" (34.1.255.159), port 25158 failed: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+2025-05-15 23:39:07,322 [WARNING] Error checking last scrape time: connection to server at "caboose.proxy.rlwy.net" (34.1.255.159), port 25158 failed: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+2025-05-15 23:39:07,323 [INFO] Starting YouTube scraping for region DE...
+2025-05-15 23:39:07,888 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-15 23:39:07,888 [INFO] Found 50 trending videos
+2025-05-15 23:39:10,920 [INFO] Inserted 0 new videos and updated 50 existing videos in the database
+2025-05-15 23:39:10,920 [INFO] Successfully stored 50 YouTube videos in the database
+2025-05-15 23:48:38,368 [INFO] Starting YouTube scraping for region DE...
+2025-05-15 23:48:38,651 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-15 23:48:38,651 [INFO] Found 50 trending videos
+2025-05-15 23:48:41,287 [INFO] Successfully stored 50 YouTube videos in the database

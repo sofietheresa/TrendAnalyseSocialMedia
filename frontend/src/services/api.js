@@ -19,12 +19,14 @@ const api = axios.create({
     withCredentials: false
 });
 
-// Clearly mark if mock data is being used for visibility
-export const useMockApi = false; // Mock API explizit deaktivieren
+// IMPORTANT: Set this to false when real FastAPI endpoints are available
+// This is a temporary configuration until the backend API is fully implemented
+export const useMockApi = false; // Set to false to use real API endpoints
+
 console.log('Using mock API:', useMockApi);
 
 // Create a global state for tracking mock data usage
-export let usingMockData = false;
+export let usingMockData = useMockApi; // Initialize with our config value
 
 // Function to check and set mock data usage state
 export const setMockDataStatus = (isMockData) => {
@@ -44,6 +46,12 @@ const RETRY_DELAY = 1000; // 1 second between retries
 
 // Helper function for API calls with better retry logic
 const apiCall = async (endpoint, method = 'get', data = null, options = {}, retries = MAX_RETRIES) => {
+    // If we're configured to use mock data, skip real API call attempts
+    if (useMockApi) {
+        setMockDataStatus(true);
+        throw new Error('Using mock data by configuration');
+    }
+
     try {
         // Reset mock data status
         setMockDataStatus(false);
@@ -120,6 +128,22 @@ export const fetchRecentData = async (platform = 'reddit', limit = 10) => {
     console.log(`Fetching recent ${platform} data (limit: ${limit})...`);
     
     try {
+        // Check if we should use mock data by configuration
+        if (useMockApi) {
+            console.log(`Using mock data for ${platform} by configuration`);
+            setMockDataStatus(true);
+            
+            // Import and return mock data directly
+            const { getMockData } = await import('../mock-api/data');
+            const mockData = getMockData(platform, limit);
+            
+            return {
+                data: mockData,
+                isMockData: true,
+                message: `Using mock data for ${platform} (configured to use mock data)`
+            };
+        }
+        
         // Always reset mock data status at start of request
         setMockDataStatus(false);
         
@@ -268,6 +292,17 @@ export const fetchTopics = async (startDate, endDate) => {
 // New function to fetch topic model data with BERT
 export const fetchTopicModel = async (startDate = null, endDate = null, platforms = ["reddit", "tiktok", "youtube"], numTopics = 5) => {
     try {
+        // Check if we should use mock data by configuration
+        if (useMockApi) {
+            console.log(`Using mock topic model data by configuration`);
+            setMockDataStatus(true);
+            
+            // Generate mock topic data
+            const mockTopicData = generateMockTopicData(numTopics, startDate, endDate);
+            
+            return mockTopicData;
+        }
+        
         // Always reset mock data status at start of request
         setMockDataStatus(false);
         
@@ -300,45 +335,141 @@ export const fetchTopicModel = async (startDate = null, endDate = null, platform
         // Mark as using mock data
         setMockDataStatus(true);
         
-        // Provide detailed error messages based on the error type
-        if (error.response) {
-            console.error('Server response:', error.response.data);
-            return {
-                error: `Serverfehler: ${error.response.data.detail || 'Unbekannter Fehler'}`,
-                topics: [],
-                metrics: {
-                    coherence_score: 0,
-                    diversity_score: 0,
-                    total_documents: 0,
-                    document_coverage: 0
-                },
-                time_range: {
-                    start_date: startDate || new Date(Date.now() - 3*24*60*60*1000).toISOString().split('T')[0],
-                    end_date: endDate || new Date().toISOString().split('T')[0]
-                }
-            };
-        } else if (error.request) {
-            return {
-                error: 'Keine Verbindung zum Server möglich',
-                topics: [],
-                metrics: null,
-                time_range: {
-                    start_date: startDate || new Date(Date.now() - 3*24*60*60*1000).toISOString().split('T')[0],
-                    end_date: endDate || new Date().toISOString().split('T')[0]
-                }
-            };
-        } else {
-            return {
-                error: 'Fehler beim Laden der Topic-Daten',
-                topics: [],
-                metrics: null,
-                time_range: {
-                    start_date: startDate || new Date(Date.now() - 3*24*60*60*1000).toISOString().split('T')[0],
-                    end_date: endDate || new Date().toISOString().split('T')[0]
-                }
-            };
-        }
+        // Generate mock topic data as fallback
+        const mockTopicData = generateMockTopicData(numTopics, startDate, endDate);
+        return mockTopicData;
     }
+};
+
+/**
+ * Generates mock topic model data for testing and development
+ * @param {number} numTopics - Number of topics to generate
+ * @param {string} startDate - Start date for time range (ISO format)
+ * @param {string} endDate - End date for time range (ISO format)
+ * @returns {Object} Mock topic model data
+ */
+const generateMockTopicData = (numTopics = 5, startDate = null, endDate = null) => {
+    // Use provided dates or generate defaults
+    const actualStartDate = startDate || new Date(Date.now() - 3*24*60*60*1000).toISOString().split('T')[0];
+    const actualEndDate = endDate || new Date().toISOString().split('T')[0];
+    
+    // Convert dates to Date objects for calculations
+    const startDateObj = new Date(actualStartDate);
+    const endDateObj = new Date(actualEndDate);
+    
+    // Calculate number of days in the range
+    const diffTime = Math.abs(endDateObj - startDateObj);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    
+    // Generate date array for the range
+    const dateArray = [];
+    for (let i = 0; i < diffDays; i++) {
+        const date = new Date(startDateObj);
+        date.setDate(date.getDate() + i);
+        dateArray.push(date.toISOString().split('T')[0]);
+    }
+    
+    // Generate realistic topic names
+    const mockTopicNames = [
+        "AI and Technology",
+        "Climate Change",
+        "Remote Work Trends",
+        "Digital Healthcare",
+        "Financial Markets",
+        "Sustainable Living",
+        "Gaming Industry",
+        "Space Exploration",
+        "Cybersecurity",
+        "Social Media Trends"
+    ];
+    
+    // Generate mock topics
+    const mockTopics = [];
+    
+    // Add "Other" topic as ID -1
+    mockTopics.push({
+        id: -1,
+        name: "Other",
+        keywords: ["miscellaneous", "various", "other", "misc", "etc"],
+        weight: 0.05,
+        coherence_score: 0.35
+    });
+    
+    // Add regular topics
+    for (let i = 0; i < Math.min(numTopics, mockTopicNames.length); i++) {
+        mockTopics.push({
+            id: i,
+            name: mockTopicNames[i],
+            keywords: generateMockKeywords(mockTopicNames[i]),
+            weight: (0.95 - (i * 0.1)).toFixed(2),
+            coherence_score: (0.9 - (i * 0.05)).toFixed(2)
+        });
+    }
+    
+    // Generate mock topic counts by date
+    const mockTopicCountsByDate = {};
+    
+    // For each topic (except "Other")
+    for (let i = 0; i < mockTopics.length; i++) {
+        if (mockTopics[i].id === -1) continue;
+        
+        const topicId = mockTopics[i].id;
+        mockTopicCountsByDate[topicId] = {};
+        
+        // Generate random counts for each date with some trend pattern
+        // Topics earlier in the list get higher numbers to show as "trending"
+        const baseCount = 50 - (i * 5);
+        
+        dateArray.forEach(date => {
+            // Generate random count with trend pattern
+            const dayOfMonth = new Date(date).getDate();
+            const trendFactor = Math.sin(dayOfMonth / 5) + 1; // Creates a wave pattern
+            const randomVariation = Math.random() * 15;
+            
+            // Ensure count is positive
+            const count = Math.max(5, Math.floor((baseCount + randomVariation) * trendFactor));
+            
+            mockTopicCountsByDate[topicId][date] = count;
+        });
+    }
+    
+    return {
+        topics: mockTopics,
+        topic_counts_by_date: mockTopicCountsByDate,
+        metrics: {
+            coherence_score: 0.78,
+            diversity_score: 0.65,
+            document_coverage: 0.92,
+            total_documents: 15764
+        },
+        time_range: {
+            start_date: actualStartDate,
+            end_date: actualEndDate
+        },
+        isMockData: true
+    };
+};
+
+/**
+ * Generates mock keywords for a topic
+ * @param {string} topicName - Topic name
+ * @returns {Array<string>} Array of relevant keywords
+ */
+const generateMockKeywords = (topicName) => {
+    const keywordMap = {
+        "AI and Technology": ["artificial intelligence", "machine learning", "neural networks", "robotics", "automation"],
+        "Climate Change": ["global warming", "carbon emissions", "green energy", "sustainable", "climate crisis"],
+        "Remote Work Trends": ["work from home", "telecommuting", "digital nomad", "hybrid work", "remote collaboration"],
+        "Digital Healthcare": ["telemedicine", "health tech", "digital health", "medical innovations", "health apps"],
+        "Financial Markets": ["stocks", "investments", "crypto", "market trends", "financial analysis"],
+        "Sustainable Living": ["eco-friendly", "zero waste", "sustainability", "green living", "renewable"],
+        "Gaming Industry": ["video games", "esports", "game development", "gaming community", "game streaming"],
+        "Space Exploration": ["NASA", "SpaceX", "Mars mission", "astronomy", "space travel"],
+        "Cybersecurity": ["data protection", "cyber threats", "network security", "privacy", "encryption"],
+        "Social Media Trends": ["viral content", "social platforms", "influencers", "engagement", "digital marketing"]
+    };
+    
+    return keywordMap[topicName] || ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"];
 };
 
 export const fetchSourceStats = async () => {

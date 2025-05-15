@@ -1,4 +1,4 @@
-from zenml.steps import step
+from src.pipelines import step
 import pandas as pd
 from pathlib import Path
 import logging
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 @step
 def ingest_data() -> pd.DataFrame:
     """
-    ZenML Step: Lädt, vereinheitlicht und kombiniert Social-Media-Daten
+    Step: Lädt, vereinheitlicht und kombiniert Social-Media-Daten
     aus der SQLite-Datenbank. Nur neue Einträge (basierend auf Timestamp)
     werden berücksichtigt.
     """
@@ -285,48 +285,27 @@ def ingest_data() -> pd.DataFrame:
             else:
                 logger.warning("Required columns for Reddit not found, skipping")
 
+        # Combine all data
+        if dfs:
+            combined_df = pd.concat(dfs, ignore_index=True)
+            logger.info(f"Combined data shape: {combined_df.shape}")
+            
+            # Filter for recent data
+            if 'timestamp' in combined_df.columns:
+                combined_df = combined_df[combined_df['timestamp'] >= pd.Timestamp(last_run)]
+                logger.info(f"Filtered data shape (after timestamp filter): {combined_df.shape}")
+            
+            # Update last run timestamp
+            with open(last_run_file, "w") as f:
+                f.write(datetime.now().isoformat())
+            
+            # Save processed data
+            combined_df.to_csv(processed_data_dir / "processed_data.csv", index=False)
+            return combined_df
+        else:
+            logger.warning("No data found from any platform")
+            return pd.DataFrame(columns=['platform', 'content', 'engagement', 'timestamp'])
+            
     except Exception as e:
-        logger.error(f"Error accessing database: {str(e)}", exc_info=True)
-        # If an error occurs, create an empty DataFrame with the expected columns
+        logger.error(f"Error during data ingestion: {e}")
         return pd.DataFrame(columns=['platform', 'content', 'engagement', 'timestamp'])
-    finally:
-        conn.close()
-
-    # Combine all dataframes
-    if not dfs:
-        logger.warning("No data found in the database.")
-        return pd.DataFrame(columns=['platform', 'content', 'engagement', 'timestamp'])
-
-    logger.info(f"Combining {len(dfs)} dataframes...")
-    combined_df = pd.concat(dfs, ignore_index=True)
-    logger.info(f"Combined data shape: {combined_df.shape}")
-
-    # Ensure all required columns exist
-    if 'content' not in combined_df.columns:
-        combined_df['content'] = ''
-    if 'engagement' not in combined_df.columns:
-        combined_df['engagement'] = 0
-    if 'timestamp' not in combined_df.columns:
-        combined_df['timestamp'] = pd.NaT
-
-    # Drop duplicates and save the processed data
-    combined_df = combined_df.drop_duplicates(subset=['content', 'timestamp'])
-    logger.info(f"Final data shape after removing duplicates: {combined_df.shape}")
-
-    # Ensure timestamp is in datetime format
-    combined_df['timestamp'] = pd.to_datetime(combined_df['timestamp'], errors='coerce')
-    # Drop rows with invalid timestamps
-    if combined_df['timestamp'].isna().any():
-        logger.warning(f"Dropping {combined_df['timestamp'].isna().sum()} rows with invalid timestamps")
-        combined_df = combined_df.dropna(subset=['timestamp'])
-
-    # Save timestamp of this run
-    with open(last_run_file, "w") as f:
-        f.write(datetime.now().isoformat())
-
-    output_file = processed_data_dir / "processed_data.csv"
-    combined_df.to_csv(output_file, index=False)
-    logger.info(f"Saved processed data to {output_file}")
-
-    logger.info(f"Ingestion complete: {len(combined_df)} rows processed")
-    return combined_df

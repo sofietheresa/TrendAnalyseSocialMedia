@@ -13,7 +13,7 @@ from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from src.pipelines.mlops_pipeline import MLOpsPipeline
+from src.pipelines.mlops_pipeline import MLOpsPipeline, run_mlops_pipeline
 from src.logger import get_logger
 
 # Configure logger
@@ -208,27 +208,88 @@ async def get_model_metrics(
     """
     logger.info(f"Request for metrics of model: {model_name}, version: {version}")
     
-    # Check for actual metrics in model registry
-    if version:
-        eval_path = MODEL_REGISTRY_PATH / model_name / version / "evaluation_results.json"
-        if eval_path.exists():
-            with open(eval_path, "r") as f:
-                metrics = json.load(f)
-                return ModelMetrics(**metrics)
+    try:
+        # Check if model exists in registry index
+        registry_index_path = MODEL_REGISTRY_PATH / "registry_index.json"
+        if registry_index_path.exists():
+            with open(registry_index_path, "r") as f:
+                registry_index = json.load(f)
+            
+            # If model exists in registry and version is not specified,
+            # use the production version or latest version
+            if model_name in registry_index.get("models", {}) and not version:
+                versions = registry_index["models"][model_name]["versions"]
+                if versions:
+                    # Get the production version or the latest version
+                    prod_version = registry_index["models"][model_name].get("production_version")
+                    version = prod_version or versions[-1]["version"]
+                    logger.info(f"Using version {version} for model {model_name}")
+        
+        # Look for evaluation results in different locations
+        potential_paths = [
+            MODEL_REGISTRY_PATH / model_name / (version or "latest") / "evaluation_results.json", 
+            MODEL_REGISTRY_PATH / model_name / (version or "latest") / "model_evaluation.json",
+            Path(f"models/registry/{model_name}/{version or 'latest'}/evaluation_results.json"),
+            Path(f"results/{model_name}/{version or 'latest'}/evaluation.json")
+        ]
+        
+        for eval_path in potential_paths:
+            if eval_path.exists():
+                logger.info(f"Found metrics at {eval_path}")
+                with open(eval_path, "r") as f:
+                    metrics = json.load(f)
+                    # Ensure we have all required fields
+                    required_fields = ["coherence_score", "diversity_score", "document_coverage", "total_documents"]
+                    for field in required_fields:
+                        if field not in metrics:
+                            metrics[field] = 0.0 if field != "total_documents" else 0
+                    return ModelMetrics(**metrics)
+    except Exception as e:
+        logger.warning(f"Error retrieving metrics for {model_name} v{version}: {str(e)}")
     
-    # Return mock metrics if no actual metrics found
-    return ModelMetrics(
-        coherence_score=0.78,
-        diversity_score=0.65,
-        document_coverage=0.92,
-        total_documents=15764,
-        uniqueness_score=0.81,
-        silhouette_score=0.72,
-        topic_separation=0.68,
-        avg_topic_similarity=0.43,
-        execution_time=183.4,
-        topic_quality=0.75
-    )
+    # If we get here, we didn't find actual metrics, use mock data based on the model name
+    mock_metrics = {
+        "topic_model": {
+            "coherence_score": 0.78,
+            "diversity_score": 0.65,
+            "document_coverage": 0.92,
+            "total_documents": 15764,
+            "uniqueness_score": 0.81,
+            "silhouette_score": 0.72,
+            "topic_separation": 0.68,
+            "avg_topic_similarity": 0.43,
+            "execution_time": 183.4,
+            "topic_quality": 0.75
+        },
+        "sentiment_classifier": {
+            "coherence_score": 0.82,
+            "diversity_score": 0.70,
+            "document_coverage": 0.95,
+            "total_documents": 22345,
+            "uniqueness_score": 0.76,
+            "silhouette_score": 0.69,
+            "topic_separation": 0.71,
+            "avg_topic_similarity": 0.38,
+            "execution_time": 205.2,
+            "topic_quality": 0.82
+        },
+        "anomaly_detector": {
+            "coherence_score": 0.74,
+            "diversity_score": 0.68,
+            "document_coverage": 0.88,
+            "total_documents": 8932,
+            "uniqueness_score": 0.77,
+            "silhouette_score": 0.65,
+            "topic_separation": 0.64,
+            "avg_topic_similarity": 0.45,
+            "execution_time": 142.7,
+            "topic_quality": 0.72
+        }
+    }
+    
+    metrics_data = mock_metrics.get(model_name, mock_metrics["topic_model"])
+    logger.info(f"Using mock metrics for {model_name} v{version}")
+    return ModelMetrics(**metrics_data)
 
 @router.get("/models/{model_name}/drift", response_model=DriftMetrics)
 async def get_model_drift(
@@ -273,14 +334,37 @@ async def execute_pipeline(pipeline_id: str):
     if pipeline_id not in pipeline_to_model:
         raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_id} not found")
     
-    # In production, this would actually trigger the pipeline
-    # For now, just return a mock response
-    execution_id = f"exec-{datetime.now().strftime('%Y%m%d%H%M%S')}"
-    
-    return {
-        "execution_id": execution_id,
-        "pipeline_id": pipeline_id,
-        "status": "started",
-        "startTime": datetime.now().isoformat(),
-        "message": f"Pipeline {pipeline_id} execution started with ID {execution_id}"
-    } 
+    try:
+        # Actually run the MLOpsPipeline instead of just returning a mock response
+        model_name = pipeline_to_model[pipeline_id]
+        execution_id = f"exec-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        
+        # Execute the pipeline asynchronously without blocking the response
+        def run_pipeline():
+            try:
+                results = run_mlops_pipeline(model_name, data_path="data/processed")
+                logger.info(f"Pipeline {pipeline_id} execution complete with results: {results}")
+                # Save results to the registry
+                registry_dir = MODEL_REGISTRY_PATH / model_name / results.get("version", "latest")
+                registry_dir.mkdir(parents=True, exist_ok=True)
+                with open(registry_dir / "pipeline_results.json", "w") as f:
+                    json.dump(results, f, indent=2)
+            except Exception as e:
+                logger.error(f"Error executing pipeline {pipeline_id}: {str(e)}")
+        
+        # Start the pipeline in a background thread
+        import threading
+        thread = threading.Thread(target=run_pipeline)
+        thread.daemon = True
+        thread.start()
+        
+        return {
+            "execution_id": execution_id,
+            "pipeline_id": pipeline_id,
+            "status": "started",
+            "startTime": datetime.now().isoformat(),
+            "message": f"Pipeline {pipeline_id} execution started with ID {execution_id}"
+        }
+    except Exception as e:
+        logger.error(f"Error initiating pipeline {pipeline_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error executing pipeline: {str(e)}") 
