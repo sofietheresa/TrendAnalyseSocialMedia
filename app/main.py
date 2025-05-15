@@ -1,5 +1,6 @@
-from flask import Flask, jsonify, request, g
-from flask_cors import CORS
+from fastapi import FastAPI, Depends, HTTPException, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine, text
 import os
 from datetime import datetime, timedelta
@@ -8,6 +9,7 @@ import logging
 import sys
 import traceback
 import time
+import uvicorn
 
 # Enhanced logging setup
 logging.basicConfig(
@@ -21,50 +23,51 @@ logger = logging.getLogger(__name__)
 logger.info(f"Environment: {os.getenv('FLASK_ENV', 'production')}")
 logger.info(f"Port: {os.getenv('PORT', '8080')}")
 
-app = Flask(__name__)
-
-# Request logging middleware
-@app.before_request
-def start_timer():
-    g.start = time.time()
-    logger.info(f"Request started: {request.method} {request.path} ({request.remote_addr})")
-
-@app.after_request
-def log_request(response):
-    now = time.time()
-    duration = round(now - g.start, 2)
-    logger.info(f"Request completed: {request.method} {request.path} - Status: {response.status_code} - Duration: {duration}s")
-    return response
-
-# Error handler for all exceptions
-@app.errorhandler(Exception)
-def handle_exception(e):
-    logger.error(f"Unhandled exception: {str(e)}")
-    logger.error(traceback.format_exc())
-    return jsonify({
-        "error": str(e),
-        "traceback": traceback.format_exc()
-    }), 500
-
-# CORS configuration
-CORS(app, resources={
-    r"/api/*": {
-        "origins": [
-            "http://localhost:3000",  # React Dev Server
-            "https://trendanalysesocialmedia.vercel.app",  # Produktions-URL
-            "https://trendanalysesocialmedia-production.up.railway.app"  # Railway App URL
-        ]
-    }
-})
-
-# Optimize Flask app configuration
-app.config.update(
-    JSONIFY_PRETTYPRINT_REGULAR=False,  # Disable pretty printing of JSON
-    JSON_SORT_KEYS=False,  # Disable JSON key sorting
-    PROPAGATE_EXCEPTIONS=True  # Better error handling
+app = FastAPI(
+    title="TrendAnalyseSocialMedia API",
+    description="API for analyzing social media trends",
+    version="1.0.0"
 )
 
-# Single database engine with connection pooling configuration
+# CORS configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",  # React Dev Server
+        "https://trendanalysesocialmedia.vercel.app",  # Produktions-URL
+        "https://trendanalysesocialmedia-production.up.railway.app"  # Railway App URL
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Request timing middleware
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.time()
+    logger.info(f"Request started: {request.method} {request.url.path} ({request.client.host if request.client else 'unknown'})")
+    
+    try:
+        response = await call_next(request)
+        process_time = time.time() - start_time
+        response.headers["X-Process-Time"] = str(process_time)
+        logger.info(f"Request completed: {request.method} {request.url.path} - Status: {response.status_code} - Duration: {process_time:.2f}s")
+        return response
+    except Exception as e:
+        logger.error(f"Request failed: {request.method} {request.url.path} - Error: {str(e)}")
+        logger.error(traceback.format_exc())
+        process_time = time.time() - start_time
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": str(e),
+                "traceback": traceback.format_exc(),
+                "duration": f"{process_time:.2f}s"
+            }
+        )
+
+# Database connection
 db_engine = None
 
 def get_db_connection():
@@ -125,16 +128,16 @@ def get_db_connection():
                 logger.error(traceback.format_exc())
                 raise
 
-@app.route('/')
-def root():
-    return jsonify({
+@app.get("/")
+async def root():
+    return {
         "status": "online",
         "message": "TrendAnalyseSocialMedia API is running",
         "timestamp": datetime.now().isoformat()
-    })
+    }
 
-@app.route('/health')
-def health_check():
+@app.get("/health")
+async def health_check():
     health_status = {
         "status": "online",
         "timestamp": datetime.now().isoformat(),
@@ -145,11 +148,8 @@ def health_check():
     }
     
     try:
-        global db_engine
-        if db_engine is None:
-            db_engine = get_db_connection()
-        
-        with db_engine.connect() as conn:
+        db = get_db_connection()
+        with db.connect() as conn:
             conn.execute(text("SELECT 1"))
             health_status["components"]["database"] = "healthy"
     except Exception as e:
@@ -158,17 +158,13 @@ def health_check():
         health_status["components"]["database"] = "unhealthy"
         health_status["database_error"] = str(e)
     
-    # If database is unhealthy but application is running, we still return 200
-    # but include the error details
-    return jsonify(health_status)
+    return health_status
 
-@app.route('/api/scraper-status')
-def get_scraper_status():
+@app.get("/api/scraper-status")
+async def get_scraper_status():
     try:
         logger.info("Fetching scraper status")
-        global db_engine
-        if db_engine is None:
-            db_engine = get_db_connection()
+        db = get_db_connection()
             
         cutoff_time = datetime.now() - timedelta(minutes=20)
         
@@ -185,7 +181,7 @@ def get_scraper_status():
             ('youtube_posts', 'youtube')
         ]
         
-        with db_engine.connect() as conn:
+        with db.connect() as conn:
             # Check if tables exist first
             existing_tables = []
             try:
@@ -219,22 +215,17 @@ def get_scraper_status():
                     logger.error(f"Error fetching {platform} status: {str(e)}")
                     # Continue with other tables rather than failing completely
         
-        return jsonify(status)
+        return status
     except Exception as e:
         logger.error(f"Error in scraper status: {str(e)}")
         logger.error(traceback.format_exc())
-        return jsonify({
-            'error': str(e),
-            'traceback': traceback.format_exc()
-        }), 500
+        raise HTTPException(status_code=500, detail=str(e))
 
-@app.route('/api/daily-stats')
-def get_daily_stats():
+@app.get("/api/daily-stats")
+async def get_daily_stats():
     try:
         logger.info("Fetching daily stats")
-        global db_engine
-        if db_engine is None:
-            db_engine = get_db_connection()
+        db = get_db_connection()
             
         end_date = datetime.now()
         start_date = end_date - timedelta(days=7)
@@ -252,7 +243,7 @@ def get_daily_stats():
             ('youtube_posts', 'youtube')
         ]
         
-        with db_engine.connect() as conn:
+        with db.connect() as conn:
             # Check if tables exist first
             existing_tables = []
             try:
@@ -289,16 +280,13 @@ def get_daily_stats():
                     logger.error(f"Error fetching {platform} daily stats: {str(e)}")
                     # Continue with other tables rather than failing completely
         
-        return jsonify(stats)
+        return stats
     except Exception as e:
         logger.error(f"Error in daily stats: {str(e)}")
         logger.error(traceback.format_exc())
-        return jsonify({
-            'error': str(e),
-            'traceback': traceback.format_exc()
-        }), 500
+        raise HTTPException(status_code=500, detail=str(e))
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     port = int(os.environ.get('PORT', 8080))
     logger.info(f"Starting application on port {port}")
-    app.run(host='0.0.0.0', port=port) 
+    uvicorn.run("main:app", host="0.0.0.0", port=port, log_level="info") 

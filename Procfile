@@ -1,1 +1,1 @@
-web: pip install -r requirements.txt && cd app && PORT=8080 gunicorn -c gunicorn_config.py wsgi:application 
+web: pip install -r requirements.txt && cd app && PORT=8080 uvicorn main:app --host=0.0.0.0 --port=8080 
