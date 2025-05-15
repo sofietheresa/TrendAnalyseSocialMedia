@@ -4,6 +4,11 @@ from sqlalchemy import create_engine, text
 import os
 from datetime import datetime, timedelta
 import urllib.parse
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 # CORS configuration
@@ -18,15 +23,24 @@ CORS(app, resources={
 })
 
 def get_db_connection(db_name):
-    url = os.getenv("DATABASE_URL")
-    if not url:
-        raise ValueError("DATABASE_URL environment variable is not set")
-    result = urllib.parse.urlparse(url)
-    conn_str = f"postgresql://{result.username}:{result.password}@{result.hostname}:{result.port}/{db_name}"
-    return create_engine(conn_str)
+    try:
+        url = os.getenv("DATABASE_URL")
+        if not url:
+            raise ValueError("DATABASE_URL environment variable is not set")
+        logger.info(f"Connecting to database: {db_name}")
+        result = urllib.parse.urlparse(url)
+        conn_str = f"postgresql://{result.username}:{result.password}@{result.hostname}:{result.port}/{db_name}"
+        return create_engine(conn_str)
+    except Exception as e:
+        logger.error(f"Error connecting to database {db_name}: {str(e)}")
+        raise
 
 # Dictionary für die Datenbankverbindungen
 db_engines = {}
+
+@app.route('/health')
+def health_check():
+    return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()})
 
 @app.route('/api/scraper-status')
 def get_scraper_status():
