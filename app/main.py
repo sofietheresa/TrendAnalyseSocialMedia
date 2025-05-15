@@ -172,9 +172,9 @@ async def get_scraper_status():
         
         # Tabellen, die überprüft werden sollen
         tables = [
-            ('reddit_posts', 'reddit'),
-            ('tiktok_posts', 'tiktok'),
-            ('youtube_posts', 'youtube')
+            ('reddit_data', 'reddit'),
+            ('tiktok_data', 'tiktok'),
+            ('youtube_data', 'youtube')
         ]
         
         with db.connect() as conn:
@@ -184,7 +184,7 @@ async def get_scraper_status():
                 result = conn.execute(text("""
                     SELECT table_name FROM information_schema.tables 
                     WHERE table_schema = 'public' 
-                    AND table_name IN ('reddit_posts', 'tiktok_posts', 'youtube_posts')
+                    AND table_name IN ('reddit_data', 'tiktok_data', 'youtube_data')
                 """))
                 existing_tables = [row[0] for row in result]
                 logger.info(f"Gefundene Tabellen: {existing_tables}")
@@ -210,7 +210,7 @@ async def get_scraper_status():
                         logger.info(f"{platform.capitalize()} Status aktualisiert: {status[platform]}")
                     except Exception:
                         # Versuche Fallback mit dem alten Tabellennamen
-                        alt_table = f"{platform}_data"
+                        alt_table = f"{platform}_posts"
                         logger.warning(f"Versuche Fallback-Tabelle: {alt_table}")
                         result = conn.execute(text(f"SELECT COUNT(*), MAX(scraped_at) FROM {alt_table}"))
                         count, last_update = result.fetchone()
@@ -247,9 +247,9 @@ async def get_daily_stats():
         
         # Tabellen, die überprüft werden sollen
         tables = [
-            ('reddit_posts', 'reddit'),
-            ('tiktok_posts', 'tiktok'),
-            ('youtube_posts', 'youtube')
+            ('reddit_data', 'reddit'),
+            ('tiktok_data', 'tiktok'),
+            ('youtube_data', 'youtube')
         ]
         
         with db.connect() as conn:
@@ -259,7 +259,7 @@ async def get_daily_stats():
                 result = conn.execute(text("""
                     SELECT table_name FROM information_schema.tables 
                     WHERE table_schema = 'public' 
-                    AND table_name IN ('reddit_posts', 'tiktok_posts', 'youtube_posts')
+                    AND table_name IN ('reddit_data', 'tiktok_data', 'youtube_data')
                 """))
                 existing_tables = [row[0] for row in result]
             except Exception as e:
@@ -343,19 +343,19 @@ async def get_topic_model(request: TopicModelRequest):
                 p.scraped_at
             FROM (
                 SELECT id, 'reddit' as source, title, selftext as text, scraped_at
-                FROM reddit_posts
+                FROM reddit_data
                 WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
                 
                 UNION ALL
                 
                 SELECT id, 'tiktok' as source, '' as title, description as text, scraped_at
-                FROM tiktok_posts
+                FROM tiktok_data
                 WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
                 
                 UNION ALL
                 
                 SELECT id, 'youtube' as source, title, description as text, scraped_at
-                FROM youtube_posts
+                FROM youtube_data
                 WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
             ) p
             WHERE p.source IN ({platforms_str})
