@@ -1447,3 +1447,27 @@ html, body, #root {
   }
 }
 
+.sentiment-emoji {
+  font-size: 1.1em;
+  margin-left: 5px;
+  position: relative;
+  top: -1px;
+}
+
+.topic-name .sentiment-emoji {
+  font-size: 0.8em;
+  background-color: rgba(255, 255, 255, 0.6);
+  padding: 2px 5px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.topic-stack .sentiment-emoji {
+  display: inline-block;
+  margin-left: 8px;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 3px 6px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+

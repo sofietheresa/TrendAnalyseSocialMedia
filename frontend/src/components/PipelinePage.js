@@ -30,19 +30,47 @@ const PipelinePage = () => {
         setLoading(true);
         setError(null);
         
+        // First try to fetch all pipelines to see what's available
+        const allPipelines = await fetchPipelines();
+        console.log('All available pipelines:', allPipelines);
+        
         // Fetch pipeline data from API
         const pipelineData = await fetchPipelines(selectedPipeline);
         
-        if (pipelineData.error) {
-          setError(pipelineData.error);
-          setLoading(false);
-          return;
+        console.log('Received pipeline data:', pipelineData);
+        
+        if (pipelineData && pipelineData.error) {
+          // If there's an error with specific pipeline, check if we can extract
+          // pipeline data from the all pipelines response
+          if (allPipelines && typeof allPipelines === 'object' && allPipelines[selectedPipeline]) {
+            console.log(`Found ${selectedPipeline} in all pipelines response`);
+            setPipelineData(allPipelines[selectedPipeline]);
+          } else {
+            setError(pipelineData.error);
+            setLoading(false);
+            return;
+          }
+        } else if (!pipelineData || typeof pipelineData !== 'object') {
+          // If we got invalid data for the specific pipeline but have valid all pipelines data
+          if (allPipelines && typeof allPipelines === 'object' && allPipelines[selectedPipeline]) {
+            console.log(`Using ${selectedPipeline} from all pipelines response`);
+            setPipelineData(allPipelines[selectedPipeline]);
+          } else {
+            setError('Received invalid pipeline data from server');
+            setLoading(false);
+            return;
+          }
+        } else {
+          // We have valid pipeline data, use it
+          setPipelineData(pipelineData);
         }
         
         // Fetch executions for the selected pipeline
         const executionsData = await fetchPipelineExecutions(selectedPipeline);
         
-        if (executionsData.error) {
+        console.log('Received executions data:', executionsData);
+        
+        if (executionsData && executionsData.error) {
           setError(executionsData.error);
           setLoading(false);
           return;
@@ -51,16 +79,19 @@ const PipelinePage = () => {
         // Ensure executionsData is an array before using filter
         const executionsArray = Array.isArray(executionsData) ? executionsData : [];
         
-        // Calculate stats
+        // Calculate stats - use pipeline data that was set
+        const pdata = pipelineData && typeof pipelineData === 'object' ? 
+          pipelineData : (allPipelines && allPipelines[selectedPipeline] ? 
+            allPipelines[selectedPipeline] : {});
+            
         const stats = {
           success: executionsArray.filter(exec => exec.status === "completed").length,
           failed: executionsArray.filter(exec => exec.status === "failed").length,
           running: executionsArray.filter(exec => exec.status === "running").length,
           total: executionsArray.length,
-          avgRuntime: pipelineData.averageRuntime || "00:00:00"
+          avgRuntime: pdata.averageRuntime || "00:00:00"
         };
         
-        setPipelineData(pipelineData);
         setExecutions(executionsArray);
         setPipelineStats(stats);
         setLoading(false);
@@ -197,19 +228,19 @@ const PipelinePage = () => {
         <div className="pipeline-container">
           <div className="pipeline-header">
             <div className="pipeline-title">
-              <h2>{pipelineData.name}</h2>
-              <p className="pipeline-description">{pipelineData.description}</p>
+              <h2>{pipelineData.name || 'Pipeline'}</h2>
+              <p className="pipeline-description">{pipelineData.description || 'No description available'}</p>
             </div>
             <div className="pipeline-actions">
               <button 
                 className="execute-pipeline-button"
                 onClick={handleExecutePipeline}
-                disabled={isExecuting || pipelineData.status === 'running'}
+                disabled={isExecuting || (pipelineData.status === 'running')}
               >
                 {isExecuting ? 'Starting Pipeline...' : 'Execute Pipeline'}
               </button>
-              <div className={`pipeline-status status-${pipelineData.status}`}>
-                {pipelineData.status.toUpperCase()}
+              <div className={`pipeline-status status-${pipelineData.status || 'unknown'}`}>
+                {(pipelineData.status || 'UNKNOWN').toUpperCase()}
               </div>
             </div>
           </div>
@@ -233,7 +264,7 @@ const PipelinePage = () => {
               <div className="stat-label">Running</div>
             </div>
             <div className="stat-card">
-              <div className="stat-value">{pipelineStats.avgRuntime}</div>
+              <div className="stat-value">{pipelineStats.avgRuntime || '00:00:00'}</div>
               <div className="stat-label">Avg. Runtime</div>
             </div>
           </div>
@@ -242,18 +273,18 @@ const PipelinePage = () => {
           <div className="pipeline-executions">
             <h3>Recent Executions</h3>
             <div className="executions-list">
-              {executions.length > 0 ? (
+              {executions && executions.length > 0 ? (
                 executions.map(execution => (
-                  <div key={execution.id} className={`execution-item status-${execution.status}`}>
+                  <div key={execution.id} className={`execution-item status-${execution.status || 'unknown'}`}>
                     <div className="execution-info">
-                      <div className="execution-id">{execution.id}</div>
-                      <div className="execution-trigger">{execution.trigger}</div>
+                      <div className="execution-id">{execution.id || 'N/A'}</div>
+                      <div className="execution-trigger">{execution.trigger || 'N/A'}</div>
                     </div>
                     <div className="execution-times">
                       <div>Start: {formatDate(execution.startTime)}</div>
                       <div>End: {execution.endTime ? formatDate(execution.endTime) : 'Running...'}</div>
                     </div>
-                    <div className="execution-status">{execution.status}</div>
+                    <div className="execution-status">{execution.status || 'Unknown'}</div>
                   </div>
                 ))
               ) : (
@@ -266,26 +297,26 @@ const PipelinePage = () => {
           <div className="pipeline-steps-container">
             <h3>Pipeline Steps</h3>
             <div className="pipeline-steps">
-              {pipelineData.steps && Array.isArray(pipelineData.steps) ? (
+              {pipelineData.steps && Array.isArray(pipelineData.steps) && pipelineData.steps.length > 0 ? (
                 pipelineData.steps.map((step, index) => (
-                  <div key={step.id} className="pipeline-step">
+                  <div key={step.id || index} className="pipeline-step">
                     <div className={`step-number ${getStatusClass(step.status)}`}>{index + 1}</div>
                     <div className="step-connector">
                       {index < pipelineData.steps.length - 1 && (
                         <div className={`connector-line ${
-                          pipelineData.steps[index + 1].status === 'pending' || 
-                          pipelineData.steps[index].status === 'failed' ? 
+                          (pipelineData.steps[index + 1].status === 'pending' || 
+                          step.status === 'failed') ? 
                           'connector-inactive' : ''
                         }`}></div>
                       )}
                     </div>
                     <div className={`step-content ${getStatusClass(step.status)}`}>
                       <div className="step-header">
-                        <h4>{step.name}</h4>
-                        <div className="step-status">{step.status}</div>
+                        <h4>{step.name || `Step ${index + 1}`}</h4>
+                        <div className="step-status">{step.status || 'Unknown'}</div>
                       </div>
-                      <div className="step-description">{step.description}</div>
-                      <div className="step-runtime">Runtime: {step.runtime}</div>
+                      <div className="step-description">{step.description || 'No description available'}</div>
+                      <div className="step-runtime">Runtime: {step.runtime || 'N/A'}</div>
                     </div>
                   </div>
                 ))

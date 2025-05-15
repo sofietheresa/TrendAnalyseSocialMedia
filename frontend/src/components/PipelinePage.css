@@ -107,6 +107,11 @@
   color: #d97706;
 }
 
+.status-unknown {
+  background-color: rgba(156, 163, 175, 0.15);
+  color: #6b7280;
+}
+
 @keyframes pulse {
   0% {
     opacity: 1;

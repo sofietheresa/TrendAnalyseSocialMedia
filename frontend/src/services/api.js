@@ -438,7 +438,9 @@ export const fetchPipelines = async (pipelineId = null) => {
       ? `/api/mlops/pipelines/${pipelineId}`
       : '/api/mlops/pipelines';
     
-    const response = await axios.get(url);
+    console.log(`Fetching pipelines from: ${url}`);
+    const response = await api.get(url);
+    console.log('Pipeline response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching pipeline data:', error);
@@ -454,7 +456,9 @@ export const fetchPipelines = async (pipelineId = null) => {
  */
 export const fetchPipelineExecutions = async (pipelineId) => {
   try {
-    const response = await axios.get(`/api/mlops/pipelines/${pipelineId}/executions`);
+    console.log(`Fetching pipeline executions for: ${pipelineId}`);
+    const response = await api.get(`/api/mlops/pipelines/${pipelineId}/executions`);
+    console.log('Pipeline executions response:', response.data);
     // Ensure we always return an array
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
@@ -471,7 +475,9 @@ export const fetchPipelineExecutions = async (pipelineId) => {
  */
 export const executePipeline = async (pipelineId) => {
   try {
-    const response = await axios.post(`/api/mlops/pipelines/${pipelineId}/execute`);
+    console.log(`Executing pipeline: ${pipelineId}`);
+    const response = await api.post(`/api/mlops/pipelines/${pipelineId}/execute`);
+    console.log('Pipeline execution response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error executing pipeline:', error);

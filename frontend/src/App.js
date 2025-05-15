@@ -45,6 +45,18 @@ const Homepage = () => {
   });
   const [topicCounts, setTopicCounts] = useState({});
   const [topicTrends, setTopicTrends] = useState([]);
+  const [topicSentiments, setTopicSentiments] = useState({});
+
+  // Get sentiment emoji based on sentiment score
+  const getSentimentEmoji = (sentiment) => {
+    if (!sentiment && sentiment !== 0) return '';
+    
+    if (sentiment >= 0.5) return '😄'; // Very positive
+    if (sentiment >= 0.1) return '🙂'; // Positive
+    if (sentiment > -0.1) return '😐'; // Neutral
+    if (sentiment > -0.5) return '🙁'; // Negative
+    return '😠'; // Very negative
+  };
 
   // Fetch topics data
   useEffect(() => {
@@ -67,15 +79,24 @@ const Homepage = () => {
           console.error("Error from topic model API:", response.error);
         } else {
           if (Array.isArray(response.topics)) {
-            setTopics(response.topics);
+            // Filter out topics with id -1 or name "Other"
+            const filteredTopics = response.topics.filter(topic => 
+              topic.id !== -1 && topic.name !== "Other" && topic.name !== "-1"
+            );
+            
+            setTopics(filteredTopics);
             
             // Process topic counts by date if available
             if (response.topic_counts_by_date) {
               setTopicCounts(response.topic_counts_by_date);
               
               // Process topic trends data for the chart
-              processTopicTrends(response.topics.slice(0, 5), response.topic_counts_by_date);
+              processTopicTrends(filteredTopics, response.topic_counts_by_date);
             }
+            
+            // Generate mock sentiment data for topics (this would be replaced with real data)
+            const sentiments = generateMockSentiments(filteredTopics);
+            setTopicSentiments(sentiments);
           } else {
             console.warn("Invalid topics format:", response.topics);
             setTopics([]);
@@ -97,6 +118,17 @@ const Homepage = () => {
     fetchTopicData();
   }, [dateFilter.startDate, dateFilter.endDate]);
 
+  // Generate random sentiment scores for each topic (mock data for demo)
+  const generateMockSentiments = (topics) => {
+    return topics.reduce((acc, topic) => {
+      if (topic.id) {
+        // Generate a random sentiment between -0.8 and 0.8
+        acc[topic.id] = (Math.random() * 1.6 - 0.8).toFixed(2);
+      }
+      return acc;
+    }, {});
+  };
+
   // Process topic trends data for the chart
   const processTopicTrends = (topTopics, countsByDate) => {
     if (!topTopics || !countsByDate) return;
@@ -104,11 +136,16 @@ const Homepage = () => {
     console.log("Processing trends for topics:", topTopics);
     console.log("With counts by date:", countsByDate);
     
+    // Filter out topics with id -1 or name "Other"
+    const filteredTopics = topTopics.filter(topic => 
+      topic.id !== -1 && topic.name !== "Other" && topic.name !== "-1"
+    );
+    
     // Get all unique dates across all topics
     const allDates = new Set();
     
     // For each topic, collect all available dates
-    topTopics.forEach(topic => {
+    filteredTopics.forEach(topic => {
       if (topic.id && countsByDate[topic.id]) {
         Object.keys(countsByDate[topic.id]).forEach(date => allDates.add(date));
       } else {
@@ -127,7 +164,7 @@ const Homepage = () => {
     // Prepare chart data
     const trendsData = {
       labels: sortedDates.map(date => new Date(date).toLocaleDateString('de-DE')),
-      datasets: topTopics.filter(topic => topic.id && countsByDate[topic.id]).map((topic, index) => {
+      datasets: filteredTopics.filter(topic => topic.id && countsByDate[topic.id]).map((topic, index) => {
         // Generate colors based on index
         const colors = [
           '#232252', // dark blue
@@ -321,7 +358,11 @@ const Homepage = () => {
                 className={`topic-stack topic-stack-${index + 1}`}
                 style={{ justifyContent: 'center', textAlign: 'center', margin: '0 auto' }}
               >
-                {topic.name || `Topic ${index + 1}`}
+                {topic.name || `Topic ${index + 1}`} {topicSentiments[topic.id] && 
+                  <span className="sentiment-emoji" title={`Sentiment: ${topicSentiments[topic.id]}`}>
+                    {getSentimentEmoji(parseFloat(topicSentiments[topic.id]))}
+                  </span>
+                }
               </div>
             ))}
           </div>
@@ -362,7 +403,14 @@ const Homepage = () => {
           <div className="topic-post-counts-section">
             {topics.slice(0, 5).map((topic, index) => topic.id && topicCounts[topic.id] ? (
               <div key={topic.id} className="topic-post-counts-card">
-                <h3 className={`topic-name topic-name-${index + 1}`}>{topic.name || `Topic ${index + 1}`}</h3>
+                <h3 className={`topic-name topic-name-${index + 1}`}>
+                  {topic.name || `Topic ${index + 1}`}
+                  {topicSentiments[topic.id] && 
+                    <span className="sentiment-emoji" style={{ marginLeft: '10px' }} title={`Sentiment: ${topicSentiments[topic.id]}`}>
+                      {getSentimentEmoji(parseFloat(topicSentiments[topic.id]))}
+                    </span>
+                  }
+                </h3>
                 {renderTopicPostCounts(topic.id)}
               </div>
             ) : null)}

@@ -261,6 +261,21 @@ async def get_data(db: Session = Depends(get_db)):
             detail=f"Datenbankfehler: {str(e)}"
         )
 
+@app.get("/debug/routes")
+async def debug_routes():
+    """
+    Debug endpoint to list all registered routes in the application
+    """
+    routes = []
+    for route in app.routes:
+        routes.append({
+            "path": route.path,
+            "name": route.name,
+            "methods": list(route.methods) if hasattr(route, "methods") else None
+        })
+    
+    return {"routes": routes}
+
 # Register routers
 app.include_router(api_router, prefix="/api", tags=["api"])
 app.include_router(mlops_router, prefix="/api/mlops", tags=["mlops"])
