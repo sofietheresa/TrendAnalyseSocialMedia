@@ -9,7 +9,7 @@ const http = require('http');
 const fs = require('fs');
 
 // Check if the API server is available
-const testApiConnection = (url) => {
+const testApiConnection = (url, timeoutMs = 3000) => {
   return new Promise((resolve) => {
     const req = http.get(url, (res) => {
       if (res.statusCode === 200) {
@@ -26,7 +26,7 @@ const testApiConnection = (url) => {
       resolve(false);
     });
     
-    req.setTimeout(3000, () => {
+    req.setTimeout(timeoutMs, () => {
       req.destroy();
       console.log('❌ API connection timed out');
       resolve(false);
@@ -42,8 +42,43 @@ const setupEnvironment = async () => {
   
   console.log(`⚙️ Checking API server at: ${apiUrl}`);
   
-  // Check if the API server is available
-  const apiAvailable = await testApiConnection(`${apiUrl}/health`);
+  // More aggressive approach to verify API availability
+  // Try multiple endpoints and make multiple attempts
+  let apiAvailable = false;
+  
+  // Try multiple health endpoints with multiple attempts
+  const healthEndpoints = ['/health', '/api/health', '/railway-health'];
+  const maxRetries = 3;
+  
+  for (const endpoint of healthEndpoints) {
+    if (apiAvailable) break;
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      console.log(`Attempting to connect to ${apiUrl}${endpoint} (attempt ${attempt + 1}/${maxRetries})...`);
+      
+      try {
+        // Try with a longer timeout
+        const isAvailable = await testApiConnection(`${apiUrl}${endpoint}`, 5000);
+        if (isAvailable) {
+          apiAvailable = true;
+          console.log(`✅ API server is available at ${apiUrl}${endpoint}`);
+          break;
+        }
+        
+        // Wait before retry
+        if (attempt < maxRetries - 1) {
+          console.log('Waiting before retry...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      } catch (error) {
+        console.error(`Error checking API availability: ${error.message}`);
+      }
+    }
+  }
+  
+  if (!apiAvailable) {
+    console.warn('⚠️ API server is not available after multiple attempts');
+  }
   
   // Set environment variables for child processes
   const env = {

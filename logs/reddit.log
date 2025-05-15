@@ -2613,3 +2613,16 @@ psycopg2.InterfaceError: connection already closed
 2025-05-15 22:40:06,932 [INFO] Found 100 posts in r/trendingsubreddits
 2025-05-15 22:40:06,933 [INFO] Found 131 unique posts out of 134 total posts
 2025-05-15 22:41:23,740 [INFO] Successfully processed 131 Reddit posts (2 inserted, 129 updated)
+2025-05-15 22:56:46,950 [INFO] Starting Reddit scraping...
+2025-05-15 22:56:46,950 [INFO] Connecting to Reddit API with ID: jl1Te...
+2025-05-15 22:56:46,950 [INFO] Successfully connected to Reddit API
+2025-05-15 22:56:46,951 [INFO] Scraping subreddit: r/all
+2025-05-15 22:56:48,785 [INFO] Found 2 posts in r/all
+2025-05-15 22:56:48,785 [INFO] Scraping subreddit: r/popular
+2025-05-15 22:56:50,292 [INFO] Found 9 posts in r/popular
+2025-05-15 22:56:50,292 [INFO] Scraping subreddit: r/trendingreddits
+2025-05-15 22:56:51,564 [INFO] Found 21 posts in r/trendingreddits
+2025-05-15 22:56:51,565 [INFO] Scraping subreddit: r/trendingsubreddits
+2025-05-15 22:56:54,125 [INFO] Found 100 posts in r/trendingsubreddits
+2025-05-15 22:56:54,126 [INFO] Found 129 unique posts out of 132 total posts
+2025-05-15 22:58:11,881 [INFO] Successfully processed 129 Reddit posts (0 inserted, 129 updated)

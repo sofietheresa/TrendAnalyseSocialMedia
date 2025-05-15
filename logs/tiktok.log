@@ -489,3 +489,7 @@ psycopg2.InterfaceError: connection already closed
 2025-05-15 22:41:25,668 [INFO] Starting TikTok scraping...
 2025-05-15 22:41:25,669 [ERROR] Error during TikTok scraping: 'TikTokAPI' object does not support the asynchronous context manager protocol
 2025-05-15 22:41:27,645 [INFO] TikTok status updated in database
+2025-05-15 22:58:13,843 [INFO] TikTok status updated in database
+2025-05-15 22:58:13,843 [INFO] Starting TikTok scraping...
+2025-05-15 22:58:13,843 [ERROR] Error during TikTok scraping: 'TikTokAPI' object does not support the asynchronous context manager protocol
+2025-05-15 22:58:15,748 [INFO] TikTok status updated in database

@@ -14,18 +14,31 @@ const api = axios.create({
     },
     // Add longer timeout for debugging
     timeout: 30000,
-    // Enable CORS with credentials
+    // Disable CORS credentials since we're using proxy
     withCredentials: false
 });
 
-// Add fallback mechanism for production environment
-const useMockApi = process.env.REACT_APP_USE_MOCK_API === 'true';
+// Clearly mark if mock data is being used for visibility
+export const useMockApi = process.env.REACT_APP_USE_MOCK_API === 'true';
 console.log('Using mock API:', useMockApi);
 
-// Import mock data handlers if needed
-let mockDataHandlers = null;
+// Create a global state for tracking mock data usage
+export let usingMockData = false;
+
+// Function to check and set mock data usage state
+export const setMockDataStatus = (isMockData) => {
+    usingMockData = isMockData;
+    // Dispatch an event so components can react
+    window.dispatchEvent(new CustomEvent('mockdatachange', { 
+        detail: { usingMockData } 
+    }));
+};
+
+// Get the current mock data status
+export const getMockDataStatus = () => usingMockData;
 
 // Dynamically import mock data handlers only if needed
+let mockDataHandlers = null;
 if (useMockApi) {
     try {
         // Dynamic import for mock data
@@ -133,6 +146,9 @@ export const fetchRecentData = async (platform = 'reddit', limit = 10, retryCoun
     console.log(`Fetching recent ${platform} data (limit: ${limit})...`);
     
     try {
+        // Always reset mock data status at start of request
+        setMockDataStatus(false);
+        
         // Make the API request with proper error handling
         console.log(`Request URL: ${API_URL}/api/recent-data?platform=${platform}&limit=${limit}`);
         const response = await api.get(`/api/recent-data`, { 
@@ -198,10 +214,13 @@ export const fetchRecentData = async (platform = 'reddit', limit = 10, retryCoun
             return fetchRecentData(platform, limit, retryCount - 1);
         }
         
-        // If all retries failed or it's not a 404 error, try to load mock data
+        // If all retries failed, try to load mock data
         console.warn(`Could not fetch ${platform} data after retries, loading mock data...`);
         
         try {
+            // Set mock data status to true since we're using mock data
+            setMockDataStatus(true);
+            
             // Import mock data dynamically
             const { getMockData } = await import('../mock-api/data');
             const mockData = getMockData(platform, limit);
@@ -275,6 +294,9 @@ export const fetchTopics = async (startDate, endDate) => {
 // New function to fetch topic model data with BERT
 export const fetchTopicModel = async (startDate = null, endDate = null, platforms = ["reddit", "tiktok", "youtube"], numTopics = 5) => {
     try {
+        // Always reset mock data status at start of request
+        setMockDataStatus(false);
+        
         console.log("Fetching topic model data with params:", { 
             start_date: startDate, 
             end_date: endDate, 
@@ -300,6 +322,9 @@ export const fetchTopicModel = async (startDate = null, endDate = null, platform
         return response.data;
     } catch (error) {
         console.error('Error fetching topic model data:', error);
+        
+        // Mark as using mock data
+        setMockDataStatus(true);
         
         // Provide detailed error messages based on the error type
         if (error.response) {

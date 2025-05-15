@@ -9,6 +9,8 @@ import ModelEvaluation from './components/ModelEvaluation';
 import PipelinePage from './components/PipelinePage';
 import { fetchTopicModel } from './services/api';
 import { Line } from 'react-chartjs-2';
+import MockDataNotification from './components/MockDataNotification';
+import AccessGate from './components/AccessGate';
 
 // Message bubble icon component
 const MessageIcon = () => (
@@ -451,79 +453,84 @@ function App() {
 
   return (
     <Router>
-      <div className="App">
-        {/* Navigation */}
-        <nav className="app-nav">
-          {/* App Title on the left */}
-          <div className="app-nav-title">
-            <Link to="/" onClick={() => setActivePage('home')}>
-              <span className="nav-title-text">SOCIAL MEDIA</span>
-              <span className="nav-subtitle-text">TRENDANALYSE</span>
-            </Link>
-          </div>
+      <AccessGate>
+        <div className="App">
+          {/* Navigation */}
+          <nav className="app-nav">
+            {/* App Title on the left */}
+            <div className="app-nav-title">
+              <Link to="/" onClick={() => setActivePage('home')}>
+                <span className="nav-title-text">SOCIAL MEDIA</span>
+                <span className="nav-subtitle-text">TRENDANALYSE</span>
+              </Link>
+            </div>
+            
+            {/* Navigation Links */}
+            <div className="nav-links-container">
+              <Link 
+                to="/" 
+                className={`nav-link ${activePage === 'home' ? 'active-nav-link' : ''}`} 
+                onClick={() => setActivePage('home')}
+              >
+                Startseite
+              </Link>
+              <Link 
+                to="/pipeline" 
+                className={`nav-link ${activePage === 'pipeline' ? 'active-nav-link' : ''}`} 
+                onClick={() => setActivePage('pipeline')}
+              >
+                Pipeline
+              </Link>
+              <Link 
+                to="/stats" 
+                className={`nav-link ${activePage === 'stats' ? 'active-nav-link' : ''}`} 
+                onClick={() => setActivePage('stats')}
+              >
+                Statistiken
+              </Link>
+              <Link 
+                to="/data" 
+                className={`nav-link ${activePage === 'data' ? 'active-nav-link' : ''}`} 
+                onClick={() => setActivePage('data')}
+              >
+                Data
+              </Link>
+              <Link 
+                to="/evaluation" 
+                className={`nav-link ${activePage === 'evaluation' ? 'active-nav-link' : ''}`} 
+                onClick={() => setActivePage('evaluation')}
+              >
+                Modell-Evaluation
+              </Link>
+              <Link 
+                to="/docs" 
+                className={`nav-link ${activePage === 'docs' ? 'active-nav-link' : ''}`} 
+                onClick={() => setActivePage('docs')}
+              >
+                Doku
+              </Link>
+            </div>
+          </nav>
           
-          {/* Navigation Links */}
-          <div className="nav-links-container">
-            <Link 
-              to="/" 
-              className={`nav-link ${activePage === 'home' ? 'active-nav-link' : ''}`} 
-              onClick={() => setActivePage('home')}
-            >
-              Startseite
-            </Link>
-            <Link 
-              to="/pipeline" 
-              className={`nav-link ${activePage === 'pipeline' ? 'active-nav-link' : ''}`} 
-              onClick={() => setActivePage('pipeline')}
-            >
-              Pipeline
-            </Link>
-            <Link 
-              to="/stats" 
-              className={`nav-link ${activePage === 'stats' ? 'active-nav-link' : ''}`} 
-              onClick={() => setActivePage('stats')}
-            >
-              Statistiken
-            </Link>
-            <Link 
-              to="/data" 
-              className={`nav-link ${activePage === 'data' ? 'active-nav-link' : ''}`} 
-              onClick={() => setActivePage('data')}
-            >
-              Data
-            </Link>
-            <Link 
-              to="/evaluation" 
-              className={`nav-link ${activePage === 'evaluation' ? 'active-nav-link' : ''}`} 
-              onClick={() => setActivePage('evaluation')}
-            >
-              Modell-Evaluation
-            </Link>
-            <Link 
-              to="/docs" 
-              className={`nav-link ${activePage === 'docs' ? 'active-nav-link' : ''}`} 
-              onClick={() => setActivePage('docs')}
-            >
-              Doku
-            </Link>
-          </div>
-        </nav>
-        
-        {/* Page Routes */}
-        <Routes>
-          <Route path="/" element={<Homepage />} />
-          <Route path="/stats" element={<StatsPage />} />
-          <Route path="/pipeline" element={<PipelinePage />} />
-          <Route path="/data" element={<DataPage />} />
-          <Route path="/evaluation" element={<ModelEvaluation />} />
-          <Route path="/docs" element={<Documentation />} />
-        </Routes>
-        
-        {/* Footer */}
-        <footer className="app-footer">
-          <p>© 2025 TrendAnalyseSocialMedia</p>
-        </footer>
-      </div>
+          {/* Page Routes */}
+          <Routes>
+            <Route path="/" element={<Homepage />} />
+            <Route path="/stats" element={<StatsPage />} />
+            <Route path="/pipeline" element={<PipelinePage />} />
+            <Route path="/data" element={<DataPage />} />
+            <Route path="/evaluation" element={<ModelEvaluation />} />
+            <Route path="/docs" element={<Documentation />} />
+          </Routes>
+          
+          {/* Footer */}
+          <footer className="app-footer">
+            <p>© 2025 TrendAnalyseSocialMedia</p>
+          </footer>
+          
+          {/* Add the mock data notification that will only show when mock data is used */}
+          <MockDataNotification />
+        </div>
+      </AccessGate>
     </Router>
   );
 }

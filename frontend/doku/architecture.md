@@ -1,18 +1,10 @@
-# Social Media Trend Analysis - Frontend
+# Social Media Trend Analysis - Systemarchitektur
 
-This application provides a user interface for analyzing social media trends across multiple platforms (Reddit, TikTok, YouTube).
+## Überblick
 
-## Features
+Diese Anwendung bietet eine Benutzeroberfläche zur Analyse von Social-Media-Trends auf verschiedenen Plattformen (Reddit, TikTok, YouTube) mit Fokus auf ML OPS-Funktionalitäten.
 
-- Real-time trend analysis 
-- Topic modeling with visualization
-- ML pipeline monitoring and orchestration
-- Social media data browser
-- Mock data support for development without API dependencies
-
-## Architecture
-
-The application follows a modern ML OPS architecture:
+## Architekturdiagramm
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
@@ -53,87 +45,50 @@ The application follows a modern ML OPS architecture:
                      └─────────────────────┘
 ```
 
-Key components:
-- **Frontend**: React-based user interface with visualizations and dashboards
-- **Orchestration**: ZenML for pipeline management and model registry
-- **Monitoring**: Prometheus and Grafana for metrics collection and visualization
-- **ML Pipeline**: Components for data preparation, model training, and deployment
+## Hauptkomponenten
+
+### 1. Datenquellen
+- **Reddit**: API-basierte Datensammlung für Reddit-Posts und -Kommentare
+- **TikTok**: Erfassung von TikTok-Trends und Video-Metadaten
+- **YouTube**: Sammlung von YouTube-Video-Informationen und Trends
+
+### 2. ML Pipeline
+- **Datenvorbereitung**: Reinigung, Transformation und Aufbereitung der Daten
+- **Modelltraining**: Training von NLP-Modellen für Trend-, Topic- und Sentiment-Analyse
+- **Deployment**: Bereitstellung der Modelle für Vorhersagen und Analysen
+
+### 3. Monitoring & Observability
+- **Prometheus**: Erfassung von Metriken für Modelle und Infrastruktur
+- **Grafana**: Visualisierung der gesammelten Metriken mit anpassbaren Dashboards
+- **Logging**: Strukturierte Logs für bessere Nachverfolgbarkeit
+
+### 4. Orchestrierung
+- **ZenML**: Management und Orchestrierung der ML-Pipelines
+- **Pipeline-Verwaltung**: Scheduling, Ausführung und Überwachung der Pipelines
+- **Modell-Registry**: Versionierung und Tracking der trainierten Modelle
+
+### 5. Frontend
+- **React-Anwendung**: Single-Page-Application für Benutzerinteraktion
+- **Visualisierungen**: Interaktive Charts und Grafiken für Trendanalysen
+- **Dashboards**: Anpassbare Ansichten für verschiedene Aspekte der Datenanalyse
+
+## API-Fallback-Mechanismus
+
+Die Anwendung verwendet einen intelligenten Fallback-Mechanismus:
+
+1. Primär werden Daten von der echten API abgefragt
+2. Bei Nichtverfügbarkeit der API wird automatisch auf Mock-Daten umgeschaltet
+3. Konsistente Datenstrukturen ermöglichen nahtlosen Übergang zwischen echten und Mock-Daten
+
+## MLOps-Technologie-Stack
+
+- **Frontend**: React, Chart.js, Bootstrap
+- **Backend**: Python, FastAPI, Flask
+- **Datenbank**: PostgreSQL
+- **ML-Tools**: ZenML, scikit-learn, NLTK, HuggingFace Transformers
+- **Monitoring**: Prometheus, Grafana
+- **Deployment**: Docker, Vercel (Frontend), Railway (Backend)
 
 ## Repository
 
-Find the source code on GitHub: [TrendAnalyseSocialMedia](https://github.com/SofiePischl/TrendAnalyseSocialMedia)
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js (v16 or higher)
-- npm (v8 or higher)
-
-### Installation
-
-1. Clone the repository
-2. Navigate to the frontend directory
-3. Install dependencies:
-
-```bash
-npm install
-```
-
-### Running the Application
-
-#### Smart Start with API Fallback (Recommended)
-
-This option will automatically detect if the API is available and fall back to mock data if it's not:
-
-```bash
-npm run start:auto
-```
-
-#### Standard Start (Requires API Server)
-
-If you want to connect to the real API server (which must be running):
-
-```bash
-npm start
-```
-
-#### Start with Mock Data
-
-To always use mock data, regardless of API availability:
-
-```bash
-npm run start:with-mock
-```
-
-### Environment Configuration
-
-The application uses the following environment variables:
-
-- `REACT_APP_API_URL`: The URL of the API server (default: `http://localhost:8000`)
-- `REACT_APP_MOCK_API_URL`: The URL of the mock API server (default: `http://localhost:3001`)
-- `REACT_APP_USE_MOCK_API`: Set to `true` to force using mock data
-
-## Development
-
-### API Connection
-
-The application is designed to work with or without the API server. When the API server is unavailable, it will automatically fall back to mock data. This allows for development and testing without requiring the full backend infrastructure.
-
-### Mock Data
-
-Mock data is located in `src/mock-api/data.js`. You can modify this file to test different scenarios.
-
-### Proxy Configuration
-
-API requests are automatically proxied to the appropriate server. In development, requests are first sent to the real API server, and if that fails, they're redirected to the mock API server.
-
-## Deployment
-
-To build the application for production:
-
-```bash
-npm run build
-```
-
-This will create a `build` directory with the compiled application. 
+Der Quellcode ist verfügbar auf GitHub: [TrendAnalyseSocialMedia](https://github.com/SofiePischl/TrendAnalyseSocialMedia) 
