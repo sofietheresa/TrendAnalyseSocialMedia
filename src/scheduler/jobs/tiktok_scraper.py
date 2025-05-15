@@ -39,27 +39,20 @@ console_handler.setFormatter(logging.Formatter(
 logger.addHandler(console_handler)
 
 def get_db_connection():
-    # Parse the DATABASE_URL to modify the database name
+    """
+    Create a connection to the main database specified in DATABASE_URL
+    """
     url = os.getenv("DATABASE_URL")
-    result = urllib.parse.urlparse(url)
-    
-    # Create a new URL with the tiktok_data database
-    new_url = f"{result.scheme}://{result.username}:{result.password}@{result.hostname}:{result.port}/tiktok_data"
+    if not url:
+        raise ValueError("DATABASE_URL environment variable not set")
     
     try:
-        # First try to connect to tiktok_data database
-        return psycopg2.connect(new_url)
-    except psycopg2.OperationalError:
-        # If tiktok_data doesn't exist, connect to the default database and create tiktok_data
-        with psycopg2.connect(url) as default_conn:
-            default_conn.autocommit = True
-            with default_conn.cursor() as cur:
-                cur.execute("SELECT 1 FROM pg_database WHERE datname = 'tiktok_data'")
-                if not cur.fetchone():
-                    cur.execute('CREATE DATABASE tiktok_data')
-        
-        # Now connect to the new database
-        return psycopg2.connect(new_url)
+        # Connect directly to the main database (railway)
+        conn = psycopg2.connect(url)
+        return conn
+    except Exception as e:
+        logger.error(f"Database connection error: {str(e)}")
+        raise
 
 async def trending_videos():
     ms_token = os.getenv("MS_TOKEN")
@@ -133,7 +126,7 @@ async def trending_videos():
                 with conn.cursor() as cur:
                     # Create table if it doesn't exist
                     cur.execute("""
-                        CREATE TABLE IF NOT EXISTS tiktok_data (
+                        CREATE TABLE IF NOT EXISTS public.tiktok_data (
                             id VARCHAR(50),
                             description TEXT,
                             author_username VARCHAR(100),
@@ -156,7 +149,7 @@ async def trending_videos():
                         try:
                             # Try to insert
                             cur.execute("""
-                                INSERT INTO tiktok_data (
+                                INSERT INTO public.tiktok_data (
                                     id, description, author_username, author_id,
                                     likes, shares, comments, plays, video_url,
                                     created_time, scraped_at

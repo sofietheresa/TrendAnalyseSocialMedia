@@ -39,27 +39,20 @@ console_handler.setFormatter(logging.Formatter(
 logger.addHandler(console_handler)
 
 def get_db_connection():
-    # Parse the DATABASE_URL to modify the database name
+    """
+    Create a connection to the main database specified in DATABASE_URL
+    """
     url = os.getenv("DATABASE_URL")
-    result = urllib.parse.urlparse(url)
-    
-    # Create a new URL with the reddit_data database
-    new_url = f"{result.scheme}://{result.username}:{result.password}@{result.hostname}:{result.port}/reddit_data"
+    if not url:
+        raise ValueError("DATABASE_URL environment variable not set")
     
     try:
-        # First try to connect to reddit_data database
-        return psycopg2.connect(new_url)
-    except psycopg2.OperationalError:
-        # If reddit_data doesn't exist, connect to the default database and create reddit_data
-        with psycopg2.connect(url) as default_conn:
-            default_conn.autocommit = True
-            with default_conn.cursor() as cur:
-                cur.execute("SELECT 1 FROM pg_database WHERE datname = 'reddit_data'")
-                if not cur.fetchone():
-                    cur.execute('CREATE DATABASE reddit_data')
-        
-        # Now connect to the new database
-        return psycopg2.connect(new_url)
+        # Connect directly to the main database (railway)
+        conn = psycopg2.connect(url)
+        return conn
+    except Exception as e:
+        logger.error(f"Database connection error: {str(e)}")
+        raise
 
 def remove_duplicates(posts):
     seen = set()
@@ -122,7 +115,7 @@ def scrape_reddit():
                 with conn.cursor() as cur:
                     # Create table if it doesn't exist
                     cur.execute("""
-                        CREATE TABLE IF NOT EXISTS reddit_data (
+                        CREATE TABLE IF NOT EXISTS public.reddit_data (
                             id VARCHAR(50),
                             title TEXT,
                             text TEXT,
@@ -145,7 +138,7 @@ def scrape_reddit():
                     for post in unique_posts:
                         try:
                             cur.execute("""
-                                INSERT INTO reddit_data (
+                                INSERT INTO public.reddit_data (
                                     id, title, text, author, score, created_utc,
                                     num_comments, url, subreddit, scraped_at
                                 )

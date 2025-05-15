@@ -128,7 +128,7 @@ shell:
 # ⚙️ SCRAPER LOKAL AUSFÜHREN (zum Debuggen)
 # --------------------------------------------
 
-.PHONY: run-all-scrapers run-scrapers run-reddit run-tiktok run-youtube
+.PHONY: run-all-scrapers run-scrapers run-reddit run-tiktok run-youtube schedule-scrapers run-scheduler
 
 # Alle Scraper ausführen
 run-all-scrapers:
@@ -157,6 +157,11 @@ run-youtube:
 	@echo "🚀 Starte YouTube-Scraper..."
 	python -c "from src.scheduler.jobs.youtube_scraper import scrape_youtube_trending; scrape_youtube_trending()"
 	@echo "✅ YouTube-Scraping abgeschlossen."
+
+# Hauptscheduler für automatische Ausführung alle 15 Minuten
+run-scheduler:
+	@echo "🕒 Starte Hauptscheduler für automatische Ausführung alle 15 Minuten..."
+	python src/scheduler/main_scraper.py
 
 # Als Service im Hintergrund starten (täglich ausführen)
 schedule-scrapers:

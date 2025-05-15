@@ -367,3 +367,17 @@ ConnectionAbortedError: [WinError 10053] An established connection was aborted b
 2025-05-15 17:06:40,783 [INFO] Successfully fetched trending videos from YouTube API
 2025-05-15 17:06:40,784 [INFO] Found 50 trending videos
 2025-05-15 17:06:43,468 [INFO] Successfully stored 50 YouTube videos in the database
+2025-05-15 17:18:43,527 [INFO] Last scrape was 12.0 minutes ago - waiting
+2025-05-15 17:35:10,948 [INFO] Starting YouTube scraping for region DE...
+2025-05-15 17:35:11,653 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-15 17:35:11,654 [INFO] Found 50 trending videos
+2025-05-15 17:35:14,367 [INFO] Successfully stored 50 YouTube videos in the database
+2025-05-15 17:37:17,960 [INFO] Last scrape was 2.1 minutes ago - waiting
+2025-05-15 17:38:56,276 [INFO] Last scrape was 3.7 minutes ago - waiting
+2025-05-15 18:32:35,318 [INFO] Starting YouTube scraping for region DE...
+2025-05-15 18:32:35,738 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-15 18:32:35,738 [INFO] Found 50 trending videos
+2025-05-15 18:32:38,366 [INFO] Successfully stored 50 YouTube videos in the database
+2025-05-15 18:39:13,633 [INFO] Last scrape was 6.6 minutes ago - waiting
+2025-05-15 18:42:40,785 [INFO] Last scrape was 10.1 minutes ago - waiting
+2025-05-15 18:42:44,095 [INFO] Last scrape was 10.1 minutes ago - waiting

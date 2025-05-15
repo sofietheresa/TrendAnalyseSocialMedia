@@ -432,3 +432,659 @@ HINT:  Ensure that no rows proposed for insertion within the same command have d
 2025-05-15 17:05:14,184 [INFO] Found 100 posts in r/trendingsubreddits
 2025-05-15 17:05:14,184 [INFO] Found 135 unique posts out of 138 total posts
 2025-05-15 17:06:38,172 [INFO] Successfully processed 135 Reddit posts (1 inserted, 134 updated)
+2025-05-15 17:18:05,569 [INFO] Starting Reddit scraping...
+2025-05-15 17:18:05,807 [INFO] Successfully connected to Reddit API
+2025-05-15 17:18:05,808 [INFO] Scraping subreddit: r/all
+2025-05-15 17:18:06,131 [ERROR] Error during Reddit scraping: received 401 HTTP response
+2025-05-15 17:18:06,132 [ERROR] Detailed error:
+Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\reddit_scraper.py", line 97, in scrape_reddit
+    for post in subreddit.hot(limit=post_limit):
+                ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\models\listing\generator.py", line 66, in __next__
+    self._next_batch()
+    ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\models\listing\generator.py", line 90, in _next_batch
+    self._listing = self._reddit.get(self.url, params=self.params)
+                    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\util\deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 731, in get
+    return self._objectify_request(method="GET", params=params, path=path)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 514, in _objectify_request
+    self.request(
+    ~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        path=path,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\util\deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 963, in request
+    return self._core.request(
+           ~~~~~~~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        path=path,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 328, in request
+    return self._request_with_retries(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        url=url,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 234, in _request_with_retries
+    response, saved_exception = self._make_request(
+                                ~~~~~~~~~~~~~~~~~~^
+        data,
+        ^^^^^
+    ...<6 lines>...
+        url,
+        ^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 186, in _make_request
+    response = self._rate_limiter.call(
+        self._requestor.request,
+    ...<8 lines>...
+        timeout=timeout,
+    )
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\rate_limit.py", line 46, in call
+    kwargs["headers"] = set_header_callback()
+                        ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 282, in _set_header_callback
+    self._authorizer.refresh()
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 378, in refresh
+    self._request_token(grant_type="client_credentials", **additional_kwargs)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 155, in _request_token
+    response = self._authenticator._post(url=url, **data)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 59, in _post
+    raise ResponseException(response)
+prawcore.exceptions.ResponseException: received 401 HTTP response
+2025-05-15 17:35:08,282 [INFO] Starting Reddit scraping...
+2025-05-15 17:35:08,297 [INFO] Successfully connected to Reddit API
+2025-05-15 17:35:08,297 [INFO] Scraping subreddit: r/all
+2025-05-15 17:35:08,666 [ERROR] Error during Reddit scraping: received 401 HTTP response
+2025-05-15 17:35:08,667 [ERROR] Detailed error:
+Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\reddit_scraper.py", line 97, in scrape_reddit
+    for post in subreddit.hot(limit=post_limit):
+                ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\models\listing\generator.py", line 66, in __next__
+    self._next_batch()
+    ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\models\listing\generator.py", line 90, in _next_batch
+    self._listing = self._reddit.get(self.url, params=self.params)
+                    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\util\deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 731, in get
+    return self._objectify_request(method="GET", params=params, path=path)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 514, in _objectify_request
+    self.request(
+    ~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        path=path,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\util\deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 963, in request
+    return self._core.request(
+           ~~~~~~~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        path=path,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 328, in request
+    return self._request_with_retries(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        url=url,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 234, in _request_with_retries
+    response, saved_exception = self._make_request(
+                                ~~~~~~~~~~~~~~~~~~^
+        data,
+        ^^^^^
+    ...<6 lines>...
+        url,
+        ^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 186, in _make_request
+    response = self._rate_limiter.call(
+        self._requestor.request,
+    ...<8 lines>...
+        timeout=timeout,
+    )
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\rate_limit.py", line 46, in call
+    kwargs["headers"] = set_header_callback()
+                        ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 282, in _set_header_callback
+    self._authorizer.refresh()
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 378, in refresh
+    self._request_token(grant_type="client_credentials", **additional_kwargs)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 155, in _request_token
+    response = self._authenticator._post(url=url, **data)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 59, in _post
+    raise ResponseException(response)
+prawcore.exceptions.ResponseException: received 401 HTTP response
+2025-05-15 17:37:15,549 [INFO] Starting Reddit scraping...
+2025-05-15 17:37:15,558 [INFO] Successfully connected to Reddit API
+2025-05-15 17:37:15,558 [INFO] Scraping subreddit: r/all
+2025-05-15 17:37:15,863 [ERROR] Error during Reddit scraping: received 401 HTTP response
+2025-05-15 17:37:15,863 [ERROR] Detailed error:
+Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\reddit_scraper.py", line 97, in scrape_reddit
+    for post in subreddit.hot(limit=post_limit):
+                ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\models\listing\generator.py", line 66, in __next__
+    self._next_batch()
+    ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\models\listing\generator.py", line 90, in _next_batch
+    self._listing = self._reddit.get(self.url, params=self.params)
+                    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\util\deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 731, in get
+    return self._objectify_request(method="GET", params=params, path=path)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 514, in _objectify_request
+    self.request(
+    ~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        path=path,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\util\deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 963, in request
+    return self._core.request(
+           ~~~~~~~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        path=path,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 328, in request
+    return self._request_with_retries(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        url=url,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 234, in _request_with_retries
+    response, saved_exception = self._make_request(
+                                ~~~~~~~~~~~~~~~~~~^
+        data,
+        ^^^^^
+    ...<6 lines>...
+        url,
+        ^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 186, in _make_request
+    response = self._rate_limiter.call(
+        self._requestor.request,
+    ...<8 lines>...
+        timeout=timeout,
+    )
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\rate_limit.py", line 46, in call
+    kwargs["headers"] = set_header_callback()
+                        ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 282, in _set_header_callback
+    self._authorizer.refresh()
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 378, in refresh
+    self._request_token(grant_type="client_credentials", **additional_kwargs)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 155, in _request_token
+    response = self._authenticator._post(url=url, **data)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 59, in _post
+    raise ResponseException(response)
+prawcore.exceptions.ResponseException: received 401 HTTP response
+2025-05-15 17:38:53,728 [INFO] Starting Reddit scraping...
+2025-05-15 17:38:53,729 [INFO] Successfully connected to Reddit API
+2025-05-15 17:38:53,729 [INFO] Scraping subreddit: r/all
+2025-05-15 17:38:54,103 [ERROR] Error during Reddit scraping: received 401 HTTP response
+2025-05-15 17:38:54,103 [ERROR] Detailed error:
+Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\reddit_scraper.py", line 97, in scrape_reddit
+    for post in subreddit.hot(limit=post_limit):
+                ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\models\listing\generator.py", line 66, in __next__
+    self._next_batch()
+    ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\models\listing\generator.py", line 90, in _next_batch
+    self._listing = self._reddit.get(self.url, params=self.params)
+                    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\util\deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 731, in get
+    return self._objectify_request(method="GET", params=params, path=path)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 514, in _objectify_request
+    self.request(
+    ~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        path=path,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\util\deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 963, in request
+    return self._core.request(
+           ~~~~~~~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        path=path,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 328, in request
+    return self._request_with_retries(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        url=url,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 234, in _request_with_retries
+    response, saved_exception = self._make_request(
+                                ~~~~~~~~~~~~~~~~~~^
+        data,
+        ^^^^^
+    ...<6 lines>...
+        url,
+        ^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 186, in _make_request
+    response = self._rate_limiter.call(
+        self._requestor.request,
+    ...<8 lines>...
+        timeout=timeout,
+    )
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\rate_limit.py", line 46, in call
+    kwargs["headers"] = set_header_callback()
+                        ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 282, in _set_header_callback
+    self._authorizer.refresh()
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 378, in refresh
+    self._request_token(grant_type="client_credentials", **additional_kwargs)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 155, in _request_token
+    response = self._authenticator._post(url=url, **data)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 59, in _post
+    raise ResponseException(response)
+prawcore.exceptions.ResponseException: received 401 HTTP response
+2025-05-15 18:32:32,750 [INFO] Starting Reddit scraping...
+2025-05-15 18:32:32,817 [INFO] Successfully connected to Reddit API
+2025-05-15 18:32:32,818 [INFO] Scraping subreddit: r/all
+2025-05-15 18:32:33,077 [ERROR] Error during Reddit scraping: received 401 HTTP response
+2025-05-15 18:32:33,078 [ERROR] Detailed error:
+Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\reddit_scraper.py", line 97, in scrape_reddit
+    for post in subreddit.hot(limit=post_limit):
+                ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\models\listing\generator.py", line 66, in __next__
+    self._next_batch()
+    ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\models\listing\generator.py", line 90, in _next_batch
+    self._listing = self._reddit.get(self.url, params=self.params)
+                    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\util\deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 731, in get
+    return self._objectify_request(method="GET", params=params, path=path)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 514, in _objectify_request
+    self.request(
+    ~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        path=path,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\util\deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 963, in request
+    return self._core.request(
+           ~~~~~~~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        path=path,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 328, in request
+    return self._request_with_retries(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        url=url,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 234, in _request_with_retries
+    response, saved_exception = self._make_request(
+                                ~~~~~~~~~~~~~~~~~~^
+        data,
+        ^^^^^
+    ...<6 lines>...
+        url,
+        ^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 186, in _make_request
+    response = self._rate_limiter.call(
+        self._requestor.request,
+    ...<8 lines>...
+        timeout=timeout,
+    )
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\rate_limit.py", line 46, in call
+    kwargs["headers"] = set_header_callback()
+                        ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 282, in _set_header_callback
+    self._authorizer.refresh()
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 378, in refresh
+    self._request_token(grant_type="client_credentials", **additional_kwargs)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 155, in _request_token
+    response = self._authenticator._post(url=url, **data)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 59, in _post
+    raise ResponseException(response)
+prawcore.exceptions.ResponseException: received 401 HTTP response
+2025-05-15 18:39:11,421 [INFO] Starting Reddit scraping...
+2025-05-15 18:39:11,433 [INFO] Successfully connected to Reddit API
+2025-05-15 18:39:11,433 [INFO] Scraping subreddit: r/all
+2025-05-15 18:39:11,617 [ERROR] Error during Reddit scraping: received 401 HTTP response
+2025-05-15 18:39:11,617 [ERROR] Detailed error:
+Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\reddit_scraper.py", line 90, in scrape_reddit
+    for post in subreddit.hot(limit=post_limit):
+                ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\models\listing\generator.py", line 66, in __next__
+    self._next_batch()
+    ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\models\listing\generator.py", line 90, in _next_batch
+    self._listing = self._reddit.get(self.url, params=self.params)
+                    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\util\deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 731, in get
+    return self._objectify_request(method="GET", params=params, path=path)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 514, in _objectify_request
+    self.request(
+    ~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        path=path,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\util\deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 963, in request
+    return self._core.request(
+           ~~~~~~~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        path=path,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 328, in request
+    return self._request_with_retries(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        url=url,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 234, in _request_with_retries
+    response, saved_exception = self._make_request(
+                                ~~~~~~~~~~~~~~~~~~^
+        data,
+        ^^^^^
+    ...<6 lines>...
+        url,
+        ^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 186, in _make_request
+    response = self._rate_limiter.call(
+        self._requestor.request,
+    ...<8 lines>...
+        timeout=timeout,
+    )
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\rate_limit.py", line 46, in call
+    kwargs["headers"] = set_header_callback()
+                        ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 282, in _set_header_callback
+    self._authorizer.refresh()
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 378, in refresh
+    self._request_token(grant_type="client_credentials", **additional_kwargs)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 155, in _request_token
+    response = self._authenticator._post(url=url, **data)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 59, in _post
+    raise ResponseException(response)
+prawcore.exceptions.ResponseException: received 401 HTTP response
+2025-05-15 18:42:38,668 [INFO] Starting Reddit scraping...
+2025-05-15 18:42:38,669 [INFO] Successfully connected to Reddit API
+2025-05-15 18:42:38,669 [INFO] Scraping subreddit: r/all
+2025-05-15 18:42:38,863 [ERROR] Error during Reddit scraping: received 401 HTTP response
+2025-05-15 18:42:38,863 [ERROR] Detailed error:
+Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\reddit_scraper.py", line 97, in scrape_reddit
+    "author": str(post.author) if post.author else None,
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\models\listing\generator.py", line 66, in __next__
+    self._next_batch()
+    ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\models\listing\generator.py", line 90, in _next_batch
+    self._listing = self._reddit.get(self.url, params=self.params)
+                    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\util\deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 731, in get
+    return self._objectify_request(method="GET", params=params, path=path)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 514, in _objectify_request
+    self.request(
+    ~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        path=path,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\util\deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 963, in request
+    return self._core.request(
+           ~~~~~~~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        path=path,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 328, in request
+    return self._request_with_retries(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        url=url,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 234, in _request_with_retries
+    response, saved_exception = self._make_request(
+                                ~~~~~~~~~~~~~~~~~~^
+        data,
+        ^^^^^
+    ...<6 lines>...
+        url,
+        ^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 186, in _make_request
+    response = self._rate_limiter.call(
+        self._requestor.request,
+    ...<8 lines>...
+        timeout=timeout,
+    )
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\rate_limit.py", line 46, in call
+    kwargs["headers"] = set_header_callback()
+                        ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 282, in _set_header_callback
+    self._authorizer.refresh()
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 378, in refresh
+    self._request_token(grant_type="client_credentials", **additional_kwargs)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 155, in _request_token
+    response = self._authenticator._post(url=url, **data)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 59, in _post
+    raise ResponseException(response)
+prawcore.exceptions.ResponseException: received 401 HTTP response
+2025-05-15 18:42:41,961 [INFO] Starting Reddit scraping...
+2025-05-15 18:42:41,962 [INFO] Successfully connected to Reddit API
+2025-05-15 18:42:41,963 [INFO] Scraping subreddit: r/all
+2025-05-15 18:42:42,135 [ERROR] Error during Reddit scraping: received 401 HTTP response
+2025-05-15 18:42:42,136 [ERROR] Detailed error:
+Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\reddit_scraper.py", line 90, in scrape_reddit
+    for post in subreddit.hot(limit=post_limit):
+                ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\models\listing\generator.py", line 66, in __next__
+    self._next_batch()
+    ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\models\listing\generator.py", line 90, in _next_batch
+    self._listing = self._reddit.get(self.url, params=self.params)
+                    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\util\deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 731, in get
+    return self._objectify_request(method="GET", params=params, path=path)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 514, in _objectify_request
+    self.request(
+    ~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        path=path,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\util\deprecate_args.py", line 46, in wrapped
+    return func(**dict(zip(_old_args, args)), **kwargs)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\praw\reddit.py", line 963, in request
+    return self._core.request(
+           ~~~~~~~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        path=path,
+        ^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 328, in request
+    return self._request_with_retries(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        data=data,
+        ^^^^^^^^^^
+    ...<5 lines>...
+        url=url,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 234, in _request_with_retries
+    response, saved_exception = self._make_request(
+                                ~~~~~~~~~~~~~~~~~~^
+        data,
+        ^^^^^
+    ...<6 lines>...
+        url,
+        ^^^^
+    )
+    ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 186, in _make_request
+    response = self._rate_limiter.call(
+        self._requestor.request,
+    ...<8 lines>...
+        timeout=timeout,
+    )
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\rate_limit.py", line 46, in call
+    kwargs["headers"] = set_header_callback()
+                        ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\sessions.py", line 282, in _set_header_callback
+    self._authorizer.refresh()
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 378, in refresh
+    self._request_token(grant_type="client_credentials", **additional_kwargs)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 155, in _request_token
+    response = self._authenticator._post(url=url, **data)
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\prawcore\auth.py", line 59, in _post
+    raise ResponseException(response)
+prawcore.exceptions.ResponseException: received 401 HTTP response
