@@ -128,10 +128,41 @@ shell:
 # ⚙️ SCRAPER LOKAL AUSFÜHREN (zum Debuggen)
 # --------------------------------------------
 
-.PHONY: run-all-scrapers
+.PHONY: run-all-scrapers run-scrapers run-reddit run-tiktok run-youtube
 
+# Alle Scraper ausführen
 run-all-scrapers:
 	python src/scheduler/run_all_scrapers.py
+
+# Alle Scraper ausführen und Ergebnis in DB schreiben
+run-scrapers:
+	@echo "🚀 Starte alle Scraper (Reddit, TikTok, YouTube)..."
+	python src/scheduler/run_all_scrapers.py
+	@echo "✅ Scraping abgeschlossen. Daten wurden in die Datenbank geschrieben."
+
+# Nur Reddit-Scraper ausführen
+run-reddit:
+	@echo "🚀 Starte Reddit-Scraper..."
+	python -c "from src.scheduler.jobs.reddit_scraper import scrape_reddit; scrape_reddit()"
+	@echo "✅ Reddit-Scraping abgeschlossen."
+
+# Nur TikTok-Scraper ausführen
+run-tiktok:
+	@echo "🚀 Starte TikTok-Scraper..."
+	python -c "from src.scheduler.jobs.tiktok_scraper import trending_videos; trending_videos()"
+	@echo "✅ TikTok-Scraping abgeschlossen."
+
+# Nur YouTube-Scraper ausführen
+run-youtube:
+	@echo "🚀 Starte YouTube-Scraper..."
+	python -c "from src.scheduler.jobs.youtube_scraper import scrape_youtube_trending; scrape_youtube_trending()"
+	@echo "✅ YouTube-Scraping abgeschlossen."
+
+# Als Service im Hintergrund starten (täglich ausführen)
+schedule-scrapers:
+	@echo "🕒 Starte Scraper als geplanten Hintergrundprozess..."
+	nohup python -c "import time; from src.scheduler.run_all_scrapers import run_all; while True: run_all(); print('Warte 24 Stunden bis zum nächsten Durchlauf...'); time.sleep(86400)" > logs/scheduled_scraping.log 2>&1 &
+	@echo "✅ Scraper im Hintergrund gestartet. Logs werden in logs/scheduled_scraping.log geschrieben."
 
 # --------------------------------------------
 # 🐳 OPTIONAL: DOCKER-COMPOSE UNTERSTÜTZUNG
