@@ -1,9 +1,43 @@
-import React from 'react';
-import { useData } from '../context/DataContext';
+import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Spinner } from 'react-bootstrap';
+import ScraperStatus from './ScraperStatus';
+import DailyStats from './DailyStats';
 
 const Dashboard = () => {
-    const { socialMediaData, loading, error } = useData();
+    const [scraperStatus, setScraperStatus] = useState(null);
+    const [dailyStats, setDailyStats] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            // Fetch scraper status
+            const statusResponse = await fetch('/api/scraper-status');
+            const statusData = await statusResponse.json();
+
+            // Fetch daily stats
+            const statsResponse = await fetch('/api/daily-stats');
+            const statsData = await statsResponse.json();
+
+            setScraperStatus(statusData);
+            setDailyStats(statsData);
+        } catch (err) {
+            setError('Fehler beim Laden der Daten');
+            console.error('Error fetching data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+        // Refresh data every minute
+        const interval = setInterval(fetchData, 60000);
+        return () => clearInterval(interval);
+    }, []);
 
     if (loading) {
         return (
@@ -25,17 +59,25 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard">
-            <h1>Social Media Dashboard</h1>
+            <h1 className="mb-4">Social Media Trend Analysis</h1>
             
+            {/* Scraper Status Section */}
+            {scraperStatus && <ScraperStatus status={scraperStatus} />}
+            
+            {/* Daily Statistics Section */}
+            {dailyStats && <DailyStats stats={dailyStats} />}
+            
+            {/* Latest Content Section */}
+            <h2 className="mt-4 mb-3">Neueste Inhalte</h2>
             <Row>
                 <Col md={4}>
                     <Card className="platform-card reddit">
                         <Card.Header>Reddit</Card.Header>
                         <Card.Body>
-                            <Card.Title>{socialMediaData.reddit.length} Posts</Card.Title>
+                            <Card.Title>{scraperStatus?.reddit?.total_posts || 0} Posts</Card.Title>
                             <div className="platform-stats">
                                 <p>Neueste Posts:</p>
-                                {socialMediaData.reddit.slice(0, 3).map(post => (
+                                {scraperStatus?.reddit?.posts.slice(0, 3).map(post => (
                                     <div key={post.id} className="post-preview">
                                         <h6>{post.title}</h6>
                                         <small>Score: {post.score}</small>
@@ -50,10 +92,10 @@ const Dashboard = () => {
                     <Card className="platform-card tiktok">
                         <Card.Header>TikTok</Card.Header>
                         <Card.Body>
-                            <Card.Title>{socialMediaData.tiktok.length} Videos</Card.Title>
+                            <Card.Title>{scraperStatus?.tiktok?.total_posts || 0} Videos</Card.Title>
                             <div className="platform-stats">
                                 <p>Trending Videos:</p>
-                                {socialMediaData.tiktok.slice(0, 3).map(video => (
+                                {scraperStatus?.tiktok?.videos.slice(0, 3).map(video => (
                                     <div key={video.id} className="post-preview">
                                         <h6>{video.description}</h6>
                                         <small>Likes: {video.likes}</small>
@@ -68,10 +110,10 @@ const Dashboard = () => {
                     <Card className="platform-card youtube">
                         <Card.Header>YouTube</Card.Header>
                         <Card.Body>
-                            <Card.Title>{socialMediaData.youtube.length} Videos</Card.Title>
+                            <Card.Title>{scraperStatus?.youtube?.total_posts || 0} Videos</Card.Title>
                             <div className="platform-stats">
                                 <p>Top Videos:</p>
-                                {socialMediaData.youtube.slice(0, 3).map(video => (
+                                {scraperStatus?.youtube?.videos.slice(0, 3).map(video => (
                                     <div key={video.video_id} className="post-preview">
                                         <h6>{video.title}</h6>
                                         <small>Views: {video.view_count}</small>

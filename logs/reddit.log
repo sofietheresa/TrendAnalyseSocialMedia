@@ -149,3 +149,51 @@ HINT:  Ensure that no rows proposed for insertion within the same command have d
 2025-05-15 10:36:02,345 [INFO] Found 100 posts in r/trendingsubreddits
 2025-05-15 10:36:02,345 [INFO] Found 127 unique posts out of 130 total posts
 2025-05-15 10:37:21,498 [INFO] Successfully processed 127 Reddit posts (8 inserted, 119 updated)
+2025-05-15 10:40:02,419 [INFO] Starting Reddit scraping...
+2025-05-15 10:40:02,420 [INFO] Successfully connected to Reddit API
+2025-05-15 10:40:02,420 [INFO] Scraping subreddit: r/all
+2025-05-15 10:40:04,554 [INFO] Found 3 posts in r/all
+2025-05-15 10:40:04,554 [INFO] Scraping subreddit: r/popular
+2025-05-15 10:40:05,864 [INFO] Found 6 posts in r/popular
+2025-05-15 10:40:05,865 [INFO] Scraping subreddit: r/trendingreddits
+2025-05-15 10:40:06,721 [INFO] Found 21 posts in r/trendingreddits
+2025-05-15 10:40:06,721 [INFO] Scraping subreddit: r/trendingsubreddits
+2025-05-15 10:40:09,125 [INFO] Found 100 posts in r/trendingsubreddits
+2025-05-15 10:40:09,126 [INFO] Found 127 unique posts out of 130 total posts
+2025-05-15 10:40:48,756 [INFO] Starting Reddit scraping...
+2025-05-15 10:40:48,756 [INFO] Starting Reddit scraping...
+2025-05-15 10:40:48,756 [INFO] Starting Reddit scraping...
+2025-05-15 10:40:48,757 [INFO] Successfully connected to Reddit API
+2025-05-15 10:40:48,757 [INFO] Successfully connected to Reddit API
+2025-05-15 10:40:48,757 [INFO] Successfully connected to Reddit API
+2025-05-15 10:40:48,757 [INFO] Scraping subreddit: r/all
+2025-05-15 10:40:48,757 [INFO] Scraping subreddit: r/all
+2025-05-15 10:40:48,757 [INFO] Scraping subreddit: r/all
+2025-05-15 10:40:50,564 [INFO] Found 3 posts in r/all
+2025-05-15 10:40:50,564 [INFO] Found 3 posts in r/all
+2025-05-15 10:40:50,564 [INFO] Found 3 posts in r/all
+2025-05-15 10:40:50,565 [INFO] Scraping subreddit: r/popular
+2025-05-15 10:40:50,565 [INFO] Scraping subreddit: r/popular
+2025-05-15 10:40:50,565 [INFO] Scraping subreddit: r/popular
+2025-05-15 10:40:51,856 [INFO] Found 6 posts in r/popular
+2025-05-15 10:40:51,856 [INFO] Found 6 posts in r/popular
+2025-05-15 10:40:51,856 [INFO] Found 6 posts in r/popular
+2025-05-15 10:40:51,857 [INFO] Scraping subreddit: r/trendingreddits
+2025-05-15 10:40:51,857 [INFO] Scraping subreddit: r/trendingreddits
+2025-05-15 10:40:51,857 [INFO] Scraping subreddit: r/trendingreddits
+2025-05-15 10:40:52,803 [INFO] Found 21 posts in r/trendingreddits
+2025-05-15 10:40:52,803 [INFO] Found 21 posts in r/trendingreddits
+2025-05-15 10:40:52,803 [INFO] Found 21 posts in r/trendingreddits
+2025-05-15 10:40:52,803 [INFO] Scraping subreddit: r/trendingsubreddits
+2025-05-15 10:40:52,803 [INFO] Scraping subreddit: r/trendingsubreddits
+2025-05-15 10:40:52,803 [INFO] Scraping subreddit: r/trendingsubreddits
+2025-05-15 10:40:55,354 [INFO] Found 100 posts in r/trendingsubreddits
+2025-05-15 10:40:55,354 [INFO] Found 100 posts in r/trendingsubreddits
+2025-05-15 10:40:55,354 [INFO] Found 100 posts in r/trendingsubreddits
+2025-05-15 10:40:55,354 [INFO] Found 127 unique posts out of 130 total posts
+2025-05-15 10:40:55,354 [INFO] Found 127 unique posts out of 130 total posts
+2025-05-15 10:40:55,354 [INFO] Found 127 unique posts out of 130 total posts
+2025-05-15 10:41:28,659 [INFO] Successfully processed 127 Reddit posts (0 inserted, 127 updated)
+2025-05-15 10:42:13,772 [INFO] Successfully processed 127 Reddit posts (0 inserted, 127 updated)
+2025-05-15 10:42:13,772 [INFO] Successfully processed 127 Reddit posts (0 inserted, 127 updated)
+2025-05-15 10:42:13,772 [INFO] Successfully processed 127 Reddit posts (0 inserted, 127 updated)
