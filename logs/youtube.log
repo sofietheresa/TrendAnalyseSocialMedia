@@ -1033,3 +1033,38 @@ Traceback (most recent call last):
              ^
 psycopg2.InterfaceError: connection already closed
 2025-05-15 21:45:04,577 [ERROR] Error updating YouTube status: connection already closed
+2025-05-15 22:04:21,269 [INFO] Starting YouTube scraping for region DE...
+2025-05-15 22:04:21,611 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-15 22:04:21,611 [INFO] Found 50 trending videos
+2025-05-15 22:04:44,011 [ERROR] Database connection error: connection to server at "caboose.proxy.rlwy.net" (34.1.255.159), port 25158 failed: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+2025-05-15 22:04:44,011 [ERROR] Error during YouTube scraping: connection to server at "caboose.proxy.rlwy.net" (34.1.255.159), port 25158 failed: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+2025-05-15 22:04:44,011 [ERROR] Detailed error:
+Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\youtube_scraper.py", line 183, in scrape_youtube_trending
+    if videos:
+             ^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\youtube_scraper.py", line 59, in get_db_connection
+    def should_scrape():
+                   ^^^^^
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\venv\Lib\site-packages\psycopg2\__init__.py", line 135, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+psycopg2.OperationalError: connection to server at "caboose.proxy.rlwy.net" (34.1.255.159), port 25158 failed: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+2025-05-15 22:05:31,226 [INFO] YouTube status updated in database

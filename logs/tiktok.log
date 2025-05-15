@@ -467,3 +467,12 @@ psycopg2.InterfaceError: connection already closed
 2025-05-15 21:43:42,895 [INFO] Starting TikTok scraping...
 2025-05-15 21:43:42,895 [ERROR] Error during TikTok scraping: 'TikTokAPI' object does not support the asynchronous context manager protocol
 2025-05-15 21:43:45,883 [INFO] TikTok status updated in database
+2025-05-15 22:04:01,529 [ERROR] Database connection error: connection to server at "caboose.proxy.rlwy.net" (34.1.255.159), port 25158 failed: Connection timed out (0x0000274C/10060)
+	Is the server running on that host and accepting TCP/IP connections?
+
+2025-05-15 22:04:01,530 [ERROR] Error updating TikTok status: connection to server at "caboose.proxy.rlwy.net" (34.1.255.159), port 25158 failed: Connection timed out (0x0000274C/10060)
+	Is the server running on that host and accepting TCP/IP connections?
+
+2025-05-15 22:04:01,530 [INFO] Starting TikTok scraping...
+2025-05-15 22:04:01,531 [ERROR] Error during TikTok scraping: 'TikTokAPI' object does not support the asynchronous context manager protocol
+2025-05-15 22:04:10,284 [INFO] TikTok status updated in database

@@ -442,7 +442,7 @@ export const fetchPipelines = async (pipelineId = null) => {
     return response.data;
   } catch (error) {
     console.error('Error fetching pipeline data:', error);
-    return { error: 'Failed to fetch pipeline data. Please try again later.' };
+    return { error: `Failed to fetch pipeline data: ${error.message}` };
   }
 };
 
@@ -450,15 +450,16 @@ export const fetchPipelines = async (pipelineId = null) => {
  * Fetch pipeline executions
  * 
  * @param {string} pipelineId - Pipeline ID
- * @returns {Promise<Object>} - Pipeline executions
+ * @returns {Promise<Array>} - Pipeline executions
  */
 export const fetchPipelineExecutions = async (pipelineId) => {
   try {
     const response = await axios.get(`/api/mlops/pipelines/${pipelineId}/executions`);
-    return response.data;
+    // Ensure we always return an array
+    return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('Error fetching pipeline executions:', error);
-    return { error: 'Failed to fetch pipeline executions. Please try again later.' };
+    return { error: `Failed to fetch pipeline executions: ${error.message}` };
   }
 };
 
@@ -482,15 +483,16 @@ export const executePipeline = async (pipelineId) => {
  * Fetch model versions
  * 
  * @param {string} modelName - Model name
- * @returns {Promise<Object>} - Model versions
+ * @returns {Promise<Array>} - Model versions
  */
 export const fetchModelVersions = async (modelName) => {
   try {
     const response = await axios.get(`/api/mlops/models/${modelName}/versions`);
-    return response.data;
+    // Ensure we always return an array
+    return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('Error fetching model versions:', error);
-    return { error: 'Failed to fetch model versions. Please try again later.' };
+    return { error: `Failed to fetch model versions: ${error.message}` };
   }
 };
 

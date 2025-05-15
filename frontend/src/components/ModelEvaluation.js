@@ -45,29 +45,31 @@ const ModelEvaluation = () => {
         // Fetch model versions
         const versions = await fetchModelVersions(selectedModel);
         
-        if (versions.error) {
+        if (versions && versions.error) {
           setError(versions.error);
           setLoading(false);
           return;
         }
         
-        setModelVersions(versions);
+        // Ensure versions is an array
+        const versionsArray = Array.isArray(versions) ? versions : [];
+        setModelVersions(versionsArray);
         
         // Set selected version to the production version or first available
-        const productionVersion = versions.find(v => v.status === 'production')?.id;
-        const versionToSelect = productionVersion || (versions.length > 0 ? versions[0].id : null);
+        const productionVersion = versionsArray.find(v => v.status === 'production')?.id;
+        const versionToSelect = productionVersion || (versionsArray.length > 0 ? versionsArray[0].id : null);
         setSelectedVersion(versionToSelect);
         
         // Fetch model metrics
         const metrics = await fetchModelMetrics(selectedModel, versionToSelect);
         
-        if (metrics.error) {
+        if (metrics && metrics.error) {
           setError(metrics.error);
           setLoading(false);
           return;
         }
         
-        setMetrics(metrics);
+        setMetrics(metrics || {});
         
         // Fetch metrics history (mock for now as we don't have API endpoint for history)
         // In a real app, we would create an API endpoint for this
@@ -82,8 +84,8 @@ const ModelEvaluation = () => {
         // Fetch drift metrics if it's a relevant model type
         if (selectedModel === 'topic_model' || selectedModel === 'sentiment_analysis') {
           const driftData = await fetchModelDrift(selectedModel, versionToSelect);
-          if (!driftData.error) {
-            setConfusionMatrix(driftData.confusionMatrix || null);
+          if (!driftData || !driftData.error) {
+            setConfusionMatrix(driftData?.confusionMatrix || null);
           }
         }
         
@@ -131,13 +133,13 @@ const ModelEvaluation = () => {
       {
         label: 'Current Model',
         data: metrics ? [
-          metrics.coherence_score,
-          metrics.diversity_score,
-          metrics.document_coverage,
-          metrics.uniqueness_score,
-          metrics.silhouette_score,
-          metrics.topic_separation
-        ] : [],
+          metrics.coherence_score || 0,
+          metrics.diversity_score || 0,
+          metrics.document_coverage || 0,
+          metrics.uniqueness_score || 0,
+          metrics.silhouette_score || 0,
+          metrics.topic_separation || 0
+        ] : [0, 0, 0, 0, 0, 0],
         backgroundColor: 'rgba(46, 108, 219, 0.2)',
         borderColor: 'rgba(46, 108, 219, 1)',
         borderWidth: 2,
@@ -234,7 +236,7 @@ const ModelEvaluation = () => {
   
   // Prepare confusion matrix data
   const prepareConfusionMatrixData = () => {
-    if (!confusionMatrix) return null;
+    if (!confusionMatrix || !confusionMatrix.values || !confusionMatrix.labels) return null;
     
     const datasets = confusionMatrix.values.map((row, index) => {
       const colors = [
@@ -246,7 +248,7 @@ const ModelEvaluation = () => {
       return {
         label: confusionMatrix.labels[index],
         data: row,
-        backgroundColor: colors[index],
+        backgroundColor: colors[index % colors.length],
         borderWidth: 1
       };
     });
@@ -281,7 +283,7 @@ const ModelEvaluation = () => {
           label: (context) => {
             const datasetLabel = context.dataset.label || '';
             const value = context.parsed.y;
-            const label = confusionMatrix.labels[context.dataIndex];
+            const label = confusionMatrix?.labels?.[context.dataIndex] || '';
             return `Predicted ${datasetLabel} as ${label}: ${value}%`;
           }
         }
@@ -358,19 +360,23 @@ const ModelEvaluation = () => {
       <div className="version-selector">
         <div className="version-selector-title">Model Versions:</div>
         <div className="version-cards">
-          {modelVersions.map(version => (
-            <div 
-              key={version.id}
-              className={`version-card ${selectedVersion === version.id ? 'active' : ''} ${version.status === 'production' ? 'production' : ''}`}
-              onClick={() => setSelectedVersion(version.id)}
-            >
-              <div className="version-name">{version.name}</div>
-              <div className="version-date">{new Date(version.date).toLocaleDateString('de-DE')}</div>
-              {version.status === 'production' && (
-                <div className="version-status">Production</div>
-              )}
-            </div>
-          ))}
+          {modelVersions.length > 0 ? (
+            modelVersions.map(version => (
+              <div 
+                key={version.id}
+                className={`version-card ${selectedVersion === version.id ? 'active' : ''} ${version.status === 'production' ? 'production' : ''}`}
+                onClick={() => setSelectedVersion(version.id)}
+              >
+                <div className="version-name">{version.name}</div>
+                <div className="version-date">{new Date(version.date).toLocaleDateString('de-DE')}</div>
+                {version.status === 'production' && (
+                  <div className="version-status">Production</div>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="no-versions">No model versions available</div>
+          )}
         </div>
       </div>
       
@@ -424,44 +430,44 @@ const ModelEvaluation = () => {
               <h2>Model Quality Metrics</h2>
               <div className="metrics-grid">
                 <div className="metric-item">
-                  <div className="metric-value">{(metrics.coherence_score || 0).toFixed(2)}</div>
+                  <div className="metric-value">{((metrics.coherence_score || 0) * 1).toFixed(2)}</div>
                   <div className="metric-label">Coherence Score</div>
                   <div className="metric-description">
                     Measures how semantically coherent the topics are. Higher is better.
                   </div>
                 </div>
                 <div className="metric-item">
-                  <div className="metric-value">{(metrics.diversity_score || 0).toFixed(2)}</div>
+                  <div className="metric-value">{((metrics.diversity_score || 0) * 1).toFixed(2)}</div>
                   <div className="metric-label">Diversity Score</div>
                   <div className="metric-description">
                     Measures how distinct the topics are from each other. Higher is better.
                   </div>
                 </div>
                 <div className="metric-item">
-                  <div className="metric-value">{((metrics.document_coverage || 0) * 100).toFixed(0)}%</div>
+                  <div className="metric-value">{(((metrics.document_coverage || 0) * 100)).toFixed(0)}%</div>
                   <div className="metric-label">Document Coverage</div>
                   <div className="metric-description">
                     Percentage of documents assigned to at least one topic.
                   </div>
                 </div>
-                {metrics.total_documents && (
+                {metrics.total_documents ? (
                   <div className="metric-item">
-                    <div className="metric-value">{metrics.total_documents.toLocaleString()}</div>
+                    <div className="metric-value">{(metrics.total_documents || 0).toLocaleString()}</div>
                     <div className="metric-label">Total Documents</div>
                     <div className="metric-description">
                       Number of documents processed in the analysis.
                     </div>
                   </div>
-                )}
+                ) : null}
                 <div className="metric-item">
-                  <div className="metric-value">{(metrics.silhouette_score || 0).toFixed(2)}</div>
+                  <div className="metric-value">{((metrics.silhouette_score || 0) * 1).toFixed(2)}</div>
                   <div className="metric-label">Silhouette Score</div>
                   <div className="metric-description">
                     Measures how well-separated the topics are. Higher is better.
                   </div>
                 </div>
                 <div className="metric-item">
-                  <div className="metric-value">{(metrics.topic_quality || 0).toFixed(2)}</div>
+                  <div className="metric-value">{((metrics.topic_quality || 0) * 1).toFixed(2)}</div>
                   <div className="metric-label">Topic Quality</div>
                   <div className="metric-description">
                     Overall quality score of the topics. Higher is better.
@@ -491,7 +497,9 @@ const ModelEvaluation = () => {
             {confusionMatrix && selectedModel === 'sentiment_analysis' && (
               <div className="charts-row">
                 <div className="chart-container full-width">
-                  <Bar data={prepareConfusionMatrixData()} options={confusionMatrixOptions} />
+                  {prepareConfusionMatrixData() && (
+                    <Bar data={prepareConfusionMatrixData()} options={confusionMatrixOptions} />
+                  )}
                 </div>
               </div>
             )}

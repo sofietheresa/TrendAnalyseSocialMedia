@@ -48,17 +48,20 @@ const PipelinePage = () => {
           return;
         }
         
+        // Ensure executionsData is an array before using filter
+        const executionsArray = Array.isArray(executionsData) ? executionsData : [];
+        
         // Calculate stats
         const stats = {
-          success: executionsData.filter(exec => exec.status === "completed").length,
-          failed: executionsData.filter(exec => exec.status === "failed").length,
-          running: executionsData.filter(exec => exec.status === "running").length,
-          total: executionsData.length,
-          avgRuntime: pipelineData.averageRuntime
+          success: executionsArray.filter(exec => exec.status === "completed").length,
+          failed: executionsArray.filter(exec => exec.status === "failed").length,
+          running: executionsArray.filter(exec => exec.status === "running").length,
+          total: executionsArray.length,
+          avgRuntime: pipelineData.averageRuntime || "00:00:00"
         };
         
         setPipelineData(pipelineData);
-        setExecutions(executionsData);
+        setExecutions(executionsArray);
         setPipelineStats(stats);
         setLoading(false);
       } catch (err) {
@@ -98,7 +101,8 @@ const PipelinePage = () => {
             
             if (!pipelineData.error && !executionsData.error) {
               setPipelineData(pipelineData);
-              setExecutions(executionsData);
+              // Ensure executionsData is an array
+              setExecutions(Array.isArray(executionsData) ? executionsData : []);
             }
           };
           
@@ -262,28 +266,32 @@ const PipelinePage = () => {
           <div className="pipeline-steps-container">
             <h3>Pipeline Steps</h3>
             <div className="pipeline-steps">
-              {pipelineData.steps.map((step, index) => (
-                <div key={step.id} className="pipeline-step">
-                  <div className={`step-number ${getStatusClass(step.status)}`}>{index + 1}</div>
-                  <div className="step-connector">
-                    {index < pipelineData.steps.length - 1 && (
-                      <div className={`connector-line ${
-                        pipelineData.steps[index + 1].status === 'pending' || 
-                        pipelineData.steps[index].status === 'failed' ? 
-                        'connector-inactive' : ''
-                      }`}></div>
-                    )}
-                  </div>
-                  <div className={`step-content ${getStatusClass(step.status)}`}>
-                    <div className="step-header">
-                      <h4>{step.name}</h4>
-                      <div className="step-status">{step.status}</div>
+              {pipelineData.steps && Array.isArray(pipelineData.steps) ? (
+                pipelineData.steps.map((step, index) => (
+                  <div key={step.id} className="pipeline-step">
+                    <div className={`step-number ${getStatusClass(step.status)}`}>{index + 1}</div>
+                    <div className="step-connector">
+                      {index < pipelineData.steps.length - 1 && (
+                        <div className={`connector-line ${
+                          pipelineData.steps[index + 1].status === 'pending' || 
+                          pipelineData.steps[index].status === 'failed' ? 
+                          'connector-inactive' : ''
+                        }`}></div>
+                      )}
                     </div>
-                    <div className="step-description">{step.description}</div>
-                    <div className="step-runtime">Runtime: {step.runtime}</div>
+                    <div className={`step-content ${getStatusClass(step.status)}`}>
+                      <div className="step-header">
+                        <h4>{step.name}</h4>
+                        <div className="step-status">{step.status}</div>
+                      </div>
+                      <div className="step-description">{step.description}</div>
+                      <div className="step-runtime">Runtime: {step.runtime}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <div className="no-steps">No steps data available for this pipeline</div>
+              )}
             </div>
           </div>
           

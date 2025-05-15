@@ -105,6 +105,17 @@
   border-radius: 4px;
 }
 
+.no-versions, .no-steps {
+  width: 100%;
+  padding: 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid #e1e5eb;
+  border-radius: 8px;
+  color: #64748B;
+  font-size: 0.95rem;
+}
+
 /* Metrics Overview */
 .metrics-overview {
   margin-bottom: 30px;
