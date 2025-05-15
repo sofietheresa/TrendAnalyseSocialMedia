@@ -1,44 +1,22 @@
 # API and Web Framework
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-python-multipart==0.0.6
-httpx==0.25.1
-aiofiles==23.2.1
-jinja2==3.1.2
-prometheus-client==0.17.1
+flask==3.1.1
+flask-cors==5.0.1
+gunicorn==21.2.0
+
+# Database
+sqlalchemy==2.0.41
+psycopg2-binary==2.9.10
 python-dotenv==1.1.0
 
 # Data Processing and Analysis
-pandas>=2.1.1
-numpy>=1.24.3
-sqlalchemy==2.0.41
-psycopg2-binary==2.9.10
-alembic==1.13.1
+pandas==2.1.4
+numpy==1.24.3
 scikit-learn==1.3.2
-
-# Machine Learning and NLP
-nltk==3.8.1
-textblob==0.17.1
-emoji==2.8.0
-
-# Vector Database
-qdrant-client==1.6.0
 
 # Utilities
 requests==2.31.0
 schedule==1.2.1
 
-# Scraping
-praw==7.7.1
-google-api-python-client==2.108.0
-
 # Build dependencies
 setuptools>=65.5.1
 wheel>=0.40.0
-
-# Flask and CORS
-flask==3.1.1
-flask-cors==5.0.1
-
-# Gunicorn
-gunicorn==21.2.0
