@@ -1,68 +1,78 @@
 import os
-import subprocess
+import importlib.util
 from datetime import datetime
 from pathlib import Path
 import logging
-import glob
-import importlib
+from logging.handlers import RotatingFileHandler
+import asyncio
 
-# 🔧 sicherstellen, dass logs-Verzeichnis vorhanden ist
-Path("logs").mkdir(parents=True, exist_ok=True)
-
-# Automatisch alle *_scraper.py Dateien im jobs/ Verzeichnis laden
+# Setup paths
 BASE_DIR = Path(__file__).resolve().parent
 JOBS_DIR = BASE_DIR / "jobs"
-SCRAPER_SCRIPTS = sorted(JOBS_DIR.glob("*_scraper.py"))
+LOG_DIR = BASE_DIR.parent.parent / "logs"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-def run_script(script):
-    name = Path(script).stem.replace("_scraper", "")
-    log_file = Path("logs") / f"{name}.log"
+# Logging setup with rotation
+log_handler = RotatingFileHandler(
+    LOG_DIR / "run_all_scrapers.log",
+    maxBytes=1024*1024,  # 1MB
+    backupCount=5
+)
+log_handler.setFormatter(logging.Formatter(
+    "%(asctime)s [%(levelname)s] %(message)s"
+))
+logger = logging.getLogger("run_all_scrapers")
+logger.setLevel(logging.INFO)
+logger.addHandler(log_handler)
 
-    print(f"📄 Log-Datei: {log_file}")
-    print(f"▶️  Starte {script} ...")
+def import_module_from_file(file_path):
+    """Import a module from file path"""
+    spec = importlib.util.spec_from_file_location(file_path.stem, file_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
+def run_script(script_path):
+    """Run a scraper script by importing it and calling its main function"""
+    name = script_path.stem
     start = datetime.now()
 
     try:
-        # Wenn das Script im jobs/ Verzeichnis ist, verwende relative Pfade
-        if "jobs" in script.parts:
-            relative_script_path = script.relative_to(BASE_DIR)
-            working_dir = str(BASE_DIR)
+        # Import the script module directly from file
+        module = import_module_from_file(script_path)
+        
+        # Get the main function (scrape_reddit, trending_videos, scrape_youtube_trending)
+        main_func = None
+        if hasattr(module, "scrape_reddit"):
+            main_func = module.scrape_reddit
+        elif hasattr(module, "trending_videos"):
+            main_func = module.trending_videos
+        elif hasattr(module, "scrape_youtube_trending"):
+            main_func = module.scrape_youtube_trending
+        
+        if main_func:
+            logger.info(f"Starting {name}...")
+            if asyncio.iscoroutinefunction(main_func):
+                asyncio.run(main_func())
+            else:
+                main_func()
+            duration = (datetime.now() - start).seconds
+            logger.info(f"Successfully completed {name} in {duration} seconds")
         else:
-            # Für Scripts im scheduler/ Verzeichnis verwende den absoluten Pfad
-            relative_script_path = script
-            working_dir = str(BASE_DIR.parent)
+            logger.error(f"Could not find main function in {name}")
 
-        with open(log_file, "a", encoding="utf-8") as log:
-            subprocess.run(
-                ["python", str(relative_script_path)],
-                cwd=working_dir,
-                env=os.environ.copy(),
-                stdout=log,
-                stderr=log,
-                text=True,
-                check=True
-            )
-        duration = (datetime.now() - start).seconds
-        print(f"✅  {script} erfolgreich in {duration} Sekunden.")
-
-    except subprocess.CalledProcessError:
-        logging.error(f"❌ Fehler beim Ausführen von {script} (siehe {log_file})")
-        print(f"❌ Fehler beim Ausführen von {script} (siehe {log_file})")
+    except Exception as e:
+        logger.error(f"Error running {name}: {str(e)}")
+        logger.exception("Detailed error:")
 
 def run_all():
+    """Run all scraper scripts in the jobs directory"""
+    # Find all scraper scripts
+    scraper_scripts = sorted(JOBS_DIR.glob("*_scraper.py"))
     
-    for script in SCRAPER_SCRIPTS:
-        logging.info("Attemping to run script: %s", script)
+    for script in scraper_scripts:
+        logger.info(f"Running script: {script.name}")
         run_script(script)
-    
-    # Führe migrate_to_sqlite.py aus, nachdem alle Scraper fertig sind
-    migrate_script = Path(__file__).parent / "migrate_to_sqlite.py"
-    if migrate_script.exists():
-        logging.info("Starting database migration...")
-        run_script(migrate_script)
-    else:
-        logging.error(f"❌ migrate_to_sqlite.py nicht gefunden unter {migrate_script}")
 
 if __name__ == "__main__":
     run_all()

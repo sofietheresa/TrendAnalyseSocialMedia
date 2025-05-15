@@ -26,6 +26,11 @@ qdrant-client==1.6.0
 
 # Utilities
 requests==2.31.0
+schedule==1.2.1
+
+# Scraping
+praw==7.7.1
+google-api-python-client==2.108.0
 
 # Build dependencies
 setuptools>=65.5.1

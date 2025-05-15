@@ -1,83 +1,214 @@
 import asyncio
 import os
-import csv
 import logging
+from logging.handlers import RotatingFileHandler
 from TikTokApi import TikTokApi
 from dotenv import load_dotenv
 from pathlib import Path
-from typing import List
+import psycopg2
+from psycopg2.extras import execute_values
+import urllib.parse
+from datetime import datetime
+import traceback
 
 load_dotenv()
 
-ms_token = os.getenv("MS_TOKEN")
-csv_path = Path("/app/data/raw/tiktok_data.csv")
-log_path = Path("/app/logs/tiktok.log")
+# Setup paths
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
+LOG_DIR = BASE_DIR / "logs"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-log_path.parent.mkdir(parents=True, exist_ok=True)
-logging.basicConfig(
-    filename=log_path,
-    level=logging.INFO,
-    filemode="a" ,
-    format="%(asctime)s [%(levelname)s] %(message)s",
+# Logging setup with rotation
+log_handler = RotatingFileHandler(
+    LOG_DIR / "tiktok.log",
+    maxBytes=1024*1024,  # 1MB
+    backupCount=5
 )
+log_handler.setFormatter(logging.Formatter(
+    "%(asctime)s [%(levelname)s] %(message)s"
+))
+logger = logging.getLogger("tiktok_scraper")
+logger.setLevel(logging.INFO)
+logger.addHandler(log_handler)
+
+# Also add console handler for immediate feedback
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(logging.Formatter(
+    "%(asctime)s [%(levelname)s] %(message)s"
+))
+logger.addHandler(console_handler)
+
+def get_db_connection():
+    # Parse the DATABASE_URL to modify the database name
+    url = os.getenv("DATABASE_URL")
+    result = urllib.parse.urlparse(url)
+    
+    # Create a new URL with the tiktok_data database
+    new_url = f"{result.scheme}://{result.username}:{result.password}@{result.hostname}:{result.port}/tiktok_data"
+    
+    try:
+        # First try to connect to tiktok_data database
+        return psycopg2.connect(new_url)
+    except psycopg2.OperationalError:
+        # If tiktok_data doesn't exist, connect to the default database and create tiktok_data
+        with psycopg2.connect(url) as default_conn:
+            default_conn.autocommit = True
+            with default_conn.cursor() as cur:
+                cur.execute("SELECT 1 FROM pg_database WHERE datname = 'tiktok_data'")
+                if not cur.fetchone():
+                    cur.execute('CREATE DATABASE tiktok_data')
+        
+        # Now connect to the new database
+        return psycopg2.connect(new_url)
 
 async def trending_videos():
+    ms_token = os.getenv("MS_TOKEN")
     if not ms_token:
-        logging.error("MS_TOKEN fehlt. Bitte prüfe deine .env-Datei.")
+        logger.error("MS_TOKEN missing. Please check your .env file.")
         return
 
-    api = TikTokApi()
-
+    browser = os.getenv("TIKTOK_BROWSER", "chromium")
+    logger.info(f"Using browser: {browser}")
+    
+    api = None
     try:
+        api = TikTokApi()
+        logger.info("Creating TikTok API session...")
+        
         await api.create_sessions(
             ms_tokens=[ms_token],
             num_sessions=1,
             sleep_after=3,
-            browser=os.getenv("TIKTOK_BROWSER", "chromium"),
+            browser=browser,
             headless=True
         )
+        logger.info("TikTok API session created successfully")
 
         data = []
-        logging.info(" Lade Trending-Videos von TikTok ...")
+        seen_video_ids = set()  # Track unique video IDs
+        logger.info("Loading trending videos from TikTok...")
 
+        video_count = 0
         async for video in api.trending.videos(count=30):
-            info = video.as_dict
-            data.append({
-                "id": info.get("id"),
-                "description": info.get("desc"),
-                "author_username": info.get("author", {}).get("uniqueId"),
-                "author_id": info.get("author", {}).get("id"),
-                "likes": info.get("stats", {}).get("diggCount"),
-                "shares": info.get("stats", {}).get("shareCount"),
-                "comments": info.get("stats", {}).get("commentCount"),
-                "plays": info.get("stats", {}).get("playCount"),
-                "video_url": info.get("video", {}).get("downloadAddr"),
-                "created_time": info.get("createTime"),
-            })
+            try:
+                info = video.as_dict
+                video_id = info.get("id")
+                
+                # Skip if we've already seen this video in this batch
+                if video_id in seen_video_ids:
+                    logger.debug(f"Skipping duplicate video: {video_id}")
+                    continue
+                    
+                seen_video_ids.add(video_id)
+                video_count += 1
+                logger.debug(f"Processing video {video_count}: {video_id}")
+                
+                data.append({
+                    "id": video_id,
+                    "description": info.get("desc"),
+                    "author_username": info.get("author", {}).get("uniqueId"),
+                    "author_id": info.get("author", {}).get("id"),
+                    "likes": info.get("stats", {}).get("diggCount"),
+                    "shares": info.get("stats", {}).get("shareCount"),
+                    "comments": info.get("stats", {}).get("commentCount"),
+                    "plays": info.get("stats", {}).get("playCount"),
+                    "video_url": info.get("video", {}).get("downloadAddr"),
+                    "created_time": info.get("createTime"),
+                    "scraped_at": datetime.now()
+                })
+            except Exception as e:
+                logger.error(f"Error processing video: {str(e)}")
+                logger.debug(traceback.format_exc())
+                continue
 
         if not data:
-            logging.warning(" Keine Videos gefunden.")
+            logger.warning("No videos found.")
             return
 
-        os.makedirs(os.path.dirname(csv_path), exist_ok=True)
-        file_exists = os.path.isfile(csv_path)
-        with open(csv_path, "a", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=data[0].keys())
-            if not file_exists:
-                writer.writeheader()
-            writer.writerows(data)
+        logger.info(f"Found {len(data)} unique videos, attempting to store in database...")
 
-        logging.info(f"✅ Erfolgreich {len(data)} Videos in '{csv_path}' gespeichert.")
+        # Store in PostgreSQL
+        if data:
+            with get_db_connection() as conn:
+                with conn.cursor() as cur:
+                    # Create table if it doesn't exist
+                    cur.execute("""
+                        CREATE TABLE IF NOT EXISTS tiktok_data (
+                            id VARCHAR(50),
+                            description TEXT,
+                            author_username VARCHAR(100),
+                            author_id VARCHAR(50),
+                            likes INTEGER,
+                            shares INTEGER,
+                            comments INTEGER,
+                            plays INTEGER,
+                            video_url TEXT,
+                            created_time BIGINT,
+                            scraped_at TIMESTAMP,
+                            PRIMARY KEY (id)
+                        )
+                    """)
+                    
+                    # Insert data one by one to handle duplicates better
+                    inserted = 0
+                    updated = 0
+                    for post in data:
+                        try:
+                            # Try to insert
+                            cur.execute("""
+                                INSERT INTO tiktok_data (
+                                    id, description, author_username, author_id,
+                                    likes, shares, comments, plays, video_url,
+                                    created_time, scraped_at
+                                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                ON CONFLICT (id) 
+                                DO UPDATE SET 
+                                    likes = EXCLUDED.likes,
+                                    shares = EXCLUDED.shares,
+                                    comments = EXCLUDED.comments,
+                                    plays = EXCLUDED.plays,
+                                    scraped_at = EXCLUDED.scraped_at
+                                RETURNING (xmax = 0) AS inserted
+                            """, (
+                                post["id"],
+                                post["description"],
+                                post["author_username"],
+                                post["author_id"],
+                                post["likes"],
+                                post["shares"],
+                                post["comments"],
+                                post["plays"],
+                                post["video_url"],
+                                post["created_time"],
+                                post["scraped_at"]
+                            ))
+                            
+                            # Check if it was an insert or update
+                            result = cur.fetchone()
+                            if result[0]:
+                                inserted += 1
+                            else:
+                                updated += 1
+                                
+                        except Exception as e:
+                            logger.error(f"Error inserting video {post['id']}: {str(e)}")
+                            continue
+                    
+                    conn.commit()
+                    logger.info(f"Successfully processed {len(data)} videos ({inserted} inserted, {updated} updated)")
 
     except Exception as e:
-        logging.error(f"❌ Fehler beim TikTok-Scraping: {type(e).__name__}: {e}")
+        logger.error(f"Error during TikTok scraping: {type(e).__name__}: {e}")
+        logger.error(traceback.format_exc())
 
     finally:
         try:
-            if hasattr(api, "browser") and api.browser:
+            if api and hasattr(api, "browser") and api.browser:
+                logger.info("Closing browser session...")
                 await api.stop_playwright()
-        except Exception:
-            pass
+                logger.info("Browser session closed")
+        except Exception as e:
+            logger.error(f"Error closing browser: {str(e)}")
 
 if __name__ == "__main__":
     asyncio.run(trending_videos())
