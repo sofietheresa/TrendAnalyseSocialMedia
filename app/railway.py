@@ -76,7 +76,15 @@ def main():
     
     try:
         import uvicorn
-        uvicorn.run("main:app", host="0.0.0.0", port=PORT, log_level="debug")
+        logger.info(f"Trying to run Uvicorn with main:app in directory: {os.getcwd()}")
+        # Die app-Variable sollte in main.py definiert sein
+        if os.path.exists("main.py"):
+            uvicorn.run("main:app", host="0.0.0.0", port=PORT, log_level="info")
+        else:
+            # Falls main.py nicht im aktuellen Verzeichnis ist, versuche es mit relativem Pfad
+            logger.info("main.py not found in current directory, trying alternative paths")
+            # Wenn wir uns im app-Verzeichnis befinden und main.py hier ist
+            uvicorn.run("main:app", host="0.0.0.0", port=PORT, log_level="info")
     except Exception as e:
         logger.error(f"Fehler beim Starten von Uvicorn: {e}")
         sys.exit(1)

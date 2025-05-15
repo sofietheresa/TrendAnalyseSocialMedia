@@ -4,8 +4,8 @@ buildCommand = "pip install -r requirements.txt"
 
 [deploy]
 startCommand = "cd app && python railway.py"
-healthcheckPath = "/"
-healthcheckTimeout = 100
+healthcheckPath = "/railway-health"
+healthcheckTimeout = 200
 restartPolicyType = "ON_FAILURE"
 
 [environments]

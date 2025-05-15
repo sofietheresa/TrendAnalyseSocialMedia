@@ -133,6 +133,15 @@ async def health_check():
     
     return health_status
 
+@app.get("/railway-health")
+async def railway_health():
+    """Minimaler Healthcheck speziell für Railway ohne Datenbankzugriff"""
+    logger.info("Railway-Healthcheck-Endpunkt aufgerufen")
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat()
+    }
+
 @app.get("/info")
 async def info():
     """Systeminformationen für Debugging"""
