@@ -3,6 +3,11 @@ import { Card, Row, Col, Spinner, Alert } from 'react-bootstrap';
 import ScraperStatus from './ScraperStatus';
 import DailyStats from './DailyStats';
 
+// Lokale Entwicklung verwendet Port 5000, Produktion verwendet die Umgebungsvariable
+const API_BASE_URL = process.env.NODE_ENV === 'development' 
+    ? 'https://trendanalysesocialmedia-production.up.railway.app' 
+    : (process.env.REACT_APP_API_URL || 'https://trendanalysesocialmedia-production.up.railway.app');
+
 const Dashboard = () => {
     const [scraperStatus, setScraperStatus] = useState(null);
     const [dailyStats, setDailyStats] = useState(null);
@@ -14,23 +19,27 @@ const Dashboard = () => {
             setLoading(true);
             setError(null);
 
+            console.log('Fetching data from:', `${API_BASE_URL}/api/scraper-status`);
+
             // Fetch scraper status
-            console.log('Fetching scraper status...');
-            const statusResponse = await fetch('/api/scraper-status');
+            const statusResponse = await fetch(`${API_BASE_URL}/api/scraper-status`);
             if (!statusResponse.ok) {
+                const errorText = await statusResponse.text();
+                console.error('Status response error:', errorText);
                 throw new Error(`HTTP error! status: ${statusResponse.status}`);
             }
             const statusData = await statusResponse.json();
-            console.log('Scraper status data:', statusData);
+            console.log('Received status data:', statusData);
 
             // Fetch daily stats
-            console.log('Fetching daily stats...');
-            const statsResponse = await fetch('/api/daily-stats');
+            const statsResponse = await fetch(`${API_BASE_URL}/api/daily-stats`);
             if (!statsResponse.ok) {
+                const errorText = await statsResponse.text();
+                console.error('Stats response error:', errorText);
                 throw new Error(`HTTP error! status: ${statsResponse.status}`);
             }
             const statsData = await statsResponse.json();
-            console.log('Daily stats data:', statsData);
+            console.log('Received stats data:', statsData);
 
             setScraperStatus(statusData);
             setDailyStats(statsData);
@@ -65,6 +74,12 @@ const Dashboard = () => {
                 <Alert variant="danger">
                     <Alert.Heading>Fehler beim Laden der Daten</Alert.Heading>
                     <p>{error}</p>
+                    <hr />
+                    <div className="d-flex justify-content-end">
+                        <button onClick={fetchData} className="btn btn-outline-danger">
+                            Erneut versuchen
+                        </button>
+                    </div>
                 </Alert>
             </div>
         );
@@ -90,7 +105,7 @@ const Dashboard = () => {
                             <Card.Title>{scraperStatus?.reddit?.total_posts || 0} Posts</Card.Title>
                             <div className="platform-stats">
                                 <p>Neueste Posts:</p>
-                                {scraperStatus?.reddit?.posts.slice(0, 3).map(post => (
+                                {scraperStatus?.reddit?.posts?.slice(0, 3).map(post => (
                                     <div key={post.id} className="post-preview">
                                         <h6>{post.title}</h6>
                                         <small>Score: {post.score}</small>
@@ -108,7 +123,7 @@ const Dashboard = () => {
                             <Card.Title>{scraperStatus?.tiktok?.total_posts || 0} Videos</Card.Title>
                             <div className="platform-stats">
                                 <p>Trending Videos:</p>
-                                {scraperStatus?.tiktok?.videos.slice(0, 3).map(video => (
+                                {scraperStatus?.tiktok?.videos?.slice(0, 3).map(video => (
                                     <div key={video.id} className="post-preview">
                                         <h6>{video.description}</h6>
                                         <small>Likes: {video.likes}</small>
@@ -126,7 +141,7 @@ const Dashboard = () => {
                             <Card.Title>{scraperStatus?.youtube?.total_posts || 0} Videos</Card.Title>
                             <div className="platform-stats">
                                 <p>Top Videos:</p>
-                                {scraperStatus?.youtube?.videos.slice(0, 3).map(video => (
+                                {scraperStatus?.youtube?.videos?.slice(0, 3).map(video => (
                                     <div key={video.video_id} className="post-preview">
                                         <h6>{video.title}</h6>
                                         <small>Views: {video.view_count}</small>

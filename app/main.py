@@ -1,55 +1,138 @@
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from .middleware import TimeoutMiddleware
-import logging
+from flask import Flask, jsonify
+from flask_cors import CORS
+from sqlalchemy import create_engine, text
+import os
+from datetime import datetime, timedelta
+import urllib.parse
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+app = Flask(__name__)
+# CORS configuration
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "http://localhost:3000",  # React Dev Server
+            "https://trendanalysesocialmedia.vercel.app",  # Produktions-URL
+            "https://trendanalysesocialmedia-production.up.railway.app"  # Railway App URL
+        ]
+    }
+})
 
-app = FastAPI(
-    title="Social Media Analysis API",
-    description="API for analyzing social media trends",
-    version="1.0.0"
-)
+def get_db_connection(db_name):
+    url = os.getenv("DATABASE_URL")
+    if not url:
+        raise ValueError("DATABASE_URL environment variable is not set")
+    result = urllib.parse.urlparse(url)
+    conn_str = f"postgresql://{result.username}:{result.password}@{result.hostname}:{result.port}/{db_name}"
+    return create_engine(conn_str)
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Dictionary für die Datenbankverbindungen
+db_engines = {}
 
-# Add timeout middleware
-app.add_middleware(TimeoutMiddleware, timeout=60)
+@app.route('/api/scraper-status')
+def get_scraper_status():
+    try:
+        # Check if any data was added in the last 20 minutes to determine if scraper is running
+        cutoff_time = datetime.now() - timedelta(minutes=20)
+        
+        status = {
+            'reddit': {'running': False, 'total_posts': 0, 'last_update': None},
+            'tiktok': {'running': False, 'total_posts': 0, 'last_update': None},
+            'youtube': {'running': False, 'total_posts': 0, 'last_update': None}
+        }
+        
+        # Initialize database engines if they don't exist
+        for db in ['reddit_data', 'tiktok_data', 'youtube_data']:
+            if db not in db_engines:
+                db_engines[db] = get_db_connection(db)
+        
+        # Check Reddit
+        with db_engines['reddit_data'].connect() as conn:
+            result = conn.execute(text("SELECT COUNT(*), MAX(scraped_at) FROM reddit_data"))
+            count, last_update = result.fetchone()
+            status['reddit'].update({
+                'running': last_update and last_update > cutoff_time,
+                'total_posts': count,
+                'last_update': last_update.isoformat() if last_update else None
+            })
+        
+        # Check TikTok
+        with db_engines['tiktok_data'].connect() as conn:
+            result = conn.execute(text("SELECT COUNT(*), MAX(scraped_at) FROM tiktok_data"))
+            count, last_update = result.fetchone()
+            status['tiktok'].update({
+                'running': last_update and last_update > cutoff_time,
+                'total_posts': count,
+                'last_update': last_update.isoformat() if last_update else None
+            })
+        
+        # Check YouTube
+        with db_engines['youtube_data'].connect() as conn:
+            result = conn.execute(text("SELECT COUNT(*), MAX(scraped_at) FROM youtube_data"))
+            count, last_update = result.fetchone()
+            status['youtube'].update({
+                'running': last_update and last_update > cutoff_time,
+                'total_posts': count,
+                'last_update': last_update.isoformat() if last_update else None
+            })
+        
+        return jsonify(status)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-# Error handlers
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"detail": exc.detail}
-    )
+@app.route('/api/daily-stats')
+def get_daily_stats():
+    try:
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=7)
+        
+        stats = {
+            'reddit': [],
+            'tiktok': [],
+            'youtube': []
+        }
+        
+        # Initialize database engines if they don't exist
+        for db in ['reddit_data', 'tiktok_data', 'youtube_data']:
+            if db not in db_engines:
+                db_engines[db] = get_db_connection(db)
+        
+        # Get Reddit daily stats
+        with db_engines['reddit_data'].connect() as conn:
+            result = conn.execute(text("""
+                SELECT DATE(scraped_at) as date, COUNT(*) as count
+                FROM reddit_data
+                WHERE scraped_at >= :start_date
+                GROUP BY DATE(scraped_at)
+                ORDER BY date
+            """), {'start_date': start_date})
+            stats['reddit'] = [{'date': row[0].isoformat(), 'count': row[1]} for row in result]
+        
+        # Get TikTok daily stats
+        with db_engines['tiktok_data'].connect() as conn:
+            result = conn.execute(text("""
+                SELECT DATE(scraped_at) as date, COUNT(*) as count
+                FROM tiktok_data
+                WHERE scraped_at >= :start_date
+                GROUP BY DATE(scraped_at)
+                ORDER BY date
+            """), {'start_date': start_date})
+            stats['tiktok'] = [{'date': row[0].isoformat(), 'count': row[1]} for row in result]
+        
+        # Get YouTube daily stats
+        with db_engines['youtube_data'].connect() as conn:
+            result = conn.execute(text("""
+                SELECT DATE(scraped_at) as date, COUNT(*) as count
+                FROM youtube_data
+                WHERE scraped_at >= :start_date
+                GROUP BY DATE(scraped_at)
+                ORDER BY date
+            """), {'start_date': start_date})
+            stats['youtube'] = [{'date': row[0].isoformat(), 'count': row[1]} for row in result]
+        
+        return jsonify(stats)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-@app.exception_handler(Exception)
-async def general_exception_handler(request: Request, exc: Exception):
-    logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "Internal server error"}
-    )
-
-# Health check endpoint
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
-
-# Import and include your API routes here
-# from .routes import router
-# app.include_router(router) 
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port) 

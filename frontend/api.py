@@ -6,7 +6,16 @@ from datetime import datetime, timedelta
 import urllib.parse
 
 app = Flask(__name__)
-CORS(app)
+# CORS für lokale Entwicklung erlauben
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "http://localhost:3000",  # React Dev Server
+            "https://trendanalysesocialmedia.vercel.app",  # Produktions-URL
+            "https://trendanalysesocialmedia-production.up.railway.app"  # Railway App URL
+        ]
+    }
+})
 
 def get_db_connection(db_name):
     url = os.getenv("DATABASE_URL")
