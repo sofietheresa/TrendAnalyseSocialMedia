@@ -5,12 +5,19 @@ import os
 from datetime import datetime, timedelta
 import urllib.parse
 import logging
+import sys
+import traceback
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
+# Enhanced logging setup
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=sys.stdout
+)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
 # CORS configuration
 CORS(app, resources={
     r"/api/*": {
@@ -22,30 +29,81 @@ CORS(app, resources={
     }
 })
 
-def get_db_connection(db_name):
+def get_db_connection():
     try:
         url = os.getenv("DATABASE_URL")
+        logger.info("Attempting to connect to database")
+        
         if not url:
+            logger.error("DATABASE_URL environment variable is not set")
             raise ValueError("DATABASE_URL environment variable is not set")
-        logger.info(f"Connecting to database: {db_name}")
-        result = urllib.parse.urlparse(url)
-        conn_str = f"postgresql://{result.username}:{result.password}@{result.hostname}:{result.port}/{db_name}"
-        return create_engine(conn_str)
+        
+        # Log the database URL (but mask sensitive information)
+        parsed_url = urllib.parse.urlparse(url)
+        safe_url = f"postgresql://{parsed_url.username}:***@{parsed_url.hostname}:{parsed_url.port}/{parsed_url.path}"
+        logger.info(f"Database URL format: {safe_url}")
+        
+        engine = create_engine(url)
+        
+        # Test the connection
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+            logger.info("Successfully connected to database")
+        
+        return engine
     except Exception as e:
-        logger.error(f"Error connecting to database {db_name}: {str(e)}")
+        logger.error(f"Database connection error: {str(e)}")
+        logger.error(traceback.format_exc())
         raise
 
-# Dictionary für die Datenbankverbindungen
-db_engines = {}
+# Single database engine
+db_engine = None
+
+@app.route('/')
+def root():
+    return jsonify({
+        "status": "online",
+        "message": "TrendAnalyseSocialMedia API is running",
+        "timestamp": datetime.now().isoformat()
+    })
 
 @app.route('/health')
 def health_check():
-    return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()})
+    health_status = {
+        "status": "online",
+        "timestamp": datetime.now().isoformat(),
+        "components": {
+            "application": "healthy",
+            "database": "unknown"
+        }
+    }
+    
+    try:
+        global db_engine
+        if db_engine is None:
+            db_engine = get_db_connection()
+        
+        with db_engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+            health_status["components"]["database"] = "healthy"
+    except Exception as e:
+        logger.error(f"Database health check failed: {str(e)}")
+        logger.error(traceback.format_exc())
+        health_status["components"]["database"] = "unhealthy"
+        health_status["database_error"] = str(e)
+    
+    # If database is unhealthy but application is running, we still return 200
+    # but include the error details
+    return jsonify(health_status)
 
 @app.route('/api/scraper-status')
 def get_scraper_status():
     try:
-        # Check if any data was added in the last 20 minutes to determine if scraper is running
+        logger.info("Fetching scraper status")
+        global db_engine
+        if db_engine is None:
+            db_engine = get_db_connection()
+            
         cutoff_time = datetime.now() - timedelta(minutes=20)
         
         status = {
@@ -54,48 +112,54 @@ def get_scraper_status():
             'youtube': {'running': False, 'total_posts': 0, 'last_update': None}
         }
         
-        # Initialize database engines if they don't exist
-        for db in ['reddit_data', 'tiktok_data', 'youtube_data']:
-            if db not in db_engines:
-                db_engines[db] = get_db_connection(db)
-        
-        # Check Reddit
-        with db_engines['reddit_data'].connect() as conn:
-            result = conn.execute(text("SELECT COUNT(*), MAX(scraped_at) FROM reddit_data"))
+        with db_engine.connect() as conn:
+            # Check Reddit
+            result = conn.execute(text("SELECT COUNT(*), MAX(scraped_at) FROM reddit_posts"))
             count, last_update = result.fetchone()
             status['reddit'].update({
                 'running': last_update and last_update > cutoff_time,
                 'total_posts': count,
                 'last_update': last_update.isoformat() if last_update else None
             })
-        
-        # Check TikTok
-        with db_engines['tiktok_data'].connect() as conn:
-            result = conn.execute(text("SELECT COUNT(*), MAX(scraped_at) FROM tiktok_data"))
+            logger.info(f"Reddit status updated: {status['reddit']}")
+            
+            # Check TikTok
+            result = conn.execute(text("SELECT COUNT(*), MAX(scraped_at) FROM tiktok_posts"))
             count, last_update = result.fetchone()
             status['tiktok'].update({
                 'running': last_update and last_update > cutoff_time,
                 'total_posts': count,
                 'last_update': last_update.isoformat() if last_update else None
             })
-        
-        # Check YouTube
-        with db_engines['youtube_data'].connect() as conn:
-            result = conn.execute(text("SELECT COUNT(*), MAX(scraped_at) FROM youtube_data"))
+            logger.info(f"TikTok status updated: {status['tiktok']}")
+            
+            # Check YouTube
+            result = conn.execute(text("SELECT COUNT(*), MAX(scraped_at) FROM youtube_posts"))
             count, last_update = result.fetchone()
             status['youtube'].update({
                 'running': last_update and last_update > cutoff_time,
                 'total_posts': count,
                 'last_update': last_update.isoformat() if last_update else None
             })
+            logger.info(f"YouTube status updated: {status['youtube']}")
         
         return jsonify(status)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"Error in scraper status: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        }), 500
 
 @app.route('/api/daily-stats')
 def get_daily_stats():
     try:
+        logger.info("Fetching daily stats")
+        global db_engine
+        if db_engine is None:
+            db_engine = get_db_connection()
+            
         end_date = datetime.now()
         start_date = end_date - timedelta(days=7)
         
@@ -105,47 +169,48 @@ def get_daily_stats():
             'youtube': []
         }
         
-        # Initialize database engines if they don't exist
-        for db in ['reddit_data', 'tiktok_data', 'youtube_data']:
-            if db not in db_engines:
-                db_engines[db] = get_db_connection(db)
-        
-        # Get Reddit daily stats
-        with db_engines['reddit_data'].connect() as conn:
+        with db_engine.connect() as conn:
+            # Get Reddit daily stats
             result = conn.execute(text("""
                 SELECT DATE(scraped_at) as date, COUNT(*) as count
-                FROM reddit_data
+                FROM reddit_posts
                 WHERE scraped_at >= :start_date
                 GROUP BY DATE(scraped_at)
                 ORDER BY date
             """), {'start_date': start_date})
             stats['reddit'] = [{'date': row[0].isoformat(), 'count': row[1]} for row in result]
-        
-        # Get TikTok daily stats
-        with db_engines['tiktok_data'].connect() as conn:
+            logger.info(f"Reddit stats fetched: {len(stats['reddit'])} days of data")
+            
+            # Get TikTok daily stats
             result = conn.execute(text("""
                 SELECT DATE(scraped_at) as date, COUNT(*) as count
-                FROM tiktok_data
+                FROM tiktok_posts
                 WHERE scraped_at >= :start_date
                 GROUP BY DATE(scraped_at)
                 ORDER BY date
             """), {'start_date': start_date})
             stats['tiktok'] = [{'date': row[0].isoformat(), 'count': row[1]} for row in result]
-        
-        # Get YouTube daily stats
-        with db_engines['youtube_data'].connect() as conn:
+            logger.info(f"TikTok stats fetched: {len(stats['tiktok'])} days of data")
+            
+            # Get YouTube daily stats
             result = conn.execute(text("""
                 SELECT DATE(scraped_at) as date, COUNT(*) as count
-                FROM youtube_data
+                FROM youtube_posts
                 WHERE scraped_at >= :start_date
                 GROUP BY DATE(scraped_at)
                 ORDER BY date
             """), {'start_date': start_date})
             stats['youtube'] = [{'date': row[0].isoformat(), 'count': row[1]} for row in result]
+            logger.info(f"YouTube stats fetched: {len(stats['youtube'])} days of data")
         
         return jsonify(stats)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"Error in daily stats: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        }), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
