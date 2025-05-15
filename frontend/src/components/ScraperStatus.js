@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Badge } from 'react-bootstrap';
 import { formatDistanceToNow } from 'date-fns';
-import { de } from 'date-fns/locale/de';
+import de from 'date-fns/locale/de';
 
 const ScraperStatus = ({ status }) => {
     const getStatusBadge = (running) => {
