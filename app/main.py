@@ -197,29 +197,30 @@ async def get_scraper_status():
                     if table_name not in existing_tables:
                         logger.warning(f"Tabelle {table_name} existiert nicht")
                         continue
-                        
-                    # Versuche alternative Abfrage, falls die Tabelle andere Namen hat
-                    try:
-                        result = conn.execute(text(f"SELECT COUNT(*), MAX(scraped_at) FROM {table_name}"))
-                        count, last_update = result.fetchone()
-                        status[platform].update({
-                            'running': last_update and last_update > cutoff_time,
-                            'total_posts': count,
-                            'last_update': last_update.isoformat() if last_update else None
-                        })
-                        logger.info(f"{platform.capitalize()} Status aktualisiert: {status[platform]}")
-                    except Exception:
-                        # Versuche Fallback mit dem alten Tabellennamen
-                        alt_table = f"{platform}_posts"
-                        logger.warning(f"Versuche Fallback-Tabelle: {alt_table}")
-                        result = conn.execute(text(f"SELECT COUNT(*), MAX(scraped_at) FROM {alt_table}"))
-                        count, last_update = result.fetchone()
-                        status[platform].update({
-                            'running': last_update and last_update > cutoff_time,
-                            'total_posts': count,
-                            'last_update': last_update.isoformat() if last_update else None
-                        })
-                        logger.info(f"{platform.capitalize()} Status aktualisiert (Fallback): {status[platform]}")
+                    
+                    # Mögliche Spaltennamen für das Erstellungsdatum
+                    date_columns = ["scraped_at", "created_at", "timestamp", "date"]
+                    
+                    for date_column in date_columns:
+                        try:
+                            # Versuche, mit dem aktuellen Datumsspaltennamen zu arbeiten
+                            query = f"SELECT COUNT(*), MAX({date_column}) FROM {table_name}"
+                            result = conn.execute(text(query))
+                            count, last_update = result.fetchone()
+                            
+                            status[platform].update({
+                                'running': last_update and last_update > cutoff_time,
+                                'total_posts': count,
+                                'last_update': last_update.isoformat() if last_update else None
+                            })
+                            
+                            logger.info(f"{platform.capitalize()} Status aktualisiert mit Spalte {date_column}: {status[platform]}")
+                            # Wenn diese Spalte funktioniert hat, brechen wir die Schleife ab
+                            break
+                        except Exception as e:
+                            logger.warning(f"Spalte {date_column} nicht verfügbar in {table_name}: {str(e)}")
+                            # Weiter zur nächsten möglichen Spalte
+                    
                 except Exception as e:
                     logger.error(f"Fehler beim Abrufen des {platform} Status: {str(e)}")
                     # Bei Fehlern einzelner Plattformen fortfahren
@@ -271,24 +272,41 @@ async def get_daily_stats():
                     if table_name not in existing_tables:
                         logger.warning(f"Tabelle {table_name} existiert nicht")
                         continue
-                        
-                    query = f"""
-                        SELECT DATE(scraped_at) as date, COUNT(*) as count
-                        FROM {table_name}
-                        WHERE scraped_at >= '{start_date.strftime('%Y-%m-%d')}'
-                        GROUP BY DATE(scraped_at)
-                        ORDER BY date
-                    """
                     
-                    results = conn.execute(text(query))
-                    for row in results:
-                        date, count = row
-                        stats[platform].append({
-                            'date': date.strftime('%Y-%m-%d'),
-                            'count': count
-                        })
+                    # Mögliche Spaltennamen für das Erstellungsdatum
+                    date_columns = ["scraped_at", "created_at", "timestamp", "date"]
                     
-                    logger.info(f"{platform.capitalize()} Statistiken abgerufen: {len(stats[platform])} Einträge")
+                    for date_column in date_columns:
+                        try:
+                            # Versuche, mit dem aktuellen Datumsspaltennamen zu arbeiten
+                            query = f"""
+                                SELECT DATE({date_column}) as date, COUNT(*) as count
+                                FROM {table_name}
+                                WHERE {date_column} >= '{start_date.strftime('%Y-%m-%d')}'
+                                GROUP BY DATE({date_column})
+                                ORDER BY date
+                            """
+                            
+                            results = conn.execute(text(query))
+                            found_data = False
+                            
+                            for row in results:
+                                date, count = row
+                                stats[platform].append({
+                                    'date': date.strftime('%Y-%m-%d'),
+                                    'count': count
+                                })
+                                found_data = True
+                            
+                            if found_data:
+                                logger.info(f"{platform.capitalize()} Statistiken abgerufen mit Spalte {date_column}: {len(stats[platform])} Einträge")
+                                # Wenn wir Daten gefunden haben, brechen wir die Schleife ab
+                                break
+                            
+                        except Exception as e:
+                            logger.warning(f"Spalte {date_column} nicht verfügbar in {table_name} für tägliche Statistik: {str(e)}")
+                            # Weiter zur nächsten möglichen Spalte
+                    
                 except Exception as e:
                     logger.error(f"Fehler beim Abrufen der {platform} Statistiken: {str(e)}")
                     # Bei Fehlern einzelner Plattformen fortfahren
@@ -334,149 +352,224 @@ async def get_topic_model(request: TopicModelRequest):
         # Daten abfragen
         platforms_str = ", ".join([f"'{p}'" for p in request.platforms])
         
-        query = f"""
-            SELECT 
-                p.id, 
-                p.source, 
-                COALESCE(p.title, '') as title, 
-                COALESCE(p.text, '') as text,
-                p.scraped_at
-            FROM (
-                SELECT id, 'reddit' as source, title, selftext as text, scraped_at
-                FROM reddit_data
-                WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
-                
-                UNION ALL
-                
-                SELECT id, 'tiktok' as source, '' as title, description as text, scraped_at
-                FROM tiktok_data
-                WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
-                
-                UNION ALL
-                
-                SELECT id, 'youtube' as source, title, description as text, scraped_at
-                FROM youtube_data
-                WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
-            ) p
-            WHERE p.source IN ({platforms_str})
-        """
-        
-        # Daten laden
+        # Versuche verschiedene SQL-Abfragen mit verschiedenen Spaltenbezeichnungen
         try:
+            # Erste Abfragevariante mit 'text' als Haupttextspalte für Reddit
+            query = f"""
+                SELECT 
+                    p.id, 
+                    p.source, 
+                    COALESCE(p.title, '') as title, 
+                    COALESCE(p.text, '') as text,
+                    p.scraped_at
+                FROM (
+                    SELECT id, 'reddit' as source, title, text, scraped_at
+                    FROM reddit_data
+                    WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
+                    
+                    UNION ALL
+                    
+                    SELECT id, 'tiktok' as source, '' as title, description as text, scraped_at
+                    FROM tiktok_data
+                    WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
+                    
+                    UNION ALL
+                    
+                    SELECT id, 'youtube' as source, title, description as text, scraped_at
+                    FROM youtube_data
+                    WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
+                ) p
+                WHERE p.source IN ({platforms_str})
+            """
+            
             with db.connect() as conn:
                 df = pd.read_sql(query, conn)
             
-            logger.info(f"Daten geladen: {len(df)} Einträge")
-            
-            if len(df) < 10:
-                return {
-                    "error": "Zu wenig Daten für Topic-Modeling",
-                    "count": len(df)
-                }
-            
-            # Texte vorbereiten
-            df['combined_text'] = df['title'] + ' ' + df['text']
-            df['combined_text'] = df['combined_text'].str.strip()
-            texts = df['combined_text'].dropna().tolist()
-            
-            # Hier würde normalerweise das BERTopic-Modell initialisiert und trainiert
-            # Da dies rechenintensiv ist und externe Abhängigkeiten hat, simulieren wir die Ergebnisse für das API
-            
-            # In einer echten Implementierung:
-            # from bertopic import BERTopic
-            # from sentence_transformers import SentenceTransformer
-            # embedding_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
-            # topic_model = BERTopic(embedding_model=embedding_model)
-            # topics, probs = topic_model.fit_transform(texts)
-            # topic_info = topic_model.get_topic_info()
-            # topic_keywords = {topic_id: [word for word, _ in topic_model.get_topic(topic_id)] 
-            #                  for topic_id in topic_info['Topic'].unique() if topic_id != -1}
-            
-            # Simulierte Ergebnisse basierend auf häufigen Wörtern für die Demo
-            from collections import Counter
-            import re
-            import random
-            
-            # Einfache Textbereinigung
-            def clean_text(text):
-                if not isinstance(text, str):
-                    return ""
-                text = text.lower()
-                text = re.sub(r'[^\w\s]', '', text)
-                text = re.sub(r'\d+', '', text)
-                return text
-            
-            # Stopwörter
-            stopwords = ["the", "and", "a", "to", "of", "in", "i", "it", "is", "that", "this", 
-                        "for", "with", "on", "you", "was", "be", "are", "have", "my", "at", "not", 
-                        "but", "we", "they", "so", "what", "all", "me", "like", "just", "do", "can", 
-                        "or", "about", "would", "from", "an", "as", "your", "if", "will", "there", 
-                        "by", "how", "get", "amp", "im", "its", "http", "https", "com", "www", "youtube",
-                        "tiktok", "reddit", "video", "watch", "follow", "post", "comment", "user", "channel"]
-            
-            # Texte bereinigen und Wörter zählen
-            all_words = []
-            for text in texts:
-                clean = clean_text(text)
-                words = [w for w in clean.split() if w not in stopwords and len(w) > 2]
-                all_words.extend(words)
-            
-            word_counts = Counter(all_words)
-            top_words = word_counts.most_common(100)
-            
-            # Topic-Gruppen erzeugen (simuliert)
-            num_topics = min(request.num_topics, 5)  # Maximal 5 Topics
-            topic_keywords = {}
-            
-            # Simulierte Topic-Kohärenz-Metriken
-            topic_coherence = random.uniform(0.35, 0.6)
-            topic_diversity = random.uniform(0.7, 0.9)
-            
-            # Wörter in Topic-Gruppen aufteilen
-            words_per_topic = 10
-            for i in range(num_topics):
-                start_idx = i * words_per_topic
-                end_idx = start_idx + words_per_topic
-                if start_idx < len(top_words):
-                    words = [word for word, count in top_words[start_idx:end_idx]]
-                    topic_keywords[i] = words
-            
-            # Topic-Namen generieren
-            topic_names = {}
-            for topic_id, words in topic_keywords.items():
-                topic_names[topic_id] = " & ".join(words[:2])
-            
-            # Ergebnisse formatieren
-            topics_result = []
-            for topic_id, keywords in topic_keywords.items():
-                topics_result.append({
-                    "id": topic_id,
-                    "name": topic_names[topic_id],
-                    "keywords": keywords,
-                    "count": len(df) // num_topics  # Ungefähre Verteilung
-                })
-            
-            # Nach Relevanz sortieren (in der Simulation nach Count)
-            topics_result = sorted(topics_result, key=lambda x: x["count"], reverse=True)
-            
-            # Ergebnis zurückgeben
-            return {
-                "topics": topics_result,
-                "metrics": {
-                    "coherence_score": topic_coherence,
-                    "diversity_score": topic_diversity,
-                    "total_documents": len(df),
-                    "document_coverage": random.uniform(0.7, 0.95),
-                },
-                "time_range": {
-                    "start_date": start_date.strftime('%Y-%m-%d'),
-                    "end_date": end_date.strftime('%Y-%m-%d')
-                }
-            }
         except Exception as e:
-            logger.error(f"Fehler beim Verarbeiten der Daten: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Datenverarbeitungsfehler: {str(e)}")
-    
+            logger.warning(f"Erste Abfragevariante fehlgeschlagen: {e}")
+            
+            try:
+                # Zweite Abfragevariante mit 'content' als möglicher Textspalte für Reddit
+                query = f"""
+                    SELECT 
+                        p.id, 
+                        p.source, 
+                        COALESCE(p.title, '') as title, 
+                        COALESCE(p.text, '') as text,
+                        p.scraped_at
+                    FROM (
+                        SELECT id, 'reddit' as source, title, content as text, scraped_at
+                        FROM reddit_data
+                        WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
+                        
+                        UNION ALL
+                        
+                        SELECT id, 'tiktok' as source, '' as title, description as text, scraped_at
+                        FROM tiktok_data
+                        WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
+                        
+                        UNION ALL
+                        
+                        SELECT id, 'youtube' as source, title, description as text, scraped_at
+                        FROM youtube_data
+                        WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
+                    ) p
+                    WHERE p.source IN ({platforms_str})
+                """
+                
+                with db.connect() as conn:
+                    df = pd.read_sql(query, conn)
+                
+            except Exception as e:
+                logger.warning(f"Zweite Abfragevariante fehlgeschlagen: {e}")
+                
+                try:
+                    # Dritte Abfragevariante mit 'body' als möglicher Textspalte für Reddit
+                    query = f"""
+                        SELECT 
+                            p.id, 
+                            p.source, 
+                            COALESCE(p.title, '') as title, 
+                            COALESCE(p.text, '') as text,
+                            p.scraped_at
+                        FROM (
+                            SELECT id, 'reddit' as source, title, body as text, scraped_at
+                            FROM reddit_data
+                            WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
+                            
+                            UNION ALL
+                            
+                            SELECT id, 'tiktok' as source, '' as title, description as text, scraped_at
+                            FROM tiktok_data
+                            WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
+                            
+                            UNION ALL
+                            
+                            SELECT id, 'youtube' as source, title, description as text, scraped_at
+                            FROM youtube_data
+                            WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
+                        ) p
+                        WHERE p.source IN ({platforms_str})
+                    """
+                    
+                    with db.connect() as conn:
+                        df = pd.read_sql(query, conn)
+                    
+                except Exception as e:
+                    logger.error(f"Alle Abfragevarianten fehlgeschlagen: {e}")
+                    # Falls alle Varianten fehlschlagen, simulieren wir eine leere Datenmenge
+                    return {
+                        "error": "Konnte Daten nicht aus Datenbank abrufen. Spaltennamen möglicherweise nicht korrekt.",
+                        "count": 0
+                    }
+        
+        logger.info(f"Daten geladen: {len(df)} Einträge")
+        
+        if len(df) < 10:
+            return {
+                "error": "Zu wenig Daten für Topic-Modeling",
+                "count": len(df)
+            }
+        
+        # Texte vorbereiten
+        df['combined_text'] = df['title'] + ' ' + df['text']
+        df['combined_text'] = df['combined_text'].str.strip()
+        texts = df['combined_text'].dropna().tolist()
+        
+        # Hier würde normalerweise das BERTopic-Modell initialisiert und trainiert
+        # Da dies rechenintensiv ist und externe Abhängigkeiten hat, simulieren wir die Ergebnisse für das API
+        
+        # In einer echten Implementierung:
+        # from bertopic import BERTopic
+        # from sentence_transformers import SentenceTransformer
+        # embedding_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+        # topic_model = BERTopic(embedding_model=embedding_model)
+        # topics, probs = topic_model.fit_transform(texts)
+        # topic_info = topic_model.get_topic_info()
+        # topic_keywords = {topic_id: [word for word, _ in topic_model.get_topic(topic_id)] 
+        #                  for topic_id in topic_info['Topic'].unique() if topic_id != -1}
+        
+        # Simulierte Ergebnisse basierend auf häufigen Wörtern für die Demo
+        from collections import Counter
+        import re
+        import random
+        
+        # Einfache Textbereinigung
+        def clean_text(text):
+            if not isinstance(text, str):
+                return ""
+            text = text.lower()
+            text = re.sub(r'[^\w\s]', '', text)
+            text = re.sub(r'\d+', '', text)
+            return text
+        
+        # Stopwörter
+        stopwords = ["the", "and", "a", "to", "of", "in", "i", "it", "is", "that", "this", 
+                    "for", "with", "on", "you", "was", "be", "are", "have", "my", "at", "not", 
+                    "but", "we", "they", "so", "what", "all", "me", "like", "just", "do", "can", 
+                    "or", "about", "would", "from", "an", "as", "your", "if", "will", "there", 
+                    "by", "how", "get", "amp", "im", "its", "http", "https", "com", "www", "youtube",
+                    "tiktok", "reddit", "video", "watch", "follow", "post", "comment", "user", "channel"]
+        
+        # Texte bereinigen und Wörter zählen
+        all_words = []
+        for text in texts:
+            clean = clean_text(text)
+            words = [w for w in clean.split() if w not in stopwords and len(w) > 2]
+            all_words.extend(words)
+        
+        word_counts = Counter(all_words)
+        top_words = word_counts.most_common(100)
+        
+        # Topic-Gruppen erzeugen (simuliert)
+        num_topics = min(request.num_topics, 5)  # Maximal 5 Topics
+        topic_keywords = {}
+        
+        # Simulierte Topic-Kohärenz-Metriken
+        topic_coherence = random.uniform(0.35, 0.6)
+        topic_diversity = random.uniform(0.7, 0.9)
+        
+        # Wörter in Topic-Gruppen aufteilen
+        words_per_topic = 10
+        for i in range(num_topics):
+            start_idx = i * words_per_topic
+            end_idx = start_idx + words_per_topic
+            if start_idx < len(top_words):
+                words = [word for word, count in top_words[start_idx:end_idx]]
+                topic_keywords[i] = words
+        
+        # Topic-Namen generieren
+        topic_names = {}
+        for topic_id, words in topic_keywords.items():
+            topic_names[topic_id] = " & ".join(words[:2])
+        
+        # Ergebnisse formatieren
+        topics_result = []
+        for topic_id, keywords in topic_keywords.items():
+            topics_result.append({
+                "id": topic_id,
+                "name": topic_names[topic_id],
+                "keywords": keywords,
+                "count": len(df) // num_topics  # Ungefähre Verteilung
+            })
+        
+        # Nach Relevanz sortieren (in der Simulation nach Count)
+        topics_result = sorted(topics_result, key=lambda x: x["count"], reverse=True)
+        
+        # Ergebnis zurückgeben
+        return {
+            "topics": topics_result,
+            "metrics": {
+                "coherence_score": topic_coherence,
+                "diversity_score": topic_diversity,
+                "total_documents": len(df),
+                "document_coverage": random.uniform(0.7, 0.95),
+            },
+            "time_range": {
+                "start_date": start_date.strftime('%Y-%m-%d'),
+                "end_date": end_date.strftime('%Y-%m-%d')
+            }
+        }
     except Exception as e:
         logger.error(f"Fehler im Topic-Model-Endpunkt: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e)) 

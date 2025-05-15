@@ -96,6 +96,18 @@ export const fetchDailyStats = async () => {
     }
 };
 
+// New function to fetch recent social media data
+export const fetchRecentData = async (platform = 'reddit', limit = 10) => {
+    console.log(`Fetching recent ${platform} data (limit: ${limit})...`);
+    try {
+        return await apiCall('/api/recent-data', 'get', { platform, limit });
+    } catch (error) {
+        console.error(`Error fetching recent ${platform} data:`, error);
+        // Return empty data rather than throwing to allow for graceful UI handling
+        return { data: [] };
+    }
+};
+
 // Other API functions using the enhanced apiCall helper
 export const fetchSocialMediaData = async () => {
     try {

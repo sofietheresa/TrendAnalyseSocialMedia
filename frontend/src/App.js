@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import StatsPanel from './components/StatsPanel';
+import DataPage from './components/DataPage';
+import Documentation from './components/Documentation';
 import { fetchTopicModel } from './services/api';
 
 // Message bubble icon component
@@ -224,12 +226,12 @@ function App() {
             Statistiken
           </Link>
           <Link 
-            to="/logs" 
+            to="/data" 
             className="nav-link" 
-            onClick={() => setActivePage('logs')}
-            style={{ fontWeight: activePage === 'logs' ? 700 : 400 }}
+            onClick={() => setActivePage('data')}
+            style={{ fontWeight: activePage === 'data' ? 700 : 400 }}
           >
-            Logs
+            Data
           </Link>
           <Link 
             to="/docs" 
@@ -246,8 +248,8 @@ function App() {
           <Route path="/" element={<Homepage />} />
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/pipeline" element={<PlaceholderPage title="Pipeline" />} />
-          <Route path="/logs" element={<PlaceholderPage title="Logs" />} />
-          <Route path="/docs" element={<PlaceholderPage title="Documentation" />} />
+          <Route path="/data" element={<DataPage />} />
+          <Route path="/docs" element={<Documentation />} />
         </Routes>
         
         {/* Footer */}

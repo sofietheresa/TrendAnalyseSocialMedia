@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from sqlalchemy import create_engine, text
 import os
@@ -130,6 +130,60 @@ def get_daily_stats():
             stats['youtube'] = [{'date': row[0].isoformat(), 'count': row[1]} for row in result]
         
         return jsonify(stats)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/recent-data')
+def get_recent_data():
+    try:
+        platform = request.args.get('platform', 'reddit')
+        limit = min(int(request.args.get('limit', 10)), 100)  # Limit to max 100 records
+        
+        # Ensure platform is valid
+        if platform not in ['reddit', 'tiktok', 'youtube']:
+            return jsonify({'error': 'Invalid platform specified'}), 400
+        
+        # Initialize database engine if it doesn't exist
+        db_name = f"{platform}_data"
+        if db_name not in db_engines:
+            db_engines[db_name] = get_db_connection(db_name)
+        
+        # Dynamically create the appropriate column selection query based on platform
+        if platform == 'reddit':
+            query = text(f"""
+                SELECT id, title, text, author, created_at, url, scraped_at
+                FROM {platform}_data
+                ORDER BY scraped_at DESC
+                LIMIT :limit
+            """)
+        elif platform == 'tiktok':
+            query = text(f"""
+                SELECT id, text, author, create_time as created_at, url, scraped_at
+                FROM {platform}_data
+                ORDER BY scraped_at DESC
+                LIMIT :limit
+            """)
+        elif platform == 'youtube':
+            query = text(f"""
+                SELECT id, title, description as text, author, published_at as created_at, url, scraped_at
+                FROM {platform}_data
+                ORDER BY scraped_at DESC
+                LIMIT :limit
+            """)
+        
+        with db_engines[db_name].connect() as conn:
+            result = conn.execute(query, {'limit': limit})
+            data = []
+            for row in result:
+                item = dict(row._mapping)
+                # Convert datetime objects to ISO format strings
+                for key, value in item.items():
+                    if isinstance(value, datetime):
+                        item[key] = value.isoformat()
+                data.append(item)
+            
+            return jsonify({'data': data})
+            
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

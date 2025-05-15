@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Tab, Tabs, Card, Table, Alert } from 'react-bootstrap';
+import PresentationViewer from './PresentationViewer';
 import './Documentation.css';
 
 const Documentation = () => {
-    const [activeTab, setActiveTab] = useState('data');
+    const [activeTab, setActiveTab] = useState('presentation');
     const [data, setData] = useState([]);
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -29,7 +30,12 @@ const Documentation = () => {
             }
         };
 
-        fetchData();
+        // Only fetch if not in presentation tab
+        if (activeTab !== 'presentation') {
+            fetchData();
+        } else {
+            setLoading(false);
+        }
     }, [activeTab]);
 
     const renderData = () => (
@@ -76,22 +82,16 @@ const Documentation = () => {
     );
 
     const renderPresentation = () => (
-        <Card className="presentation-card">
-            <Card.Body>
-                <div className="presentation-container">
-                    <iframe
-                        src="/api/documentation/presentation"
-                        title="Documentation Presentation"
-                        width="100%"
-                        height="600"
-                        frameBorder="0"
-                    />
-                </div>
-            </Card.Body>
-        </Card>
+        <div className="presentation-wrapper">
+            <PresentationViewer presentationUrl="/presentations/social_media_trends.pptx" />
+            <div className="presentation-info">
+                <h4>Social Media Trend Analysis</h4>
+                <p>This presentation provides an overview of our social media trend analysis project, including methodology, key findings, and future directions.</p>
+            </div>
+        </div>
     );
 
-    if (loading) return <div className="loading">Loading...</div>;
+    if (loading && activeTab !== 'presentation') return <div className="loading">Loading...</div>;
     if (error) return <Alert variant="danger">{error}</Alert>;
 
     return (
@@ -102,14 +102,14 @@ const Documentation = () => {
                 onSelect={(k) => setActiveTab(k)}
                 className="documentation-tabs"
             >
+                <Tab eventKey="presentation" title="Presentation">
+                    {renderPresentation()}
+                </Tab>
                 <Tab eventKey="data" title="Analysis Data">
                     {renderData()}
                 </Tab>
                 <Tab eventKey="logs" title="System Logs">
                     {renderLogs()}
-                </Tab>
-                <Tab eventKey="presentation" title="Presentation">
-                    {renderPresentation()}
                 </Tab>
             </Tabs>
         </Container>
