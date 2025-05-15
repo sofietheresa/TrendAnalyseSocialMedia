@@ -118,6 +118,20 @@ const StatsPanel = () => {
     };
   };
 
+  // Calculate today's posts
+  const calculateTodaysPosts = () => {
+    if (!dailyStats) return { reddit: 0, tiktok: 0, youtube: 0 };
+    
+    // Get today's date in the format used in the API (YYYY-MM-DD)
+    const today = new Date().toISOString().split('T')[0];
+    
+    return {
+      reddit: dailyStats.reddit.find(item => item.date === today)?.count || 0,
+      tiktok: dailyStats.tiktok.find(item => item.date === today)?.count || 0,
+      youtube: dailyStats.youtube.find(item => item.date === today)?.count || 0
+    };
+  };
+
   // Get the most recent update date for each platform
   const getLastUpdateDates = () => {
     if (!dailyStats) return { reddit: null, tiktok: null, youtube: null };
@@ -208,6 +222,7 @@ const StatsPanel = () => {
 
   const chartData = prepareChartData();
   const totalPosts = calculateTotalPosts();
+  const todaysPosts = calculateTodaysPosts();
   const lastUpdateDates = getLastUpdateDates();
 
   return (
@@ -222,6 +237,12 @@ const StatsPanel = () => {
                 {data.running ? 'Active' : 'Inactive'}
               </div>
               <div className="stats-details">
+                <h4>Today's Stats</h4>
+                <div className="stats-item">
+                  <span className="stats-value" style={{ fontSize: '2rem', fontWeight: '700', display: 'block', textAlign: 'center' }}>{todaysPosts[platform] || 0}</span>
+                </div>
+                
+                <h4>Overall Statistics</h4>
                 <div className="stats-item">
                   <span className="stats-label">Total Posts:</span>
                   <span className="stats-value">{totalPosts[platform] || 0}</span>
