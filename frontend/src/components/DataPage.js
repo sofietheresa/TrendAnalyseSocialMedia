@@ -26,52 +26,6 @@ const DataPage = () => {
         setLoading(true);
         setError(null);
         
-        const result = await fetchRecentData(activeTab, limit);
-        
-        // Process and sort the data
-        let processedData = [];
-        
-        // Handle different possible response structures
-        if (result && result.data && Array.isArray(result.data)) {
-          processedData = result.data;
-        } else if (result && Array.isArray(result)) {
-          processedData = result;
-        } else if (result && typeof result === 'object') {
-          // Try to find any array in the response
-          for (const key in result) {
-            if (Array.isArray(result[key]) && result[key].length > 0) {
-              processedData = result[key];
-              break;
-            }
-          }
-        }
-        
-        // Sort data in descending order by date
-        const sortedData = sortDataByDate(processedData);
-        
-        // Update the state with the sorted data
-        setData(prevData => ({
-          ...prevData,
-          [activeTab]: sortedData
-        }));
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError(err.message || 'Failed to fetch data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [activeTab, limit]);
-
-  // Fetch data when tab or limit changes
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
         // Fetch data with retry (3 attempts)
         const result = await fetchRecentData(activeTab, limit, 3);
         
@@ -84,6 +38,8 @@ const DataPage = () => {
         
         // Process and sort the data
         let processedData = [];
+        
+        console.log("Raw API response:", result);
         
         // Handle different possible response structures
         if (result && result.data && Array.isArray(result.data)) {

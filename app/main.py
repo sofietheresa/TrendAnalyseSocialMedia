@@ -607,7 +607,8 @@ async def get_recent_data(
     try:
         # Validate inputs
         if platform not in ["reddit", "tiktok", "youtube"]:
-            raise HTTPException(status_code=400, detail="Invalid platform. Must be one of: reddit, tiktok, youtube")
+            logger.warning(f"Invalid platform requested: {platform}")
+            raise HTTPException(status_code=400, detail=f"Invalid platform: {platform}. Must be one of: reddit, tiktok, youtube")
         
         # Cap limit to prevent excessive data requests
         limit = min(int(limit), 100)
@@ -665,8 +666,8 @@ async def get_recent_data(
             table_exists = result.scalar()
             
             if not table_exists:
-                logger.warning(f"Table {table_name} does not exist")
-                return {"data": []}
+                logger.warning(f"Table {table_name} does not exist in the database")
+                return {"data": [], "message": f"No data available for {platform}"}
             
             # Execute query
             logger.debug(f"Executing query: {query}")
@@ -684,10 +685,17 @@ async def get_recent_data(
                         item[column] = value
                 data.append(item)
             
-            logger.info(f"Retrieved {len(data)} records for {platform}")
-            return {"data": data}
+            result_count = len(data)
+            logger.info(f"Retrieved {result_count} records for {platform}")
+            
+            if result_count == 0:
+                logger.warning(f"No data found for {platform} in the database")
+                return {"data": [], "message": f"No data found for {platform}"}
+                
+            return {"data": data, "count": result_count}
     
     except Exception as e:
-        logger.error(f"Error retrieving recent {platform} data: {str(e)}")
+        error_msg = f"Error retrieving recent {platform} data: {str(e)}"
+        logger.error(error_msg)
         logger.exception("Detailed error:")
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=500, detail=error_msg) 

@@ -114,11 +114,21 @@ export const fetchRecentData = async (platform = 'reddit', limit = 10, retryCoun
     
     try {
         // Make the API request with proper error handling
+        console.log(`Request URL: ${API_URL}/api/recent-data?platform=${platform}&limit=${limit}`);
         const response = await api.get(`/api/recent-data`, { 
             params: { platform, limit } 
         });
         
         console.log(`Received ${platform} data:`, response);
+        console.log(`Response data type: ${typeof response.data}`);
+        
+        if (response.data) {
+            try {
+                console.log("Response data JSON:", JSON.stringify(response.data, null, 2));
+            } catch (e) {
+                console.log("Response data (not stringifiable):", response.data);
+            }
+        }
         
         // Process the response data
         if (response.data) {
@@ -156,6 +166,15 @@ export const fetchRecentData = async (platform = 'reddit', limit = 10, retryCoun
         }
     } catch (error) {
         console.error(`Error fetching recent ${platform} data:`, error);
+        
+        // Log more details about the error
+        if (error.response) {
+            console.error('Error response:', {
+                status: error.response.status,
+                statusText: error.response.statusText,
+                data: error.response.data
+            });
+        }
         
         // Retry logic for 404 errors - the server might be catching up
         if (error.response && error.response.status === 404 && retryCount > 0) {
