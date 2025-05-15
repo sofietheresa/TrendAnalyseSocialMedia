@@ -65,6 +65,66 @@ const DataPage = () => {
     fetchData();
   }, [activeTab, limit]);
 
+  // Fetch data when tab or limit changes
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch data with retry (3 attempts)
+        const result = await fetchRecentData(activeTab, limit, 3);
+        
+        // Check if there's an error in the result
+        if (result.error) {
+          console.error("API returned error:", result.error);
+          setError(result.error);
+          return;
+        }
+        
+        // Process and sort the data
+        let processedData = [];
+        
+        // Handle different possible response structures
+        if (result && result.data && Array.isArray(result.data)) {
+          processedData = result.data;
+        } else if (result && Array.isArray(result)) {
+          processedData = result;
+        } else if (result && typeof result === 'object') {
+          // Try to find any array in the response
+          for (const key in result) {
+            if (Array.isArray(result[key]) && result[key].length > 0) {
+              processedData = result[key];
+              break;
+            }
+          }
+        }
+        
+        console.log(`Processed ${activeTab} data:`, processedData);
+        
+        if (processedData.length === 0) {
+          console.warn(`No data found for ${activeTab}`);
+        }
+        
+        // Sort data in descending order by date
+        const sortedData = sortDataByDate(processedData);
+        
+        // Update the state with the sorted data
+        setData(prevData => ({
+          ...prevData,
+          [activeTab]: sortedData
+        }));
+      } catch (err) {
+        console.error("Error in data handling:", err);
+        setError(`Failed to process data: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [activeTab, limit]);
+
   /**
    * Sort data by date in descending order (newest first)
    * 
@@ -118,7 +178,14 @@ const DataPage = () => {
   const renderDate = (item) => {
     // Try to access date using different potential field names
     const date = getDateFromItem(item);
-    return date ? new Date(date).toLocaleString() : 'Unknown date';
+    return date ? new Date(date).toLocaleString('de-DE', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }) : 'Kein Datum';
   };
 
   return (

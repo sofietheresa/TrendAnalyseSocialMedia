@@ -237,21 +237,21 @@ const StatsPanel = () => {
         </div>
       ) : (
         <>
-          {/* Chart Section */}
-          <div className="chart-container">
-            {chartData && (
-              <Line 
-                data={chartData} 
-                options={chartOptions}
-                height={300}
-              />
-            )}
-          </div>
-
-          {/* Platform Stats */}
-          <div className="platform-stats-container">
+          {/* Platform Cards - Now at top with horizontal layout */}
+          <div className="platform-cards-container" style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            gap: '20px', 
+            marginBottom: '30px',
+            flexWrap: 'wrap'
+          }}>
             {['reddit', 'tiktok', 'youtube'].map(platform => (
-              <div key={platform} className={`platform-card ${platform}`}>
+              <div key={platform} className={`platform-card ${platform}`} style={{ 
+                flex: '1',
+                minWidth: '250px',
+                maxWidth: '350px',
+                margin: '0 auto'
+              }}>
                 <div className="platform-header">
                   <h3>{platform.charAt(0).toUpperCase() + platform.slice(1)}</h3>
                   <span className={`status-indicator ${scraperStatus && scraperStatus[platform]?.running ? 'active' : 'inactive'}`}>
@@ -273,18 +273,30 @@ const StatsPanel = () => {
                   <div className="stats-item">
                     <span className="stats-label">Last Update:</span>
                     <span className="stats-value">
-                      {lastUpdateDates[platform] ? lastUpdateDates[platform].toLocaleString(undefined, {
+                      {lastUpdateDates[platform] ? lastUpdateDates[platform].toLocaleString('de-DE', {
                         year: 'numeric',
                         month: '2-digit',
                         day: '2-digit',
                         hour: '2-digit',
-                        minute: '2-digit'
+                        minute: '2-digit',
+                        hour12: false
                       }) : 'Never'}
                     </span>
                   </div>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Chart Section */}
+          <div className="chart-container">
+            {chartData && (
+              <Line 
+                data={chartData} 
+                options={chartOptions}
+                height={300}
+              />
+            )}
           </div>
         </>
       )}

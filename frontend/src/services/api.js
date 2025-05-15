@@ -109,15 +109,18 @@ export const fetchDailyStats = async () => {
 };
 
 // New function to fetch recent social media data
-export const fetchRecentData = async (platform = 'reddit', limit = 10) => {
+export const fetchRecentData = async (platform = 'reddit', limit = 10, retryCount = 1) => {
     console.log(`Fetching recent ${platform} data (limit: ${limit})...`);
+    
     try {
+        // Make the API request with proper error handling
         const response = await api.get(`/api/recent-data`, { 
             params: { platform, limit } 
         });
         
         console.log(`Received ${platform} data:`, response);
         
+        // Process the response data
         if (response.data) {
             // If response.data is an array, return it directly wrapped in an object
             if (Array.isArray(response.data)) {
@@ -129,7 +132,7 @@ export const fetchRecentData = async (platform = 'reddit', limit = 10) => {
             }
             // Otherwise, try to parse the data intelligently
             else {
-                console.warn('Response format not recognized:', response.data);
+                console.log('Processing response data type:', typeof response.data);
                 
                 // If response.data contains any array property, use that
                 for (const key in response.data) {
@@ -137,6 +140,12 @@ export const fetchRecentData = async (platform = 'reddit', limit = 10) => {
                         console.log(`Found array data in property "${key}"`);
                         return { data: response.data[key] };
                     }
+                }
+                
+                // If no array property found but response.data is an object
+                if (typeof response.data === 'object') {
+                    console.log('Response data is an object without arrays, returning as single item array');
+                    return { data: [response.data] };
                 }
                 
                 return { data: [] };
@@ -147,8 +156,24 @@ export const fetchRecentData = async (platform = 'reddit', limit = 10) => {
         }
     } catch (error) {
         console.error(`Error fetching recent ${platform} data:`, error);
-        // Return empty data rather than throwing to allow for graceful UI handling
-        return { data: [] };
+        
+        // Retry logic for 404 errors - the server might be catching up
+        if (error.response && error.response.status === 404 && retryCount > 0) {
+            console.log(`Retrying ${platform} data fetch, ${retryCount} attempts left...`);
+            
+            // Wait 1 second before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Retry with one less retry attempt
+            return fetchRecentData(platform, limit, retryCount - 1);
+        }
+        
+        // If all retries failed or it's not a 404 error, return empty data
+        console.warn(`Could not fetch ${platform} data after retries`);
+        return { 
+            data: [],
+            error: `Failed to load ${platform} data: ${error.message || 'Unknown error'}`
+        };
     }
 };
 
