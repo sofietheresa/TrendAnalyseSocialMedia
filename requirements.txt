@@ -9,8 +9,8 @@ prometheus-client==0.17.1
 python-dotenv==1.0.0
 
 # Data Processing and Analysis
-pandas==2.1.1
-numpy==1.24.3
+pandas>=2.1.1
+numpy>=1.24.3
 sqlalchemy==2.0.23
 psycopg2-binary==2.9.9
 alembic==1.13.1
@@ -26,3 +26,7 @@ qdrant-client==1.6.0
 
 # Utilities
 requests==2.31.0
+
+# Build dependencies
+setuptools>=65.5.1
+wheel>=0.40.0
