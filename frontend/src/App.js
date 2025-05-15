@@ -7,6 +7,7 @@ import DataPage from './components/DataPage';
 import Documentation from './components/Documentation';
 import ModelEvaluation from './components/ModelEvaluation';
 import { fetchTopicModel } from './services/api';
+import { Line } from 'react-chartjs-2';
 
 // Message bubble icon component
 const MessageIcon = () => (
@@ -42,6 +43,7 @@ const Homepage = () => {
     endDate: ''
   });
   const [topicCounts, setTopicCounts] = useState({});
+  const [topicTrends, setTopicTrends] = useState([]);
 
   // Fetch topics data
   useEffect(() => {
@@ -69,6 +71,9 @@ const Homepage = () => {
             // Process topic counts by date if available
             if (response.topic_counts_by_date) {
               setTopicCounts(response.topic_counts_by_date);
+              
+              // Process topic trends data for the chart
+              processTopicTrends(response.topics.slice(0, 5), response.topic_counts_by_date);
             }
           } else {
             console.warn("Invalid topics format:", response.topics);
@@ -90,6 +95,54 @@ const Homepage = () => {
 
     fetchTopicData();
   }, [dateFilter.startDate, dateFilter.endDate]);
+
+  // Process topic trends data for the chart
+  const processTopicTrends = (topTopics, countsByDate) => {
+    if (!topTopics || !countsByDate) return;
+    
+    // Get all unique dates across all topics
+    const allDates = new Set();
+    
+    // For each topic, collect all available dates
+    topTopics.forEach(topic => {
+      if (topic.id && countsByDate[topic.id]) {
+        Object.keys(countsByDate[topic.id]).forEach(date => allDates.add(date));
+      }
+    });
+    
+    // Sort dates chronologically
+    const sortedDates = Array.from(allDates).sort();
+    
+    // Prepare chart data
+    const trendsData = {
+      labels: sortedDates.map(date => new Date(date).toLocaleDateString('de-DE')),
+      datasets: topTopics.map((topic, index) => {
+        // Generate colors based on index
+        const colors = [
+          '#232252', // dark blue
+          '#2e6cdb', // medium blue
+          '#9364eb', // purple
+          '#e750ae', // pink
+          '#f8986f'  // orange
+        ];
+        
+        return {
+          label: topic.name || `Topic ${index + 1}`,
+          data: sortedDates.map(date => {
+            return topic.id && countsByDate[topic.id] && countsByDate[topic.id][date] 
+              ? countsByDate[topic.id][date] 
+              : 0;
+          }),
+          borderColor: colors[index % colors.length],
+          backgroundColor: `${colors[index % colors.length]}22`, // Add transparency
+          tension: 0.3,
+          fill: index === 0 // Only fill the first dataset
+        };
+      })
+    };
+    
+    setTopicTrends(trendsData);
+  };
 
   // Handle date filter form submission
   const handleDateFilterSubmit = (e) => {
@@ -128,16 +181,79 @@ const Homepage = () => {
     );
   };
 
+  // Chart options for trend visualization
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          font: {
+            family: 'Sora, Arial, sans-serif',
+            size: 14
+          },
+          color: '#232252'
+        }
+      },
+      title: {
+        display: true,
+        text: 'Topic Trends Over Time',
+        font: {
+          family: 'Sora, Arial, sans-serif',
+          size: 18,
+          weight: 'bold'
+        },
+        color: '#232252'
+      },
+      tooltip: {
+        callbacks: {
+          title: (context) => {
+            return `Date: ${context[0].label}`;
+          },
+          label: (context) => {
+            return `${context.dataset.label}: ${context.raw} posts`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          font: {
+            family: 'Sora, Arial, sans-serif'
+          },
+          color: '#232252'
+        }
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(46, 108, 219, 0.1)'
+        },
+        ticks: {
+          font: {
+            family: 'Sora, Arial, sans-serif'
+          },
+          color: '#232252'
+        }
+      }
+    }
+  };
+
   return (
     <main className="app-content">
-      {/* Title */}
-      <h1 className="main-title">
+      {/* Title - Moved higher with more spacing */}
+      <h1 className="main-title" style={{ marginTop: '-40px', marginBottom: '40px' }}>
         <span style={{ fontWeight: 900, letterSpacing: '0.03em' }}>SOCIAL MEDIA</span>
         <br />
         <span style={{ fontWeight: 400, fontSize: '0.8em' }}>Trend Analysis</span>
       </h1>
       
-      {/* Date Range Filter */}
+      {/* Date Range Filter - Position unchanged */}
       <div className="filter-section">
         <form className="calendar-filter" onSubmit={handleDateFilterSubmit}>
           <label>
@@ -179,16 +295,52 @@ const Homepage = () => {
         </div>
       )}
       
-      {/* Topics Stack */}
+      {/* Topics Stack - Now centered */}
       {!loading && !error && topics && topics.length > 0 ? (
         <div className="topics-container">
-          <div className="topics-stack-section">
+          <div className="topics-stack-section" style={{ alignItems: 'center', textAlign: 'center' }}>
             {topics.slice(0, 5).map((topic, index) => (
-              <div key={topic.id || index} className={`topic-stack topic-stack-${index + 1}`}>
+              <div 
+                key={topic.id || index} 
+                className={`topic-stack topic-stack-${index + 1}`}
+                style={{ justifyContent: 'center', textAlign: 'center', margin: '0 auto' }}
+              >
                 {topic.name || `Topic ${index + 1}`}
               </div>
             ))}
           </div>
+          
+          {/* Topic Trends Chart - New section */}
+          {topicTrends.datasets && topicTrends.datasets.length > 0 && (
+            <div className="topic-trends-chart" style={{ 
+              marginTop: '40px',
+              marginBottom: '40px',
+              width: '100%',
+              maxWidth: '1000px',
+              margin: '40px auto',
+              height: '400px',
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
+              padding: '20px',
+              borderRadius: '15px',
+              boxShadow: '0 4px 30px rgba(0, 0, 0, 0.05)'
+            }}>
+              <Line
+                data={topicTrends}
+                options={chartOptions}
+                height={350}
+              />
+              {dateFilter.startDate && dateFilter.endDate && (
+                <div className="selected-range-info" style={{
+                  textAlign: 'center',
+                  marginTop: '10px',
+                  fontSize: '0.9rem',
+                  color: '#64748B'
+                }}>
+                  Selected range: {new Date(dateFilter.startDate).toLocaleDateString('de-DE')} - {new Date(dateFilter.endDate).toLocaleDateString('de-DE')}
+                </div>
+              )}
+            </div>
+          )}
           
           {/* Topic Post Counts */}
           <div className="topic-post-counts-section">

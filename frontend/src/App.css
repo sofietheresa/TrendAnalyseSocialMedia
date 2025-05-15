@@ -181,6 +181,8 @@ html, body, #root {
   text-align: center;
   letter-spacing: 0.01em;
   line-height: 1.1;
+  margin-top: -10px;
+  margin-bottom: 30px;
 }
 
 .subtitle {
@@ -203,6 +205,8 @@ html, body, #root {
   margin-bottom: 0;
   text-align: center;
   width: 100%;
+  margin: 0 auto;
+  max-width: 900px;
 }
 
 .topic-stack {
@@ -1336,5 +1340,29 @@ html, body, #root {
     grid-template-columns: 1fr;
     max-width: 90%;
   }
+}
+
+.topic-trends-chart {
+  width: 100%;
+  max-width: 1000px;
+  margin: 40px auto;
+  height: 400px;
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(8px);
+}
+
+.selected-range-info {
+  text-align: center;
+  margin-top: 15px;
+  padding: 8px 16px;
+  background-color: rgba(147, 100, 235, 0.1);
+  color: #232252;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  display: inline-block;
 }
 

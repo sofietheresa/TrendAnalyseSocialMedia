@@ -572,6 +572,41 @@ async def get_topic_model(request: TopicModelRequest):
         # Nach Relevanz sortieren (in der Simulation nach Count)
         topics_result = sorted(topics_result, key=lambda x: x["count"], reverse=True)
         
+        # Simuliere topic_counts_by_date (Zeitverlauf der Topics)
+        topic_counts_by_date = {}
+        
+        # Erzeuge 7 Tage vom Ende-Datum zurück
+        current_date = end_date
+        dates = []
+        for i in range(7):
+            date_str = (current_date - timedelta(days=i)).strftime('%Y-%m-%d')
+            dates.append(date_str)
+        
+        # Sortiere Daten chronologisch
+        dates.sort()
+        
+        # Für jeden Topic eine Zeitreihe erzeugen
+        for topic in topics_result[:5]:  # Nur für die Top-5 Topics
+            topic_id = topic["id"]
+            topic_counts_by_date[topic_id] = {}
+            
+            # Basiswert für dieses Topic
+            base_value = random.randint(5, 15) * (5 - topics_result.index(topic))
+            
+            # Für jeden Tag einen Wert erzeugen
+            for i, date in enumerate(dates):
+                # Füge eine leichte Steigung plus etwas Zufall hinzu
+                if i == 0:
+                    # Startwert
+                    topic_counts_by_date[topic_id][date] = base_value
+                else:
+                    # Vorheriger Wert plus Trend plus Zufall
+                    prev_value = topic_counts_by_date[topic_id][dates[i-1]]
+                    trend = random.uniform(-0.1, 0.2) * prev_value  # Leichte Steigung im Trend
+                    noise = random.uniform(-0.15, 0.15) * prev_value  # Zufällige Schwankung
+                    new_value = max(1, int(prev_value + trend + noise))  # Nie unter 1
+                    topic_counts_by_date[topic_id][date] = new_value
+        
         # Ergebnis zurückgeben
         return {
             "topics": topics_result,
@@ -584,7 +619,8 @@ async def get_topic_model(request: TopicModelRequest):
             "time_range": {
                 "start_date": start_date.strftime('%Y-%m-%d'),
                 "end_date": end_date.strftime('%Y-%m-%d')
-            }
+            },
+            "topic_counts_by_date": topic_counts_by_date
         }
     except Exception as e:
         logger.error(f"Fehler im Topic-Model-Endpunkt: {str(e)}")
