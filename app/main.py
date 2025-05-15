@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request, g
 from flask_cors import CORS
 from sqlalchemy import create_engine, text
 import os
@@ -7,6 +7,7 @@ import urllib.parse
 import logging
 import sys
 import traceback
+import time
 
 # Enhanced logging setup
 logging.basicConfig(
@@ -21,6 +22,29 @@ logger.info(f"Environment: {os.getenv('FLASK_ENV', 'production')}")
 logger.info(f"Port: {os.getenv('PORT', '8080')}")
 
 app = Flask(__name__)
+
+# Request logging middleware
+@app.before_request
+def start_timer():
+    g.start = time.time()
+    logger.info(f"Request started: {request.method} {request.path} ({request.remote_addr})")
+
+@app.after_request
+def log_request(response):
+    now = time.time()
+    duration = round(now - g.start, 2)
+    logger.info(f"Request completed: {request.method} {request.path} - Status: {response.status_code} - Duration: {duration}s")
+    return response
+
+# Error handler for all exceptions
+@app.errorhandler(Exception)
+def handle_exception(e):
+    logger.error(f"Unhandled exception: {str(e)}")
+    logger.error(traceback.format_exc())
+    return jsonify({
+        "error": str(e),
+        "traceback": traceback.format_exc()
+    }), 500
 
 # CORS configuration
 CORS(app, resources={
@@ -44,37 +68,62 @@ app.config.update(
 db_engine = None
 
 def get_db_connection():
-    try:
-        global db_engine
-        if db_engine is not None:
-            return db_engine
+    """Get a database connection with retry logic"""
+    max_retries = 3
+    retry_delay = 1  # seconds
+    
+    for attempt in range(max_retries):
+        try:
+            global db_engine
+            if db_engine is not None:
+                # Test if the connection is still valid
+                with db_engine.connect() as conn:
+                    conn.execute(text("SELECT 1"))
+                    logger.debug("Reusing existing database connection")
+                return db_engine
 
-        url = os.getenv("DATABASE_URL")
-        logger.info("Attempting to connect to database")
-        
-        if not url:
-            logger.error("DATABASE_URL environment variable is not set")
-            raise ValueError("DATABASE_URL environment variable is not set")
-        
-        # Configure SQLAlchemy engine with connection pooling
-        db_engine = create_engine(
-            url,
-            pool_size=5,  # Reduced pool size
-            max_overflow=10,
-            pool_timeout=30,
-            pool_recycle=1800  # Recycle connections after 30 minutes
-        )
-        
-        # Test the connection
-        with db_engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-            logger.info("Successfully connected to database")
-        
-        return db_engine
-    except Exception as e:
-        logger.error(f"Database connection error: {str(e)}")
-        logger.error(traceback.format_exc())
-        raise
+            url = os.getenv("DATABASE_URL")
+            logger.info(f"Connecting to database (attempt {attempt+1}/{max_retries})")
+            
+            if not url:
+                logger.error("DATABASE_URL environment variable is not set")
+                raise ValueError("DATABASE_URL environment variable is not set")
+            
+            # Configure SQLAlchemy engine with connection pooling and timeouts
+            db_engine = create_engine(
+                url,
+                pool_size=5,  # Reduced pool size
+                max_overflow=10,
+                pool_timeout=30,
+                pool_recycle=1800,  # Recycle connections after 30 minutes
+                connect_args={
+                    "connect_timeout": 10,  # Connection timeout in seconds
+                    "application_name": "trendanalyse-api"  # Identify app in pg_stat_activity
+                }
+            )
+            
+            # Test the connection
+            with db_engine.connect() as conn:
+                result = conn.execute(text("SELECT 1"))
+                one = result.scalar()
+                if one != 1:
+                    raise Exception(f"Database test query returned {one} instead of 1")
+                logger.info("Successfully connected to database")
+            
+            return db_engine
+            
+        except Exception as e:
+            if attempt < max_retries - 1:
+                logger.warning(f"Database connection failed (attempt {attempt+1}/{max_retries}): {str(e)}")
+                logger.warning(f"Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+                retry_delay *= 2  # Exponential backoff
+                # Clear the engine in case it's in a bad state
+                db_engine = None
+            else:
+                logger.error(f"Database connection failed after {max_retries} attempts: {str(e)}")
+                logger.error(traceback.format_exc())
+                raise
 
 @app.route('/')
 def root():
@@ -129,36 +178,46 @@ def get_scraper_status():
             'youtube': {'running': False, 'total_posts': 0, 'last_update': None}
         }
         
+        # List of tables to check
+        tables = [
+            ('reddit_posts', 'reddit'),
+            ('tiktok_posts', 'tiktok'),
+            ('youtube_posts', 'youtube')
+        ]
+        
         with db_engine.connect() as conn:
-            # Check Reddit
-            result = conn.execute(text("SELECT COUNT(*), MAX(scraped_at) FROM reddit_posts"))
-            count, last_update = result.fetchone()
-            status['reddit'].update({
-                'running': last_update and last_update > cutoff_time,
-                'total_posts': count,
-                'last_update': last_update.isoformat() if last_update else None
-            })
-            logger.info(f"Reddit status updated: {status['reddit']}")
+            # Check if tables exist first
+            existing_tables = []
+            try:
+                # Use information_schema to check for table existence
+                result = conn.execute(text("""
+                    SELECT table_name FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name IN ('reddit_posts', 'tiktok_posts', 'youtube_posts')
+                """))
+                existing_tables = [row[0] for row in result]
+                logger.info(f"Found tables: {existing_tables}")
+            except Exception as e:
+                logger.error(f"Error checking table existence: {str(e)}")
             
-            # Check TikTok
-            result = conn.execute(text("SELECT COUNT(*), MAX(scraped_at) FROM tiktok_posts"))
-            count, last_update = result.fetchone()
-            status['tiktok'].update({
-                'running': last_update and last_update > cutoff_time,
-                'total_posts': count,
-                'last_update': last_update.isoformat() if last_update else None
-            })
-            logger.info(f"TikTok status updated: {status['tiktok']}")
-            
-            # Check YouTube
-            result = conn.execute(text("SELECT COUNT(*), MAX(scraped_at) FROM youtube_posts"))
-            count, last_update = result.fetchone()
-            status['youtube'].update({
-                'running': last_update and last_update > cutoff_time,
-                'total_posts': count,
-                'last_update': last_update.isoformat() if last_update else None
-            })
-            logger.info(f"YouTube status updated: {status['youtube']}")
+            # Check each platform's data
+            for table_name, platform in tables:
+                try:
+                    if table_name not in existing_tables:
+                        logger.warning(f"Table {table_name} does not exist")
+                        continue
+                        
+                    result = conn.execute(text(f"SELECT COUNT(*), MAX(scraped_at) FROM {table_name}"))
+                    count, last_update = result.fetchone()
+                    status[platform].update({
+                        'running': last_update and last_update > cutoff_time,
+                        'total_posts': count,
+                        'last_update': last_update.isoformat() if last_update else None
+                    })
+                    logger.info(f"{platform.capitalize()} status updated: {status[platform]}")
+                except Exception as e:
+                    logger.error(f"Error fetching {platform} status: {str(e)}")
+                    # Continue with other tables rather than failing completely
         
         return jsonify(status)
     except Exception as e:
@@ -186,39 +245,49 @@ def get_daily_stats():
             'youtube': []
         }
         
+        # List of tables to check
+        tables = [
+            ('reddit_posts', 'reddit'),
+            ('tiktok_posts', 'tiktok'),
+            ('youtube_posts', 'youtube')
+        ]
+        
         with db_engine.connect() as conn:
-            # Get Reddit daily stats
-            result = conn.execute(text("""
-                SELECT DATE(scraped_at) as date, COUNT(*) as count
-                FROM reddit_posts
-                WHERE scraped_at >= :start_date
-                GROUP BY DATE(scraped_at)
-                ORDER BY date
-            """), {'start_date': start_date})
-            stats['reddit'] = [{'date': row[0].isoformat(), 'count': row[1]} for row in result]
-            logger.info(f"Reddit stats fetched: {len(stats['reddit'])} days of data")
+            # Check if tables exist first
+            existing_tables = []
+            try:
+                # Use information_schema to check for table existence
+                result = conn.execute(text("""
+                    SELECT table_name FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name IN ('reddit_posts', 'tiktok_posts', 'youtube_posts')
+                """))
+                existing_tables = [row[0] for row in result]
+                logger.info(f"Found tables: {existing_tables}")
+            except Exception as e:
+                logger.error(f"Error checking table existence: {str(e)}")
             
-            # Get TikTok daily stats
-            result = conn.execute(text("""
-                SELECT DATE(scraped_at) as date, COUNT(*) as count
-                FROM tiktok_posts
-                WHERE scraped_at >= :start_date
-                GROUP BY DATE(scraped_at)
-                ORDER BY date
-            """), {'start_date': start_date})
-            stats['tiktok'] = [{'date': row[0].isoformat(), 'count': row[1]} for row in result]
-            logger.info(f"TikTok stats fetched: {len(stats['tiktok'])} days of data")
-            
-            # Get YouTube daily stats
-            result = conn.execute(text("""
-                SELECT DATE(scraped_at) as date, COUNT(*) as count
-                FROM youtube_posts
-                WHERE scraped_at >= :start_date
-                GROUP BY DATE(scraped_at)
-                ORDER BY date
-            """), {'start_date': start_date})
-            stats['youtube'] = [{'date': row[0].isoformat(), 'count': row[1]} for row in result]
-            logger.info(f"YouTube stats fetched: {len(stats['youtube'])} days of data")
+            # Check each platform's data
+            for table_name, platform in tables:
+                try:
+                    if table_name not in existing_tables:
+                        logger.warning(f"Table {table_name} does not exist")
+                        continue
+                        
+                    query = text(f"""
+                        SELECT DATE(scraped_at) as date, COUNT(*) as count
+                        FROM {table_name}
+                        WHERE scraped_at >= :start_date
+                        GROUP BY DATE(scraped_at)
+                        ORDER BY date
+                    """)
+                    
+                    result = conn.execute(query, {'start_date': start_date})
+                    stats[platform] = [{'date': row[0].isoformat(), 'count': row[1]} for row in result]
+                    logger.info(f"{platform.capitalize()} stats fetched: {len(stats[platform])} days of data")
+                except Exception as e:
+                    logger.error(f"Error fetching {platform} daily stats: {str(e)}")
+                    # Continue with other tables rather than failing completely
         
         return jsonify(stats)
     except Exception as e:
