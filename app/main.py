@@ -352,102 +352,107 @@ async def get_topic_model(request: TopicModelRequest):
         # Daten abfragen
         platforms_str = ", ".join([f"'{p}'" for p in request.platforms])
         
-        # Versuche verschiedene SQL-Abfragen mit verschiedenen Spaltenbezeichnungen
-        try:
-            # Erste Abfragevariante mit 'text' als Haupttextspalte für Reddit
-            query = f"""
-                SELECT 
-                    p.id, 
-                    p.source, 
-                    COALESCE(p.title, '') as title, 
-                    COALESCE(p.text, '') as text,
-                    p.scraped_at
-                FROM (
-                    SELECT id, 'reddit' as source, title, text, scraped_at
-                    FROM reddit_data
-                    WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
-                    
-                    UNION ALL
-                    
-                    SELECT id, 'tiktok' as source, '' as title, description as text, scraped_at
-                    FROM tiktok_data
-                    WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
-                    
-                    UNION ALL
-                    
-                    SELECT id, 'youtube' as source, title, description as text, scraped_at
-                    FROM youtube_data
-                    WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
-                ) p
-                WHERE p.source IN ({platforms_str})
-            """
-            
-            with db.connect() as conn:
-                df = pd.read_sql(query, conn)
-            
-        except Exception as e:
-            logger.warning(f"Erste Abfragevariante fehlgeschlagen: {e}")
-            
-            try:
-                # Zweite Abfragevariante mit 'content' als möglicher Textspalte für Reddit
-                query = f"""
-                    SELECT 
-                        p.id, 
-                        p.source, 
-                        COALESCE(p.title, '') as title, 
-                        COALESCE(p.text, '') as text,
-                        p.scraped_at
-                    FROM (
-                        SELECT id, 'reddit' as source, title, content as text, scraped_at
-                        FROM reddit_data
-                        WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
-                        
-                        UNION ALL
-                        
-                        SELECT id, 'tiktok' as source, '' as title, description as text, scraped_at
-                        FROM tiktok_data
-                        WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
-                        
-                        UNION ALL
-                        
-                        SELECT id, 'youtube' as source, title, description as text, scraped_at
-                        FROM youtube_data
-                        WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
-                    ) p
-                    WHERE p.source IN ({platforms_str})
-                """
-                
-                with db.connect() as conn:
-                    df = pd.read_sql(query, conn)
-                
-            except Exception as e:
-                logger.warning(f"Zweite Abfragevariante fehlgeschlagen: {e}")
-                
+        # Die verschiedenen möglichen Tabellennamen ausprobieren
+        table_combinations = [
+            {
+                'reddit': 'reddit_posts',
+                'tiktok': 'tiktok_posts',
+                'youtube': 'youtube_videos'
+            },
+            {
+                'reddit': 'reddit_data',
+                'tiktok': 'tiktok_data',
+                'youtube': 'youtube_data'
+            }
+        ]
+        
+        # Verschiedene mögliche Spaltenbezeichnungen
+        column_combinations = [
+            # Kombination 1: text, description, description
+            {
+                'reddit_content': 'text',
+                'tiktok_content': 'description',
+                'youtube_content': 'description',
+                'reddit_date': 'scraped_at',
+                'tiktok_date': 'scraped_at',
+                'youtube_date': 'scraped_at'
+            },
+            # Kombination 2: content, description, description
+            {
+                'reddit_content': 'content',
+                'tiktok_content': 'description',
+                'youtube_content': 'description',
+                'reddit_date': 'scraped_at',
+                'tiktok_date': 'scraped_at',
+                'youtube_date': 'scraped_at'
+            },
+            # Kombination 3: body, description, description
+            {
+                'reddit_content': 'body',
+                'tiktok_content': 'description',
+                'youtube_content': 'description',
+                'reddit_date': 'scraped_at',
+                'tiktok_date': 'scraped_at',
+                'youtube_date': 'scraped_at'
+            },
+            # Kombination 4: selftext, description, description
+            {
+                'reddit_content': 'selftext',
+                'tiktok_content': 'description',
+                'youtube_content': 'description',
+                'reddit_date': 'scraped_at',
+                'tiktok_date': 'scraped_at',
+                'youtube_date': 'scraped_at'
+            },
+            # Kombination 5: text, text, description
+            {
+                'reddit_content': 'text',
+                'tiktok_content': 'text',
+                'youtube_content': 'description',
+                'reddit_date': 'scraped_at',
+                'tiktok_date': 'scraped_at',
+                'youtube_date': 'scraped_at'
+            },
+            # Kombination 6: Mit verschiedenen Datumsspalten
+            {
+                'reddit_content': 'text',
+                'tiktok_content': 'description',
+                'youtube_content': 'description',
+                'reddit_date': 'created',
+                'tiktok_date': 'created_time',
+                'youtube_date': 'published_at'
+            }
+        ]
+        
+        df = None
+        
+        # Versuche alle Kombinationen, bis eine funktioniert
+        for tables in table_combinations:
+            for columns in column_combinations:
                 try:
-                    # Dritte Abfragevariante mit 'body' als möglicher Textspalte für Reddit
                     query = f"""
                         SELECT 
                             p.id, 
                             p.source, 
                             COALESCE(p.title, '') as title, 
                             COALESCE(p.text, '') as text,
-                            p.scraped_at
+                            p.date
                         FROM (
-                            SELECT id, 'reddit' as source, title, body as text, scraped_at
-                            FROM reddit_data
-                            WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
+                            SELECT id, 'reddit' as source, title, {columns['reddit_content']} as text, {columns['reddit_date']} as date
+                            FROM {tables['reddit']}
+                            WHERE {columns['reddit_date']} BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
                             
                             UNION ALL
                             
-                            SELECT id, 'tiktok' as source, '' as title, description as text, scraped_at
-                            FROM tiktok_data
-                            WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
+                            SELECT id, 'tiktok' as source, '' as title, {columns['tiktok_content']} as text, {columns['tiktok_date']} as date
+                            FROM {tables['tiktok']}
+                            WHERE {columns['tiktok_date']} BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
                             
                             UNION ALL
                             
-                            SELECT id, 'youtube' as source, title, description as text, scraped_at
-                            FROM youtube_data
-                            WHERE scraped_at BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
+                            SELECT video_id as id, 'youtube' as source, title, {columns['youtube_content']} as text, {columns['youtube_date']} as date
+                            FROM {tables['youtube']}
+                            WHERE {columns['youtube_date']} BETWEEN '{start_date.isoformat()}' AND '{end_date.isoformat()}'
                         ) p
                         WHERE p.source IN ({platforms_str})
                     """
@@ -455,13 +460,24 @@ async def get_topic_model(request: TopicModelRequest):
                     with db.connect() as conn:
                         df = pd.read_sql(query, conn)
                     
+                    if len(df) > 0:
+                        logger.info(f"Erfolgreich Daten geladen mit Tabellen: {tables} und Spalten: {columns}")
+                        break
+                        
                 except Exception as e:
-                    logger.error(f"Alle Abfragevarianten fehlgeschlagen: {e}")
-                    # Falls alle Varianten fehlschlagen, simulieren wir eine leere Datenmenge
-                    return {
-                        "error": "Konnte Daten nicht aus Datenbank abrufen. Spaltennamen möglicherweise nicht korrekt.",
-                        "count": 0
-                    }
+                    logger.warning(f"Abfrage fehlgeschlagen mit Tabellen: {tables} und Spalten: {columns}. Fehler: {e}")
+                    continue
+                    
+            if df is not None and len(df) > 0:
+                break
+                
+        if df is None or len(df) == 0:
+            logger.error("Alle Abfragevarianten fehlgeschlagen")
+            # Falls alle Varianten fehlschlagen, simulieren wir eine leere Datenmenge
+            return {
+                "error": "Konnte Daten nicht aus Datenbank abrufen. Spaltennamen möglicherweise nicht korrekt.",
+                "count": 0
+            }
         
         logger.info(f"Daten geladen: {len(df)} Einträge")
         

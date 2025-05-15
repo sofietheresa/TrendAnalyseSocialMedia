@@ -139,6 +139,8 @@ def get_recent_data():
         platform = request.args.get('platform', 'reddit')
         limit = min(int(request.args.get('limit', 10)), 100)  # Limit to max 100 records
         
+        print(f"Fetching {platform} data with limit {limit}")
+        
         # Ensure platform is valid
         if platform not in ['reddit', 'tiktok', 'youtube']:
             return jsonify({'error': 'Invalid platform specified'}), 400
@@ -146,32 +148,102 @@ def get_recent_data():
         # Initialize database engine if it doesn't exist
         db_name = f"{platform}_data"
         if db_name not in db_engines:
+            print(f"Initializing database connection for {db_name}")
             db_engines[db_name] = get_db_connection(db_name)
+        
+        # Try both table formats: platform_data and platform_posts
+        table_names = [f"{platform}_data", f"{platform}_posts"]
         
         # Dynamically create the appropriate column selection query based on platform
         if platform == 'reddit':
-            query = text(f"""
-                SELECT id, title, text, author, created_at, url, scraped_at
-                FROM {platform}_data
-                ORDER BY scraped_at DESC
-                LIMIT :limit
-            """)
+            for table_name in table_names:
+                try:
+                    query = text(f"""
+                        SELECT COUNT(*) FROM {table_name}
+                    """)
+                    with db_engines[db_name].connect() as conn:
+                        result = conn.execute(query)
+                        if result.scalar() > 0:
+                            print(f"Using table {table_name}")
+                            query = text(f"""
+                                SELECT id, title, text, author, created_at, url, scraped_at
+                                FROM {table_name}
+                                ORDER BY scraped_at DESC
+                                LIMIT :limit
+                            """)
+                            break
+                except:
+                    continue
+            else:
+                # If no table found, default to platform_data
+                print(f"No valid table found, defaulting to {platform}_data")
+                query = text(f"""
+                    SELECT id, title, text, author, created_at, url, scraped_at
+                    FROM {platform}_data
+                    ORDER BY scraped_at DESC
+                    LIMIT :limit
+                """)
+                
         elif platform == 'tiktok':
-            query = text(f"""
-                SELECT id, text, author, create_time as created_at, url, scraped_at
-                FROM {platform}_data
-                ORDER BY scraped_at DESC
-                LIMIT :limit
-            """)
+            for table_name in table_names:
+                try:
+                    query = text(f"""
+                        SELECT COUNT(*) FROM {table_name}
+                    """)
+                    with db_engines[db_name].connect() as conn:
+                        result = conn.execute(query)
+                        if result.scalar() > 0:
+                            print(f"Using table {table_name}")
+                            query = text(f"""
+                                SELECT id, text, author, create_time as created_at, url, scraped_at
+                                FROM {table_name}
+                                ORDER BY scraped_at DESC
+                                LIMIT :limit
+                            """)
+                            break
+                except:
+                    continue
+            else:
+                # If no table found, default to platform_data
+                print(f"No valid table found, defaulting to {platform}_data")
+                query = text(f"""
+                    SELECT id, text, author, create_time as created_at, url, scraped_at
+                    FROM {platform}_data
+                    ORDER BY scraped_at DESC
+                    LIMIT :limit
+                """)
+                
         elif platform == 'youtube':
-            query = text(f"""
-                SELECT id, title, description as text, author, published_at as created_at, url, scraped_at
-                FROM {platform}_data
-                ORDER BY scraped_at DESC
-                LIMIT :limit
-            """)
+            for table_name in table_names:
+                try:
+                    query = text(f"""
+                        SELECT COUNT(*) FROM {table_name}
+                    """)
+                    with db_engines[db_name].connect() as conn:
+                        result = conn.execute(query)
+                        if result.scalar() > 0:
+                            print(f"Using table {table_name}")
+                            query = text(f"""
+                                SELECT id, title, description as text, author, published_at as created_at, url, scraped_at
+                                FROM {table_name}
+                                ORDER BY scraped_at DESC
+                                LIMIT :limit
+                            """)
+                            break
+                except:
+                    continue
+            else:
+                # If no table found, default to platform_data
+                print(f"No valid table found, defaulting to {platform}_data")
+                query = text(f"""
+                    SELECT id, title, description as text, author, published_at as created_at, url, scraped_at
+                    FROM {platform}_data
+                    ORDER BY scraped_at DESC
+                    LIMIT :limit
+                """)
         
         with db_engines[db_name].connect() as conn:
+            print(f"Executing query: {query}")
             result = conn.execute(query, {'limit': limit})
             data = []
             for row in result:
@@ -182,10 +254,14 @@ def get_recent_data():
                         item[key] = value.isoformat()
                 data.append(item)
             
+            print(f"Found {len(data)} records for {platform}")
             return jsonify({'data': data})
             
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"Error in get_recent_data: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e), 'data': []}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

@@ -5,6 +5,14 @@
   padding: 20px;
 }
 
+.page-title {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center;
+  font-weight: 600;
+}
+
 .data-controls {
   display: flex;
   justify-content: space-between;
@@ -58,6 +66,8 @@
   padding: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .data-card:hover {
@@ -84,21 +94,26 @@
 
 .data-title {
   font-weight: 600;
-  margin-top: 10px;
+  margin-top: 0;
+  margin-bottom: 10px;
   font-size: 1.1rem;
+  color: #444;
 }
 
 .data-content {
   line-height: 1.5;
   color: #333;
+  flex-grow: 1;
+  margin-bottom: 10px;
 }
 
 .data-link {
   display: inline-block;
-  margin-top: 15px;
+  margin-top: auto;
   color: #9364eb;
   text-decoration: none;
   font-weight: 500;
+  align-self: flex-start;
 }
 
 .data-link:hover {
@@ -136,6 +151,9 @@
   color: #666;
   padding: 30px 0;
   font-style: italic;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin: 20px 0;
 }
 
 @keyframes spin {

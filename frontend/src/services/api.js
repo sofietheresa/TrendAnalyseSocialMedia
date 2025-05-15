@@ -100,7 +100,18 @@ export const fetchDailyStats = async () => {
 export const fetchRecentData = async (platform = 'reddit', limit = 10) => {
     console.log(`Fetching recent ${platform} data (limit: ${limit})...`);
     try {
-        return await apiCall('/api/recent-data', 'get', { platform, limit });
+        const response = await api.get(`/api/recent-data`, { 
+            params: { platform, limit } 
+        });
+        
+        console.log(`Received ${platform} data:`, response);
+        
+        if (response.data) {
+            return response.data;
+        } else {
+            console.warn('Empty response from API');
+            return { data: [] };
+        }
     } catch (error) {
         console.error(`Error fetching recent ${platform} data:`, error);
         // Return empty data rather than throwing to allow for graceful UI handling
@@ -161,22 +172,69 @@ export const fetchTopics = async (startDate, endDate) => {
 // New function to fetch topic model data with BERT
 export const fetchTopicModel = async (startDate = null, endDate = null, platforms = ["reddit", "tiktok", "youtube"], numTopics = 5) => {
     try {
-        console.log("Fetching topic model data...");
+        console.log("Fetching topic model data with params:", { 
+            start_date: startDate, 
+            end_date: endDate, 
+            platforms, 
+            num_topics: numTopics 
+        });
+        
         const response = await api.post('/api/topic-model', {
             start_date: startDate,
             end_date: endDate,
             platforms: platforms,
             num_topics: numTopics
         });
+        
+        console.log("Topic model response:", response.data);
+        
+        // Check if topics is actually an array to avoid rendering issues
+        if (response.data && !Array.isArray(response.data.topics)) {
+            console.warn("Invalid topics format in response:", response.data.topics);
+            response.data.topics = [];
+        }
+        
         return response.data;
     } catch (error) {
         console.error('Error fetching topic model data:', error);
+        
+        // Provide detailed error messages based on the error type
         if (error.response) {
-            throw new Error(`Serverfehler: ${error.response.data.detail || 'Unbekannter Fehler'}`);
+            console.error('Server response:', error.response.data);
+            return {
+                error: `Serverfehler: ${error.response.data.detail || 'Unbekannter Fehler'}`,
+                topics: [],
+                metrics: {
+                    coherence_score: 0,
+                    diversity_score: 0,
+                    total_documents: 0,
+                    document_coverage: 0
+                },
+                time_range: {
+                    start_date: startDate || new Date(Date.now() - 3*24*60*60*1000).toISOString().split('T')[0],
+                    end_date: endDate || new Date().toISOString().split('T')[0]
+                }
+            };
         } else if (error.request) {
-            throw new Error('Keine Verbindung zum Server möglich');
+            return {
+                error: 'Keine Verbindung zum Server möglich',
+                topics: [],
+                metrics: null,
+                time_range: {
+                    start_date: startDate || new Date(Date.now() - 3*24*60*60*1000).toISOString().split('T')[0],
+                    end_date: endDate || new Date().toISOString().split('T')[0]
+                }
+            };
         } else {
-            throw new Error('Fehler beim Laden der Topic-Daten');
+            return {
+                error: 'Fehler beim Laden der Topic-Daten',
+                topics: [],
+                metrics: null,
+                time_range: {
+                    start_date: startDate || new Date(Date.now() - 3*24*60*60*1000).toISOString().split('T')[0],
+                    end_date: endDate || new Date().toISOString().split('T')[0]
+                }
+            };
         }
     }
 };

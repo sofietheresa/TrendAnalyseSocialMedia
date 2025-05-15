@@ -17,15 +17,25 @@ const DataPage = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        console.log(`Fetching ${activeTab} data with limit ${limit}...`);
         const result = await fetchRecentData(activeTab, limit);
+        console.log('Result received:', result);
         
-        setData(prevData => ({
-          ...prevData,
-          [activeTab]: result.data || []
-        }));
+        if (result && Array.isArray(result.data)) {
+          setData(prevData => ({
+            ...prevData,
+            [activeTab]: result.data
+          }));
+        } else {
+          console.warn('Received invalid data format:', result);
+          setData(prevData => ({
+            ...prevData,
+            [activeTab]: []
+          }));
+        }
       } catch (err) {
         console.error("Error fetching data:", err);
-        setError(err.message);
+        setError(err.message || 'Failed to fetch data');
       } finally {
         setLoading(false);
       }
@@ -48,6 +58,8 @@ const DataPage = () => {
 
   return (
     <div className="data-page">
+      <h1 className="page-title">Recent Social Media Content</h1>
+      
       <div className="data-controls">
         <div className="platform-tabs">
           <button 
@@ -95,7 +107,7 @@ const DataPage = () => {
         </div>
       ) : (
         <div className="data-list">
-          {data[activeTab].length === 0 ? (
+          {(!data[activeTab] || data[activeTab].length === 0) ? (
             <p className="no-data-message">No data available for this platform.</p>
           ) : (
             data[activeTab].map((item, index) => (
@@ -104,8 +116,8 @@ const DataPage = () => {
                   <span className="data-timestamp">{renderDate(item)}</span>
                   {item.author && <span className="data-author">by {item.author}</span>}
                 </div>
-                <div className="data-content">{renderContent(item)}</div>
                 {item.title && <div className="data-title">{item.title}</div>}
+                <div className="data-content">{renderContent(item)}</div>
                 {item.url && (
                   <a href={item.url} target="_blank" rel="noopener noreferrer" className="data-link">
                     View original

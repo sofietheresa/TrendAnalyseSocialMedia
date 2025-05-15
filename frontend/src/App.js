@@ -48,22 +48,36 @@ const Homepage = () => {
       try {
         setLoading(true);
         setError(null);
+        console.log("Fetching topic data with filters:", dateFilter);
+        
         // By default, this will fetch the last 3 days of data
         const response = await fetchTopicModel(
           dateFilter.startDate || null, 
           dateFilter.endDate || null
         );
         
+        console.log("Received topic data:", response);
+        
         if (response.error) {
           setError(response.error);
+          console.error("Error from topic model API:", response.error);
         } else {
-          setTopics(response.topics);
+          if (Array.isArray(response.topics)) {
+            setTopics(response.topics);
+          } else {
+            console.warn("Invalid topics format:", response.topics);
+            setTopics([]);
+          }
+          
           setMetrics(response.metrics);
-          setTimeRange(response.time_range);
+          setTimeRange(response.time_range || {
+            start_date: null,
+            end_date: null
+          });
         }
       } catch (err) {
         console.error("Error fetching topic data:", err);
-        setError(err.message);
+        setError(err.message || "Fehler beim Laden der Daten");
       } finally {
         setLoading(false);
       }
@@ -78,6 +92,8 @@ const Homepage = () => {
     const formData = new FormData(e.target);
     const startDate = formData.get('startDate');
     const endDate = formData.get('endDate');
+    
+    console.log("Setting date filter:", { startDate, endDate });
     
     setDateFilter({
       startDate,
@@ -137,12 +153,12 @@ const Homepage = () => {
       )}
       
       {/* Topics Stack */}
-      {!loading && !error && topics.length > 0 && (
+      {!loading && !error && topics && topics.length > 0 ? (
         <>
           <div className="topics-stack-section">
             {topics.slice(0, 5).map((topic, index) => (
-              <div key={topic.id} className={`topic-stack topic-stack-${index + 1}`}>
-                {topic.name}
+              <div key={topic.id || index} className={`topic-stack topic-stack-${index + 1}`}>
+                {topic.name || `Topic ${index + 1}`}
               </div>
             ))}
           </div>
@@ -153,22 +169,27 @@ const Homepage = () => {
               <h3>Model Evaluation</h3>
               <div className="metrics-grid">
                 <div className="metric-item">
-                  <div className="metric-value">{metrics.coherence_score.toFixed(2)}</div>
+                  <div className="metric-value">{(metrics.coherence_score || 0).toFixed(2)}</div>
                   <div className="metric-label">Coherence Score</div>
                 </div>
                 <div className="metric-item">
-                  <div className="metric-value">{metrics.diversity_score.toFixed(2)}</div>
+                  <div className="metric-value">{(metrics.diversity_score || 0).toFixed(2)}</div>
                   <div className="metric-label">Diversity Score</div>
                 </div>
                 <div className="metric-item">
-                  <div className="metric-value">{(metrics.document_coverage * 100).toFixed(0)}%</div>
+                  <div className="metric-value">{((metrics.document_coverage || 0) * 100).toFixed(0)}%</div>
                   <div className="metric-label">Document Coverage</div>
                 </div>
               </div>
             </div>
           )}
         </>
-      )}
+      ) : !loading && !error ? (
+        <div className="no-data-message">
+          <p>No trending topics found for the selected time period.</p>
+          <p>Try selecting a different date range or check back later.</p>
+        </div>
+      ) : null}
     </main>
   );
 };
