@@ -1,13 +1,5 @@
 #!/usr/bin/env python3
-"""ASGI entry point for Uvicorn/Gunicorn"""
+"""ASGI entry point for Uvicorn"""
 
-# The app variable is imported by Gunicorn
-try:
-    from main import app
-except ImportError as e:
-    import sys
-    print(f"CRITICAL ERROR: Failed to import app from main.py: {e}", file=sys.stderr)
-    raise
-
-if __name__ == "__main__":
-    app.run() 
+# Die app-Variable wird direkt aus main.py importiert
+from main import app 
