@@ -22,7 +22,7 @@ PORT = 8000
 
 def check_dependencies():
     """Überprüfe, ob alle notwendigen Abhängigkeiten installiert sind"""
-    required_modules = ["fastapi", "uvicorn", "sqlalchemy"]
+    required_modules = ["fastapi", "uvicorn", "sqlalchemy", "pandas", "pydantic"]
     missing_modules = []
     
     for module in required_modules:
