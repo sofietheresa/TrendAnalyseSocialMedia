@@ -136,3 +136,7 @@ TimeoutError: [WinError 10060] A connection attempt failed because the connected
 2025-05-15 10:59:50,019 [INFO] Last scrape was 1.6 minutes ago - waiting
 2025-05-15 10:59:50,019 [INFO] Last scrape was 1.6 minutes ago - waiting
 2025-05-15 10:59:50,019 [INFO] Last scrape was 1.6 minutes ago - waiting
+2025-05-15 11:14:54,856 [INFO] Starting YouTube scraping for region DE...
+2025-05-15 11:14:55,308 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-15 11:14:55,308 [INFO] Found 50 trending videos
+2025-05-15 11:14:57,990 [INFO] Successfully stored 50 YouTube videos in the database

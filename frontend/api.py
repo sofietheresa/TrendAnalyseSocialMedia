@@ -1,35 +1,26 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-import asyncpg
+from sqlalchemy import create_engine, text
 import os
 from datetime import datetime, timedelta
 import urllib.parse
-import asyncio
-from functools import wraps
 
 app = Flask(__name__)
 CORS(app)
 
-async def get_db_pool(db_name):
+def get_db_connection(db_name):
     url = os.getenv("DATABASE_URL")
     if not url:
         raise ValueError("DATABASE_URL environment variable is not set")
     result = urllib.parse.urlparse(url)
     conn_str = f"postgresql://{result.username}:{result.password}@{result.hostname}:{result.port}/{db_name}"
-    return await asyncpg.create_pool(conn_str)
+    return create_engine(conn_str)
 
-# Globaler Pool für Datenbankverbindungen
-db_pools = {}
-
-def async_route(f):
-    @wraps(f)
-    def wrapped(*args, **kwargs):
-        return asyncio.run(f(*args, **kwargs))
-    return wrapped
+# Dictionary für die Datenbankverbindungen
+db_engines = {}
 
 @app.route('/api/scraper-status')
-@async_route
-async def get_scraper_status():
+def get_scraper_status():
     try:
         # Check if any data was added in the last 20 minutes to determine if scraper is running
         cutoff_time = datetime.now() - timedelta(minutes=20)
@@ -40,15 +31,15 @@ async def get_scraper_status():
             'youtube': {'running': False, 'total_posts': 0, 'last_update': None}
         }
         
-        # Initialize connection pools if they don't exist
+        # Initialize database engines if they don't exist
         for db in ['reddit_data', 'tiktok_data', 'youtube_data']:
-            if db not in db_pools:
-                db_pools[db] = await get_db_pool(db)
+            if db not in db_engines:
+                db_engines[db] = get_db_connection(db)
         
         # Check Reddit
-        async with db_pools['reddit_data'].acquire() as conn:
-            row = await conn.fetchrow("SELECT COUNT(*), MAX(scraped_at) FROM reddit_data")
-            count, last_update = row['count'], row['max']
+        with db_engines['reddit_data'].connect() as conn:
+            result = conn.execute(text("SELECT COUNT(*), MAX(scraped_at) FROM reddit_data"))
+            count, last_update = result.fetchone()
             status['reddit'].update({
                 'running': last_update and last_update > cutoff_time,
                 'total_posts': count,
@@ -56,9 +47,9 @@ async def get_scraper_status():
             })
         
         # Check TikTok
-        async with db_pools['tiktok_data'].acquire() as conn:
-            row = await conn.fetchrow("SELECT COUNT(*), MAX(scraped_at) FROM tiktok_data")
-            count, last_update = row['count'], row['max']
+        with db_engines['tiktok_data'].connect() as conn:
+            result = conn.execute(text("SELECT COUNT(*), MAX(scraped_at) FROM tiktok_data"))
+            count, last_update = result.fetchone()
             status['tiktok'].update({
                 'running': last_update and last_update > cutoff_time,
                 'total_posts': count,
@@ -66,9 +57,9 @@ async def get_scraper_status():
             })
         
         # Check YouTube
-        async with db_pools['youtube_data'].acquire() as conn:
-            row = await conn.fetchrow("SELECT COUNT(*), MAX(scraped_at) FROM youtube_data")
-            count, last_update = row['count'], row['max']
+        with db_engines['youtube_data'].connect() as conn:
+            result = conn.execute(text("SELECT COUNT(*), MAX(scraped_at) FROM youtube_data"))
+            count, last_update = result.fetchone()
             status['youtube'].update({
                 'running': last_update and last_update > cutoff_time,
                 'total_posts': count,
@@ -80,8 +71,7 @@ async def get_scraper_status():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/daily-stats')
-@async_route
-async def get_daily_stats():
+def get_daily_stats():
     try:
         end_date = datetime.now()
         start_date = end_date - timedelta(days=7)
@@ -92,43 +82,43 @@ async def get_daily_stats():
             'youtube': []
         }
         
-        # Initialize connection pools if they don't exist
+        # Initialize database engines if they don't exist
         for db in ['reddit_data', 'tiktok_data', 'youtube_data']:
-            if db not in db_pools:
-                db_pools[db] = await get_db_pool(db)
+            if db not in db_engines:
+                db_engines[db] = get_db_connection(db)
         
         # Get Reddit daily stats
-        async with db_pools['reddit_data'].acquire() as conn:
-            rows = await conn.fetch("""
+        with db_engines['reddit_data'].connect() as conn:
+            result = conn.execute(text("""
                 SELECT DATE(scraped_at) as date, COUNT(*) as count
                 FROM reddit_data
-                WHERE scraped_at >= $1
+                WHERE scraped_at >= :start_date
                 GROUP BY DATE(scraped_at)
                 ORDER BY date
-            """, start_date)
-            stats['reddit'] = [{'date': row['date'].isoformat(), 'count': row['count']} for row in rows]
+            """), {'start_date': start_date})
+            stats['reddit'] = [{'date': row[0].isoformat(), 'count': row[1]} for row in result]
         
         # Get TikTok daily stats
-        async with db_pools['tiktok_data'].acquire() as conn:
-            rows = await conn.fetch("""
+        with db_engines['tiktok_data'].connect() as conn:
+            result = conn.execute(text("""
                 SELECT DATE(scraped_at) as date, COUNT(*) as count
                 FROM tiktok_data
-                WHERE scraped_at >= $1
+                WHERE scraped_at >= :start_date
                 GROUP BY DATE(scraped_at)
                 ORDER BY date
-            """, start_date)
-            stats['tiktok'] = [{'date': row['date'].isoformat(), 'count': row['count']} for row in rows]
+            """), {'start_date': start_date})
+            stats['tiktok'] = [{'date': row[0].isoformat(), 'count': row[1]} for row in result]
         
         # Get YouTube daily stats
-        async with db_pools['youtube_data'].acquire() as conn:
-            rows = await conn.fetch("""
+        with db_engines['youtube_data'].connect() as conn:
+            result = conn.execute(text("""
                 SELECT DATE(scraped_at) as date, COUNT(*) as count
                 FROM youtube_data
-                WHERE scraped_at >= $1
+                WHERE scraped_at >= :start_date
                 GROUP BY DATE(scraped_at)
                 ORDER BY date
-            """, start_date)
-            stats['youtube'] = [{'date': row['date'].isoformat(), 'count': row['count']} for row in rows]
+            """), {'start_date': start_date})
+            stats['youtube'] = [{'date': row[0].isoformat(), 'count': row[1]} for row in result]
         
         return jsonify(stats)
     except Exception as e:
