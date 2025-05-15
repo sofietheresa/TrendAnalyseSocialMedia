@@ -310,4 +310,16 @@
   .version-cards {
     flex-direction: column;
   }
+}
+
+.schedule-info {
+  text-align: center;
+  color: #64748B;
+  font-size: 0.95rem;
+  margin-top: -15px;
+  margin-bottom: 25px;
+}
+
+.model-evaluation-header {
+  margin-bottom: 30px;
 } 

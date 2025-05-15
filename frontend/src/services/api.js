@@ -493,7 +493,9 @@ export const executePipeline = async (pipelineId) => {
  */
 export const fetchModelVersions = async (modelName) => {
   try {
-    const response = await axios.get(`/api/mlops/models/${modelName}/versions`);
+    console.log(`Fetching model versions for: ${modelName}`);
+    const response = await api.get(`/api/mlops/models/${modelName}/versions`);
+    console.log('Model versions response:', response.data);
     // Ensure we always return an array
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
@@ -512,7 +514,9 @@ export const fetchModelVersions = async (modelName) => {
 export const fetchModelMetrics = async (modelName, version = null) => {
   try {
     const url = `/api/mlops/models/${modelName}/metrics${version ? `?version=${version}` : ''}`;
-    const response = await axios.get(url);
+    console.log(`Fetching model metrics from: ${url}`);
+    const response = await api.get(url);
+    console.log('Model metrics response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching model metrics:', error);
@@ -530,7 +534,9 @@ export const fetchModelMetrics = async (modelName, version = null) => {
 export const fetchModelDrift = async (modelName, version = null) => {
   try {
     const url = `/api/mlops/models/${modelName}/drift${version ? `?version=${version}` : ''}`;
-    const response = await axios.get(url);
+    console.log(`Fetching model drift from: ${url}`);
+    const response = await api.get(url);
+    console.log('Model drift response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching model drift data:', error);

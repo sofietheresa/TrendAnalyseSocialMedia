@@ -149,7 +149,7 @@ html, body, #root {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 40px;
+  padding: 20px 20px 20px 20px;
   background: rgba(255, 255, 255, 0.85);
   font-family: 'Sora', Arial, sans-serif;
   font-size: 1.2rem;
@@ -167,6 +167,7 @@ html, body, #root {
 
 .app-nav-title {
   flex-shrink: 0;
+  margin-left: 10px;
 }
 
 .app-nav-title a {
@@ -180,7 +181,7 @@ html, body, #root {
   font-family: 'Sora', Arial, sans-serif;
   font-weight: 900;
   font-size: 1.3rem;
-  color: #232252;
+  color: #b09cff;
   letter-spacing: 0.03em;
   line-height: 1.2;
 }
@@ -189,7 +190,7 @@ html, body, #root {
   font-family: 'Sora', Arial, sans-serif;
   font-weight: 600;
   font-size: 1rem;
-  color: #232252;
+  color: #b09cff;
   letter-spacing: 0.01em;
 }
 

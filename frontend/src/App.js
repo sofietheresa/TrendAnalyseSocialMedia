@@ -136,9 +136,9 @@ const Homepage = () => {
     console.log("Processing trends for topics:", topTopics);
     console.log("With counts by date:", countsByDate);
     
-    // Filter out topics with id -1 or name "Other"
-    const filteredTopics = topTopics.filter(topic => 
-      topic.id !== -1 && topic.name !== "Other" && topic.name !== "-1"
+    // Filter out topics with id -1 or name "Other" and skip the first topic
+    const filteredTopics = topTopics.filter((topic, index) => 
+      topic.id !== -1 && topic.name !== "Other" && topic.name !== "-1" && index > 0
     );
     
     // Get all unique dates across all topics
@@ -352,11 +352,11 @@ const Homepage = () => {
       {!loading && !error && topics && topics.length > 0 ? (
         <div className="topics-container">
           <div className="topics-stack-section" style={{ alignItems: 'center', textAlign: 'center' }}>
-            {topics.slice(0, 5).map((topic, index) => (
+            {topics.slice(1, 6).map((topic, index) => (
               <div 
                 key={topic.id || index} 
                 className={`topic-stack topic-stack-${index + 1}`}
-                style={{ justifyContent: 'center', textAlign: 'center', margin: '0 auto' }}
+                style={{ justifyContent: 'center', textAlign: 'center', margin: '15px auto' }}
               >
                 {topic.name || `Topic ${index + 1}`} {topicSentiments[topic.id] && 
                   <span className="sentiment-emoji" title={`Sentiment: ${topicSentiments[topic.id]}`}>
@@ -401,7 +401,7 @@ const Homepage = () => {
           
           {/* Topic Post Counts */}
           <div className="topic-post-counts-section">
-            {topics.slice(0, 5).map((topic, index) => topic.id && topicCounts[topic.id] ? (
+            {topics.slice(1, 6).map((topic, index) => topic.id && topicCounts[topic.id] ? (
               <div key={topic.id} className="topic-post-counts-card">
                 <h3 className={`topic-name topic-name-${index + 1}`}>
                   {topic.name || `Topic ${index + 1}`}

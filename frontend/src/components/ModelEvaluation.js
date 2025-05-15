@@ -329,7 +329,10 @@ const ModelEvaluation = () => {
 
   return (
     <div className="model-evaluation-page">
-      <h1 className="page-title">Model Evaluation</h1>
+      <div className="model-evaluation-header">
+        <h1 className="page-title">Model Evaluation</h1>
+        <p className="schedule-info">Pipeline runs automatically every 6 hours to evaluate model performance</p>
+      </div>
       
       {/* Model Selector */}
       <div className="model-selector">

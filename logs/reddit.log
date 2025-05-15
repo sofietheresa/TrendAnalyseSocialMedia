@@ -2557,3 +2557,46 @@ Traceback (most recent call last):
     inserted += 1
     ^^^^^^^^^^^
 psycopg2.InterfaceError: connection already closed
+2025-05-15 22:21:52,949 [INFO] Starting Reddit scraping...
+2025-05-15 22:21:52,949 [INFO] Connecting to Reddit API with ID: jl1Te...
+2025-05-15 22:21:52,950 [INFO] Successfully connected to Reddit API
+2025-05-15 22:21:52,950 [INFO] Scraping subreddit: r/all
+2025-05-15 22:21:54,529 [INFO] Found 2 posts in r/all
+2025-05-15 22:21:54,529 [INFO] Scraping subreddit: r/popular
+2025-05-15 22:21:56,196 [INFO] Found 8 posts in r/popular
+2025-05-15 22:21:56,197 [INFO] Scraping subreddit: r/trendingreddits
+2025-05-15 22:21:57,101 [INFO] Found 21 posts in r/trendingreddits
+2025-05-15 22:21:57,102 [INFO] Scraping subreddit: r/trendingsubreddits
+2025-05-15 22:21:59,818 [INFO] Found 100 posts in r/trendingsubreddits
+2025-05-15 22:21:59,819 [INFO] Found 128 unique posts out of 131 total posts
+2025-05-15 22:22:47,286 [ERROR] Error processing post 1kh3ajs: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+2025-05-15 22:22:47,286 [ERROR] Database error: connection already closed
+2025-05-15 22:22:47,286 [ERROR] Detailed error:
+Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\reddit_scraper.py", line 174, in scrape_reddit
+    inserted = 0
+            ^^^^
+    ...<22 lines>...
+                post["score"],
+    
+psycopg2.OperationalError: server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+server closed the connection unexpectedly
+	This probably means the server terminated abnormally
+	before or while processing the request.
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\reddit_scraper.py", line 208, in scrape_reddit
+    inserted += 1
+    ^^^^^^^^^^^
+psycopg2.InterfaceError: connection already closed
