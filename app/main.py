@@ -16,6 +16,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Log environment variables (excluding sensitive ones)
+logger.info(f"Environment: {os.getenv('FLASK_ENV', 'production')}")
+logger.info(f"Port: {os.getenv('PORT', '8080')}")
+
 app = Flask(__name__)
 
 # CORS configuration
@@ -213,5 +217,6 @@ def get_daily_stats():
         }), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 8080))
+    logger.info(f"Starting application on port {port}")
     app.run(host='0.0.0.0', port=port) 

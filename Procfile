@@ -1,1 +1,1 @@
-web: pip install -r requirements.txt && cd app && gunicorn --log-level debug --access-logfile - --error-logfile - --bind 0.0.0.0:$PORT wsgi:app 
+web: pip install -r requirements.txt && cd app && PORT=8080 gunicorn -c gunicorn_config.py wsgi:app 
