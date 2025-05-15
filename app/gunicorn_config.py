@@ -4,6 +4,9 @@ import os
 bind = f"0.0.0.0:{os.getenv('PORT', '8080')}"
 backlog = 1024
 
+# WSGI entry point: file name "main.py" and Flask app instance "app"
+wsgi_app = "main:app"
+
 # Worker processes - using a fixed small number for memory constraints
 workers = 2  # Using just 2 workers to conserve memory
 worker_class = 'sync'
@@ -48,4 +51,4 @@ limit_request_fields = 32768
 limit_request_field_size = 8192
 
 # Preload app to save memory
-preload_app = True 
+preload_app = True ##
