@@ -1,49 +1,66 @@
 #!/usr/bin/env python3
 """
-Test-Skript zum Überprüfen, ob die FastAPI-App korrekt importiert werden kann.
-Dieses Skript sollte immer erfolgreich laufen, wenn die App richtig konfiguriert ist.
+Test import script to verify all dependencies are installed correctly
 """
 
 import sys
-import importlib.util
 import os
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger("dependency-test")
 
 def test_imports():
-    """Test, ob die notwendigen Module importiert werden können"""
-    try:
-        print("Python-Version:", sys.version)
-        print("Aktuelles Verzeichnis:", os.getcwd())
-        print("Dateien im Verzeichnis:", os.listdir())
-        
-        print("\nVersuche 'fastapi' zu importieren...")
-        import fastapi
-        print("FastAPI-Version:", fastapi.__version__)
-        
-        print("\nVersuche 'main' zu importieren...")
-        import main
-        print("main Modul gefunden!")
-        
-        print("\nVersuche 'app' aus 'main' zu importieren...")
-        assert hasattr(main, 'app'), "main hat kein 'app' Attribut"
-        from main import app
-        print("app-Objekt erfolgreich importiert!")
-        print("app-Typ:", type(app))
-        
-        print("\nVersuche 'wsgi' zu importieren...")
-        import wsgi
-        print("wsgi Modul gefunden!")
-        
-        assert hasattr(wsgi, 'app'), "wsgi hat kein 'app' Attribut"
-        print("wsgi.app ist vorhanden!")
-        
-        print("\nALLE IMPORTS ERFOLGREICH!")
-        return True
-    except Exception as e:
-        print(f"FEHLER: {type(e).__name__}: {e}")
-        import traceback
-        traceback.print_exc()
+    """Test importing all required dependencies"""
+    
+    # List of modules to test
+    required_modules = [
+        "fastapi",
+        "uvicorn",
+        "sqlalchemy",
+        "psycopg2",
+        "dotenv"
+    ]
+    
+    missing_modules = []
+    
+    # Test each module
+    for module in required_modules:
+        try:
+            __import__(module)
+            logger.info(f"✅ Successfully imported {module}")
+        except ImportError:
+            logger.error(f"❌ Failed to import {module}")
+            missing_modules.append(module)
+    
+    # Summary
+    if missing_modules:
+        logger.error(f"Missing modules: {', '.join(missing_modules)}")
         return False
+    else:
+        logger.info("All required dependencies are installed!")
+        return True
+
+def main():
+    """Main function"""
+    logger.info("=== DEPENDENCY TEST SCRIPT ===")
+    logger.info(f"Python version: {sys.version}")
+    logger.info(f"Current directory: {os.getcwd()}")
+    logger.info(f"Environment: {os.getenv('FLASK_ENV', 'production')}")
+    logger.info(f"PORT: {os.getenv('PORT', '8000')}")
+    
+    success = test_imports()
+    
+    if success:
+        logger.info("Dependency test passed!")
+        sys.exit(0)
+    else:
+        logger.error("Dependency test failed!")
+        sys.exit(1)
 
 if __name__ == "__main__":
-    success = test_imports()
-    sys.exit(0 if success else 1) 
+    main() 
