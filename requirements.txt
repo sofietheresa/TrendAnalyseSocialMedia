@@ -1,21 +1,11 @@
 # API and Web Framework
 fastapi==0.104.0
 uvicorn[standard]==0.23.2
+gunicorn==21.2.0
 
-# Database
-sqlalchemy==2.0.41
-psycopg2-binary==2.9.10
+# Basic Dependencies
 python-dotenv==1.1.0
 
-# Data Processing and Analysis
-pandas==2.1.4
-numpy==1.24.3
-scikit-learn==1.3.2
-
-# Utilities
-requests==2.31.0
-schedule==1.2.1
-
-# Build dependencies
+# Basis packages (minimiert für Debug)
 setuptools>=65.5.1
 wheel>=0.40.0

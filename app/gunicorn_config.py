@@ -1,29 +1,25 @@
 import os
 
 # Server socket
-bind = f"0.0.0.0:{os.getenv('PORT', '8080')}"
+bind = f"0.0.0.0:{os.getenv('PORT', '8000')}"
 backlog = 1024
 
-# WSGI entry point: file name "main.py" and Flask app instance "app"
+# ASGI configuration using Uvicorn worker for FastAPI
 wsgi_app = "main:app"
+worker_class = "uvicorn.workers.UvicornWorker"
 
-# Worker processes - using a fixed small number for memory constraints
-workers = 2  # Using just 2 workers to conserve memory
-worker_class = 'sync'
-worker_connections = 1000
-max_requests = 1000
-max_requests_jitter = 50
-timeout = 30
-keepalive = 2
+# Worker processes - minimal for memory constraints
+workers = 1  # Nur ein Worker um Memory-Probleme zu vermeiden
+timeout = 300  # Längeres Timeout für bessere Stabilität
+keepalive = 5
+graceful_timeout = 10
 
-# Logging
-accesslog = '-'
-errorlog = '-'
-loglevel = 'debug'
+# Logging - extensive for debugging
+accesslog = "-"
+errorlog = "-"
+loglevel = "debug"
+capture_output = True
 access_log_format = '%({x-forwarded-for}i)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
-
-# Process naming
-proc_name = 'trendanalyse-api'
 
 # Server mechanics
 daemon = False
@@ -31,24 +27,19 @@ pidfile = None
 umask = 0
 user = None
 group = None
-tmp_upload_dir = None
 
 # Memory management
-worker_tmp_dir = '/dev/shm'  # Using shared memory for temp files
-max_requests = 1000  # Restart workers after this many requests
-max_requests_jitter = 50  # Add randomness to max_requests
+worker_tmp_dir = "/tmp"
+max_requests = 0  # Deaktiviert, um Worker-Recycling zu vermeiden, das zu 502-Fehlern führen kann
+max_requests_jitter = 0
 
-# SSL
-keyfile = None
-certfile = None
-
-# Debugging
+# Debug options
 reload = False
-reload_engine = 'auto'
+reload_engine = "auto"
 
 # Security
-limit_request_fields = 32768
-limit_request_field_size = 8192
+limit_request_fields = 1000
+limit_request_field_size = 8190
 
-# Preload app to save memory
-preload_app = True ##
+# Kein Preloading, um mögliche Probleme zu vermeiden
+preload_app = False
