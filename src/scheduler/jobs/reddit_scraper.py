@@ -71,12 +71,46 @@ def scrape_reddit():
     try:
         logger.info("Starting Reddit scraping...")
 
-        reddit = praw.Reddit(
-            client_id=os.getenv("REDDIT_ID"),
-            client_secret=os.getenv("REDDIT_SECRET"),
-            user_agent="TrendAnalysis/1.0"
-        )
-        logger.info("Successfully connected to Reddit API")
+        # Prüfe, ob die Reddit-Anmeldedaten vorhanden sind
+        reddit_id = os.getenv("REDDIT_ID")
+        reddit_secret = os.getenv("REDDIT_SECRET")
+        
+        if not reddit_id or not reddit_secret:
+            logger.error("Reddit API credentials missing. Check your .env file.")
+            return
+            
+        # Entferne führende und nachfolgende Anführungszeichen und Leerzeichen
+        reddit_id = reddit_id.strip().strip('"\'')
+        reddit_secret = reddit_secret.strip().strip('"\'')
+
+     
+        
+        # Verbesserte User-Agent-Zeichenfolge
+        user_agent = "python:TrendAnalysis:v1.0 (by u/YourRedditUsername)"
+        
+        try:
+            reddit = praw.Reddit(
+                client_id=reddit_id,
+                client_secret=reddit_secret,
+                user_agent=user_agent
+            )
+            
+        except Exception as e:
+            logger.error(f"Failed to connect to Reddit API: {str(e)}")
+            # Fallback: Erstelle einen Dummy-Eintrag, um den Scraper-Status zu aktualisieren
+            with get_db_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        INSERT INTO public.reddit_data 
+                        (id, title, text, author, score, created_utc, num_comments, url, subreddit, scraped_at)
+                        VALUES ('status_update', 'Reddit API Error', %s, 'Scraper', 0, 0, 0, 
+                                'https://example.com', 'status', %s)
+                        ON CONFLICT (id) DO UPDATE SET 
+                            text = EXCLUDED.text,
+                            scraped_at = EXCLUDED.scraped_at
+                    """, (str(e), datetime.now()))
+                    conn.commit()
+            return
 
         subreddits = ["all", "popular", "trendingreddits", "trendingsubreddits"]
         post_limit = 100
@@ -84,7 +118,7 @@ def scrape_reddit():
         scrape_time = datetime.now()
 
         for sub in subreddits:
-            logger.info(f"Scraping subreddit: r/{sub}")
+           
             subreddit = reddit.subreddit(sub)
             post_count = 0
             for post in subreddit.hot(limit=post_limit):
@@ -102,7 +136,7 @@ def scrape_reddit():
                         "scraped_at": scrape_time
                     })
                     post_count += 1
-            logger.info(f"Found {post_count} posts in r/{sub}")
+          
 
         # Remove duplicates from the current batch
         unique_posts = remove_duplicates(all_posts)

@@ -293,3 +293,98 @@ HINT:  Ensure that no rows proposed for insertion within the same command have d
 2025-05-15 17:18:40,699 [INFO] Successfully processed 45 videos (35 inserted, 10 updated)
 2025-05-15 17:18:40,699 [INFO] Closing browser session...
 2025-05-15 17:18:40,990 [INFO] Browser session closed
+2025-05-15 19:11:28,296 [INFO] TikTok status updated in database
+2025-05-15 19:11:28,297 [INFO] Starting TikTok scraping...
+2025-05-15 19:11:28,297 [ERROR] Error during TikTok scraping: 'TikTokAPI' object does not support the asynchronous context manager protocol
+2025-05-15 19:11:30,189 [INFO] TikTok status updated in database
+2025-05-15 19:28:19,969 [INFO] TikTok status updated in database
+2025-05-15 19:28:19,970 [INFO] Starting TikTok scraping...
+2025-05-15 19:28:19,970 [ERROR] Error during TikTok scraping: 'TikTokAPI' object does not support the asynchronous context manager protocol
+2025-05-15 19:28:21,926 [INFO] TikTok status updated in database
+2025-05-15 19:31:39,295 [INFO] TikTok status updated in database
+2025-05-15 19:31:39,296 [INFO] Starting TikTok scraping...
+2025-05-15 19:31:39,296 [ERROR] Error during TikTok scraping: 'TikTokAPI' object does not support the asynchronous context manager protocol
+2025-05-15 19:31:41,205 [INFO] TikTok status updated in database
+2025-05-15 19:45:10,207 [INFO] TikTok status updated in database
+2025-05-15 19:45:10,207 [INFO] Starting TikTok scraping...
+2025-05-15 19:45:10,208 [ERROR] Error during TikTok scraping: 'TikTokAPI' object does not support the asynchronous context manager protocol
+2025-05-15 19:45:12,139 [INFO] TikTok status updated in database
+2025-05-15 19:57:02,380 [INFO] Using browser: chromium
+2025-05-15 19:57:02,380 [ERROR] Error during TikTok scraping: NameError: name 'TikTokApi' is not defined
+2025-05-15 19:57:02,381 [ERROR] Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\tiktok_scraper.py", line 68, in trending_videos
+    api = TikTokApi()
+          ^^^^^^^^^
+NameError: name 'TikTokApi' is not defined. Did you mean: 'TikTokAPI'?
+
+2025-05-15 20:02:05,818 [INFO] TikTok status updated in database
+2025-05-15 20:02:05,818 [INFO] Starting TikTok scraping...
+2025-05-15 20:02:05,818 [ERROR] Error during TikTok scraping: 'TikTokAPI' object does not support the asynchronous context manager protocol
+2025-05-15 20:02:07,751 [INFO] TikTok status updated in database
+2025-05-15 20:16:58,407 [INFO] Using browser: chromium
+2025-05-15 20:16:58,407 [ERROR] Error during TikTok scraping: NameError: name 'TikTokApi' is not defined
+2025-05-15 20:16:58,409 [ERROR] Traceback (most recent call last):
+  File "c:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\tiktok_scraper.py", line 68, in trending_videos
+    api = TikTokApi()
+          ^^^^^^^^^
+NameError: name 'TikTokApi' is not defined. Did you mean: 'TikTokAPI'?
+
+2025-05-15 20:17:19,657 [INFO] Using browser: chromium
+2025-05-15 20:17:19,657 [ERROR] Error during TikTok scraping: NameError: name 'TikTokApi' is not defined
+2025-05-15 20:17:19,659 [ERROR] Traceback (most recent call last):
+  File "c:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\tiktok_scraper.py", line 68, in trending_videos
+    api = TikTokApi()
+          ^^^^^^^^^
+NameError: name 'TikTokApi' is not defined. Did you mean: 'TikTokAPI'?
+
+2025-05-15 20:17:42,114 [INFO] Using browser: chromium
+2025-05-15 20:17:42,114 [ERROR] Error during TikTok scraping: NameError: name 'TikTokApi' is not defined
+2025-05-15 20:17:42,115 [ERROR] Traceback (most recent call last):
+  File "c:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\tiktok_scraper.py", line 68, in trending_videos
+    api = TikTokApi()
+          ^^^^^^^^^
+NameError: name 'TikTokApi' is not defined. Did you mean: 'TikTokAPI'?
+
+2025-05-15 20:18:54,926 [INFO] TikTok status updated in database
+2025-05-15 20:18:54,926 [INFO] Starting TikTok scraping...
+2025-05-15 20:18:54,927 [ERROR] Error during TikTok scraping: 'TikTokAPI' object does not support the asynchronous context manager protocol
+2025-05-15 20:18:56,835 [INFO] TikTok status updated in database
+2025-05-15 20:19:37,674 [INFO] Using browser: chromium
+2025-05-15 20:19:37,674 [ERROR] Error during TikTok scraping: NameError: name 'TikTokApi' is not defined
+2025-05-15 20:19:37,675 [ERROR] Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\tiktok_scraper.py", line 68, in trending_videos
+    api = TikTokApi()
+          ^^^^^^^^^
+NameError: name 'TikTokApi' is not defined. Did you mean: 'TikTokAPI'?
+
+2025-05-15 20:19:56,858 [INFO] Using browser: chromium
+2025-05-15 20:19:56,858 [INFO] Creating TikTok API session...
+2025-05-15 20:19:56,858 [ERROR] Error during TikTok scraping: AttributeError: 'TikTokAPI' object has no attribute 'create_sessions'
+2025-05-15 20:19:56,862 [ERROR] Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\tiktok_scraper.py", line 71, in trending_videos
+    await api.create_sessions(
+          ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'TikTokAPI' object has no attribute 'create_sessions'
+
+2025-05-15 20:19:56,862 [ERROR] Error closing browser: TikTokAPI must be used as a context manager
+2025-05-15 20:20:26,557 [INFO] Using browser: chromium
+2025-05-15 20:20:26,557 [INFO] Creating TikTok API session...
+2025-05-15 20:20:26,557 [ERROR] Error during TikTok scraping: TypeError: 'TikTokAPI' object does not support the asynchronous context manager protocol
+2025-05-15 20:20:26,558 [ERROR] Traceback (most recent call last):
+  File "C:\Users\SofiePischl\Documents\01_HdM\10_ML_OPS\TrendAnalyseSocialMedia\src\scheduler\jobs\tiktok_scraper.py", line 69, in trending_videos
+    async with TikTokAPI(ms_token=ms_token, headless=True) as api:
+               ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'TikTokAPI' object does not support the asynchronous context manager protocol
+
+2025-05-15 20:22:58,473 [INFO] Using browser: chromium
+2025-05-15 20:22:58,473 [INFO] Creating TikTok API session...
+2025-05-15 20:23:08,952 [INFO] TikTok API session created successfully
+2025-05-15 20:23:08,952 [INFO] Loading trending videos from TikTok...
+2025-05-15 20:23:12,923 [INFO] Found 44 unique videos, attempting to store in database...
+2025-05-15 20:23:23,753 [INFO] Successfully processed 44 videos (36 inserted, 8 updated)
+2025-05-15 20:25:19,505 [INFO] Using browser: chromium
+2025-05-15 20:25:19,505 [INFO] Creating TikTok API session...
+2025-05-15 20:25:26,685 [INFO] TikTok API session created successfully
+2025-05-15 20:25:26,685 [INFO] Loading trending videos from TikTok...
+2025-05-15 20:25:30,787 [INFO] Found 38 unique videos, attempting to store in database...
+2025-05-15 20:25:40,172 [INFO] Successfully processed 38 videos (20 inserted, 18 updated)

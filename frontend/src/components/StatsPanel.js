@@ -250,7 +250,13 @@ const StatsPanel = () => {
                 <div className="stats-item">
                   <span className="stats-label">Last Update:</span>
                   <span className="stats-value">
-                    {lastUpdateDates[platform] ? lastUpdateDates[platform].toLocaleDateString() : 'Never'}
+                    {lastUpdateDates[platform] ? lastUpdateDates[platform].toLocaleString(undefined, {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    }) : 'Never'}
                   </span>
                 </div>
               </div>
