@@ -141,17 +141,55 @@ html, body, #root {
   }
 }
 
-/* Navigation oben */
+/* Navbar styles with title */
 .app-nav {
   display: flex;
-  justify-content: center;
-  gap: 20px;
-  padding: 30px 0 20px 0;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
   background: transparent;
   font-family: 'Sora', Arial, sans-serif;
   font-size: 1.2rem;
   font-weight: 400;
   letter-spacing: 0.01em;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.app-nav-title {
+  flex-shrink: 0;
+}
+
+.app-nav-title a {
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.nav-title-text {
+  font-family: 'Sora', Arial, sans-serif;
+  font-weight: 900;
+  font-size: 1.2rem;
+  color: #232252;
+  letter-spacing: 0.03em;
+  line-height: 1;
+}
+
+.nav-subtitle-text {
+  font-family: 'Sora', Arial, sans-serif;
+  font-weight: 400;
+  font-size: 0.9rem;
+  color: #232252;
+  letter-spacing: 0.01em;
+}
+
+.nav-links-container {
+  display: flex;
+  gap: 20px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .nav-link {
@@ -710,13 +748,8 @@ html, body, #root {
     gap: 1rem;
   }
 
-  .calendar-filter {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .postcount-grid {
-    grid-template-columns: 1fr;
+  .nav-link {
+    font-size: 1rem;
   }
 
   .topic-stack {
@@ -846,30 +879,6 @@ html, body, #root {
   padding: 2rem;
   text-align: center;
   color: #ff4444;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .navbar {
-    flex-direction: column;
-    padding: 1rem;
-    gap: 1rem;
-  }
-  
-  .nav-links {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1rem;
-  }
-  
-  .nav-info {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .dashboard {
-    padding: 1rem;
-  }
 }
 
 /* Stats Panel Styles */
@@ -1372,5 +1381,64 @@ html, body, #root {
   font-size: 0.9rem;
   border-radius: 8px;
   display: inline-block;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .app-nav {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .nav-link {
+    font-size: 1rem;
+  }
+
+  .topic-stack {
+    font-size: 2rem !important;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .app-nav {
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+  }
+  
+  .app-nav-title {
+    margin-bottom: 10px;
+    align-self: center;
+  }
+  
+  .app-nav-title a {
+    align-items: center;
+  }
+  
+  .nav-links-container {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .nav-link {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+  }
+
+  .topic-stack {
+    font-size: 2rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-links-container {
+    gap: 10px;
+  }
+  
+  .nav-link {
+    font-size: 0.8rem;
+    padding: 5px 10px;
+  }
 }
 

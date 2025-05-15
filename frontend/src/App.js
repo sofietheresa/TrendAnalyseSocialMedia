@@ -390,48 +390,59 @@ function App() {
       <div className="App">
         {/* Navigation */}
         <nav className="app-nav">
-          <Link 
-            to="/" 
-            className={`nav-link ${activePage === 'home' ? 'active-nav-link' : ''}`} 
-            onClick={() => setActivePage('home')}
-          >
-            Startseite
-          </Link>
-          <Link 
-            to="/pipeline" 
-            className={`nav-link ${activePage === 'pipeline' ? 'active-nav-link' : ''}`} 
-            onClick={() => setActivePage('pipeline')}
-          >
-            Pipeline
-          </Link>
-          <Link 
-            to="/stats" 
-            className={`nav-link ${activePage === 'stats' ? 'active-nav-link' : ''}`} 
-            onClick={() => setActivePage('stats')}
-          >
-            Statistiken
-          </Link>
-          <Link 
-            to="/data" 
-            className={`nav-link ${activePage === 'data' ? 'active-nav-link' : ''}`} 
-            onClick={() => setActivePage('data')}
-          >
-            Data
-          </Link>
-          <Link 
-            to="/evaluation" 
-            className={`nav-link ${activePage === 'evaluation' ? 'active-nav-link' : ''}`} 
-            onClick={() => setActivePage('evaluation')}
-          >
-            Modell-Evaluation
-          </Link>
-          <Link 
-            to="/docs" 
-            className={`nav-link ${activePage === 'docs' ? 'active-nav-link' : ''}`} 
-            onClick={() => setActivePage('docs')}
-          >
-            Doku
-          </Link>
+          {/* App Title on the left */}
+          <div className="app-nav-title">
+            <Link to="/" onClick={() => setActivePage('home')}>
+              <span className="nav-title-text">SOCIAL MEDIA</span>
+              <span className="nav-subtitle-text">Trend Analysis</span>
+            </Link>
+          </div>
+          
+          {/* Navigation Links */}
+          <div className="nav-links-container">
+            <Link 
+              to="/" 
+              className={`nav-link ${activePage === 'home' ? 'active-nav-link' : ''}`} 
+              onClick={() => setActivePage('home')}
+            >
+              Startseite
+            </Link>
+            <Link 
+              to="/pipeline" 
+              className={`nav-link ${activePage === 'pipeline' ? 'active-nav-link' : ''}`} 
+              onClick={() => setActivePage('pipeline')}
+            >
+              Pipeline
+            </Link>
+            <Link 
+              to="/stats" 
+              className={`nav-link ${activePage === 'stats' ? 'active-nav-link' : ''}`} 
+              onClick={() => setActivePage('stats')}
+            >
+              Statistiken
+            </Link>
+            <Link 
+              to="/data" 
+              className={`nav-link ${activePage === 'data' ? 'active-nav-link' : ''}`} 
+              onClick={() => setActivePage('data')}
+            >
+              Data
+            </Link>
+            <Link 
+              to="/evaluation" 
+              className={`nav-link ${activePage === 'evaluation' ? 'active-nav-link' : ''}`} 
+              onClick={() => setActivePage('evaluation')}
+            >
+              Modell-Evaluation
+            </Link>
+            <Link 
+              to="/docs" 
+              className={`nav-link ${activePage === 'docs' ? 'active-nav-link' : ''}`} 
+              onClick={() => setActivePage('docs')}
+            >
+              Doku
+            </Link>
+          </div>
         </nav>
         
         {/* Page Routes */}
