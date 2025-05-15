@@ -18,6 +18,26 @@ const api = axios.create({
     withCredentials: false
 });
 
+// Add fallback mechanism for production environment
+const useMockApi = process.env.REACT_APP_USE_MOCK_API === 'true';
+console.log('Using mock API:', useMockApi);
+
+// Import mock data handlers if needed
+let mockDataHandlers = null;
+
+// Dynamically import mock data handlers only if needed
+if (useMockApi) {
+    try {
+        // Dynamic import for mock data
+        import('../mock-api/handlers').then(module => {
+            mockDataHandlers = module.default;
+            console.log('Mock data handlers loaded successfully');
+        });
+    } catch (error) {
+        console.error('Failed to load mock data handlers:', error);
+    }
+}
+
 // Detailed Error Handler
 api.interceptors.request.use(
     config => {
@@ -109,7 +129,7 @@ export const fetchDailyStats = async () => {
 };
 
 // New function to fetch recent social media data
-export const fetchRecentData = async (platform = 'reddit', limit = 10, retryCount = 1) => {
+export const fetchRecentData = async (platform = 'reddit', limit = 10, retryCount = 3) => {
     console.log(`Fetching recent ${platform} data (limit: ${limit})...`);
     
     try {
@@ -120,15 +140,6 @@ export const fetchRecentData = async (platform = 'reddit', limit = 10, retryCoun
         });
         
         console.log(`Received ${platform} data:`, response);
-        console.log(`Response data type: ${typeof response.data}`);
-        
-        if (response.data) {
-            try {
-                console.log("Response data JSON:", JSON.stringify(response.data, null, 2));
-            } catch (e) {
-                console.log("Response data (not stringifiable):", response.data);
-            }
-        }
         
         // Process the response data
         if (response.data) {
@@ -176,8 +187,8 @@ export const fetchRecentData = async (platform = 'reddit', limit = 10, retryCoun
             });
         }
         
-        // Retry logic for 404 errors - the server might be catching up
-        if (error.response && error.response.status === 404 && retryCount > 0) {
+        // Retry logic for connection issues - the server might be catching up
+        if (retryCount > 0) {
             console.log(`Retrying ${platform} data fetch, ${retryCount} attempts left...`);
             
             // Wait 1 second before retrying
@@ -187,12 +198,27 @@ export const fetchRecentData = async (platform = 'reddit', limit = 10, retryCoun
             return fetchRecentData(platform, limit, retryCount - 1);
         }
         
-        // If all retries failed or it's not a 404 error, return empty data
-        console.warn(`Could not fetch ${platform} data after retries`);
-        return { 
-            data: [],
-            error: `Failed to load ${platform} data: ${error.message || 'Unknown error'}`
-        };
+        // If all retries failed or it's not a 404 error, try to load mock data
+        console.warn(`Could not fetch ${platform} data after retries, loading mock data...`);
+        
+        try {
+            // Import mock data dynamically
+            const { getMockData } = await import('../mock-api/data');
+            const mockData = getMockData(platform, limit);
+            console.log(`Loaded mock data for ${platform}:`, mockData);
+            
+            return { 
+                data: mockData, 
+                isMockData: true,
+                message: `Using mock data for ${platform} (API unavailable)`
+            };
+        } catch (mockError) {
+            console.error(`Failed to load mock data for ${platform}:`, mockError);
+            return { 
+                data: [],
+                error: `Failed to load ${platform} data: ${error.message || 'Unknown error'}`
+            };
+        }
     }
 };
 

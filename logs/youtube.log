@@ -1096,3 +1096,7 @@ Traceback (most recent call last):
              ^
 psycopg2.InterfaceError: connection already closed
 2025-05-15 22:24:13,643 [INFO] YouTube status updated in database
+2025-05-15 22:41:29,767 [INFO] Starting YouTube scraping for region DE...
+2025-05-15 22:41:29,985 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-15 22:41:29,985 [INFO] Found 50 trending videos
+2025-05-15 22:41:32,611 [INFO] Successfully stored 50 YouTube videos in the database
