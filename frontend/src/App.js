@@ -6,6 +6,7 @@ import StatsPanel from './components/StatsPanel';
 import DataPage from './components/DataPage';
 import Documentation from './components/Documentation';
 import ModelEvaluation from './components/ModelEvaluation';
+import PipelinePage from './components/PipelinePage';
 import { fetchTopicModel } from './services/api';
 import { Line } from 'react-chartjs-2';
 
@@ -464,7 +465,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Homepage />} />
           <Route path="/stats" element={<StatsPage />} />
-          <Route path="/pipeline" element={<PlaceholderPage title="Pipeline" />} />
+          <Route path="/pipeline" element={<PipelinePage />} />
           <Route path="/data" element={<DataPage />} />
           <Route path="/evaluation" element={<ModelEvaluation />} />
           <Route path="/docs" element={<Documentation />} />

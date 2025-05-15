@@ -426,4 +426,108 @@ export const fetchPredictions = async () => {
     }
 };
 
+/**
+ * Fetch ML pipeline data
+ * 
+ * @param {string} pipelineId - Optional pipeline ID to fetch a specific pipeline
+ * @returns {Promise<Object>} - Pipeline data
+ */
+export const fetchPipelines = async (pipelineId = null) => {
+  try {
+    const url = pipelineId 
+      ? `/api/mlops/pipelines/${pipelineId}`
+      : '/api/mlops/pipelines';
+    
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching pipeline data:', error);
+    return { error: 'Failed to fetch pipeline data. Please try again later.' };
+  }
+};
+
+/**
+ * Fetch pipeline executions
+ * 
+ * @param {string} pipelineId - Pipeline ID
+ * @returns {Promise<Object>} - Pipeline executions
+ */
+export const fetchPipelineExecutions = async (pipelineId) => {
+  try {
+    const response = await axios.get(`/api/mlops/pipelines/${pipelineId}/executions`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching pipeline executions:', error);
+    return { error: 'Failed to fetch pipeline executions. Please try again later.' };
+  }
+};
+
+/**
+ * Execute a pipeline
+ * 
+ * @param {string} pipelineId - Pipeline ID
+ * @returns {Promise<Object>} - Execution details
+ */
+export const executePipeline = async (pipelineId) => {
+  try {
+    const response = await axios.post(`/api/mlops/pipelines/${pipelineId}/execute`);
+    return response.data;
+  } catch (error) {
+    console.error('Error executing pipeline:', error);
+    return { error: 'Failed to execute pipeline. Please try again later.' };
+  }
+};
+
+/**
+ * Fetch model versions
+ * 
+ * @param {string} modelName - Model name
+ * @returns {Promise<Object>} - Model versions
+ */
+export const fetchModelVersions = async (modelName) => {
+  try {
+    const response = await axios.get(`/api/mlops/models/${modelName}/versions`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching model versions:', error);
+    return { error: 'Failed to fetch model versions. Please try again later.' };
+  }
+};
+
+/**
+ * Fetch model metrics
+ * 
+ * @param {string} modelName - Model name
+ * @param {string} version - Optional model version
+ * @returns {Promise<Object>} - Model metrics
+ */
+export const fetchModelMetrics = async (modelName, version = null) => {
+  try {
+    const url = `/api/mlops/models/${modelName}/metrics${version ? `?version=${version}` : ''}`;
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching model metrics:', error);
+    return { error: 'Failed to fetch model metrics. Please try again later.' };
+  }
+};
+
+/**
+ * Fetch model drift data
+ * 
+ * @param {string} modelName - Model name
+ * @param {string} version - Optional model version
+ * @returns {Promise<Object>} - Drift metrics
+ */
+export const fetchModelDrift = async (modelName, version = null) => {
+  try {
+    const url = `/api/mlops/models/${modelName}/drift${version ? `?version=${version}` : ''}`;
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching model drift data:', error);
+    return { error: 'Failed to fetch model drift data. Please try again later.' };
+  }
+};
+
 export default api; 

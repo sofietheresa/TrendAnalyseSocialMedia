@@ -29,6 +29,10 @@ from src.pipelines.steps.preprocessing import preprocess_data
 from src.pipelines.steps.data_exploration import explore_data
 from src.pipelines.steps.predictions import make_predictions
 
+# Import API routers
+from src.api import api_router
+from src.api.mlops_api import router as mlops_router
+
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,7 +41,11 @@ logger = logging.getLogger(__name__)
 service_ready = False
 initialization_error = None
 
-app = FastAPI()
+app = FastAPI(
+    title="Social Media Trend Analysis API",
+    description="API for analyzing social media trends",
+    version="1.0.0",
+)
 
 # CORS Middleware
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
@@ -252,6 +260,10 @@ async def get_data(db: Session = Depends(get_db)):
             status_code=500,
             detail=f"Datenbankfehler: {str(e)}"
         )
+
+# Register routers
+app.include_router(api_router, prefix="/api", tags=["api"])
+app.include_router(mlops_router, prefix="/api/mlops", tags=["mlops"])
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000) 
