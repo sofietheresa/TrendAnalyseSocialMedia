@@ -33,8 +33,22 @@ CORS(app, resources={
     }
 })
 
+# Optimize Flask app configuration
+app.config.update(
+    JSONIFY_PRETTYPRINT_REGULAR=False,  # Disable pretty printing of JSON
+    JSON_SORT_KEYS=False,  # Disable JSON key sorting
+    PROPAGATE_EXCEPTIONS=True  # Better error handling
+)
+
+# Single database engine with connection pooling configuration
+db_engine = None
+
 def get_db_connection():
     try:
+        global db_engine
+        if db_engine is not None:
+            return db_engine
+
         url = os.getenv("DATABASE_URL")
         logger.info("Attempting to connect to database")
         
@@ -42,26 +56,25 @@ def get_db_connection():
             logger.error("DATABASE_URL environment variable is not set")
             raise ValueError("DATABASE_URL environment variable is not set")
         
-        # Log the database URL (but mask sensitive information)
-        parsed_url = urllib.parse.urlparse(url)
-        safe_url = f"postgresql://{parsed_url.username}:***@{parsed_url.hostname}:{parsed_url.port}/{parsed_url.path}"
-        logger.info(f"Database URL format: {safe_url}")
-        
-        engine = create_engine(url)
+        # Configure SQLAlchemy engine with connection pooling
+        db_engine = create_engine(
+            url,
+            pool_size=5,  # Reduced pool size
+            max_overflow=10,
+            pool_timeout=30,
+            pool_recycle=1800  # Recycle connections after 30 minutes
+        )
         
         # Test the connection
-        with engine.connect() as conn:
+        with db_engine.connect() as conn:
             conn.execute(text("SELECT 1"))
             logger.info("Successfully connected to database")
         
-        return engine
+        return db_engine
     except Exception as e:
         logger.error(f"Database connection error: {str(e)}")
         logger.error(traceback.format_exc())
         raise
-
-# Single database engine
-db_engine = None
 
 @app.route('/')
 def root():
