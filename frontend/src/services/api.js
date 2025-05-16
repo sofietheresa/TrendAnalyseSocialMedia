@@ -2,8 +2,11 @@ import axios from "axios";
 
 // API URL configuration - using a unified API that includes both main and drift API functionality
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000"; // FastAPI server
+// Explizit prüfen, ob DB-Endpunkte verwendet werden sollen
+const ENABLE_DB_ENDPOINTS = process.env.REACT_APP_ENABLE_DB_ENDPOINTS !== "false";
 
 console.log("API_URL set to:", API_URL);
+console.log("Using DB endpoints:", ENABLE_DB_ENDPOINTS ? "Yes" : "No");
 
 // Improved Axios configuration
 const api = axios.create({
@@ -304,35 +307,40 @@ export const fetchTopicModel = async (
       num_topics: numTopics,
     });
 
-    // Try direct DB endpoint first with explicit timeout
-    try {
-      console.log("Trying direct DB endpoint at /api/db/topic-model");
-      const response = await api.get("/api/db/topic-model", {
-        params: {
-          start_date: startDate,
-          end_date: endDate,
-          platforms: platforms.join(","),
-          num_topics: numTopics,
-        },
-        timeout: 60000, // 60 second timeout
-      });
+    // Vercel-Deployment sollte DB-Endpunkte überspringen
+    if (ENABLE_DB_ENDPOINTS) {
+      // Try direct DB endpoint first with explicit timeout
+      try {
+        console.log("Trying direct DB endpoint at /api/db/topic-model");
+        const response = await api.get("/api/db/topic-model", {
+          params: {
+            start_date: startDate,
+            end_date: endDate,
+            platforms: platforms.join(","),
+            num_topics: numTopics,
+          },
+          timeout: 60000, // 60 second timeout
+        });
 
-      console.log("DB Topic model response:", response.data);
+        console.log("DB Topic model response:", response.data);
 
-      // Check if topics is actually an array to avoid rendering issues
-      if (response.data && !Array.isArray(response.data.topics)) {
+        // Check if topics is actually an array to avoid rendering issues
+        if (response.data && !Array.isArray(response.data.topics)) {
+          console.warn(
+            "Invalid topics format in DB response:",
+            response.data.topics,
+          );
+          response.data.topics = [];
+        }
+
+        return response.data;
+      } catch (dbError) {
         console.warn(
-          "Invalid topics format in DB response:",
-          response.data.topics,
+          `DB endpoint failed: ${dbError.message}. Trying alternative endpoints...`,
         );
-        response.data.topics = [];
       }
-
-      return response.data;
-    } catch (dbError) {
-      console.warn(
-        `DB endpoint failed: ${dbError.message}. Trying alternative endpoints...`,
-      );
+    } else {
+      console.log("DB endpoints disabled, skipping DB access attempt");
     }
 
     // Try POST to /api/topic-model
@@ -706,26 +714,33 @@ export const fetchPredictions = async (startDate = null, endDate = null) => {
   try {
     // Always reset mock data status at start of request
     setMockDataStatus(false);
-
-    // Versuche zuerst, Vorhersagen direkt aus der PostgreSQL-DB zu holen
+    
     console.log("Fetching predictions with params:", { startDate, endDate });
+    
+    // Vercel-Deployment sollte DB-Endpunkte überspringen
+    if (ENABLE_DB_ENDPOINTS) {
+      // Versuche zuerst, Vorhersagen direkt aus der PostgreSQL-DB zu holen
+      try {
+        const response = await api.get("/api/db/predictions", {
+          params: {
+            start_date: startDate,
+            end_date: endDate,
+          },
+          timeout: 60000, // 60 second timeout
+        });
 
-    const response = await api.get("/api/db/predictions", {
-      params: {
-        start_date: startDate,
-        end_date: endDate,
-      },
-      timeout: 60000, // 60 second timeout
-    });
+        console.log("Received predictions from DB:", response.data);
+        return response.data;
+      } catch (error) {
+        console.error("Error fetching predictions from DB:", error);
+      }
+    } else {
+      console.log("DB endpoints disabled, skipping DB access attempt");
+    }
 
-    console.log("Received predictions from DB:", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching predictions from DB:", error);
-
-    // Versuche alternative Endpunkte, falls der Hauptendpunkt fehlschlägt
+    // Versuche alternative Endpunkte, falls der Hauptendpunkt fehlschlägt oder DB-Endpunkte deaktiviert sind
     try {
-      console.log("Trying alternative endpoint for predictions...");
+      console.log("Trying standard API endpoint for predictions...");
       const altResponse = await api.get("/api/predictions", {
         params: {
           start_date: startDate,
@@ -734,10 +749,10 @@ export const fetchPredictions = async (startDate = null, endDate = null) => {
         timeout: 60000, // 60 second timeout
       });
 
-      console.log("Alternative predictions response:", altResponse.data);
+      console.log("Standard API predictions response:", altResponse.data);
       return altResponse.data;
     } catch (altError) {
-      console.error("Error fetching from alternative endpoint:", altError);
+      console.error("Error fetching from standard endpoint:", altError);
 
       // Last attempt at a more basic endpoint
       try {
@@ -757,6 +772,9 @@ export const fetchPredictions = async (startDate = null, endDate = null) => {
         );
       }
     }
+  } catch (error) {
+    console.error("All prediction endpoints failed:", error);
+    throw error;
   }
 };
 
@@ -807,14 +825,16 @@ export const fetchPipelineExecutions = async (pipelineId) => {
     const url = `/api/mlops/pipelines/${pipelineId}/executions`;
     console.log(`Fetching pipeline executions from: ${url}`);
 
-    // Use the unified API
-    const response = await api.get(url);
+    // Use the unified API with a longer timeout
+    const response = await api.get(url, {
+      timeout: 45000, // 45 seconds timeout for potentially slow responses
+    });
     console.log("Pipeline executions response:", response.data);
 
     // Ensure the response is an array before returning
     if (!response.data || !Array.isArray(response.data)) {
       throw new Error(
-        `Invalid response format for pipeline executions: expected array`,
+        `Invalid response format for pipeline executions: expected array`
       );
     }
 

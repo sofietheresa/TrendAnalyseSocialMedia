@@ -1375,7 +1375,10 @@ async def get_pipeline(pipeline_id: str):
         }
     }
     
-    return pipelines
+    if pipeline_id not in pipelines:
+        raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_id} not found")
+    
+    return pipelines[pipeline_id]
 
 @app.get("/api/mlops/pipelines/{pipeline_id}/executions")
 async def get_pipeline_executions(pipeline_id: str):
@@ -1384,6 +1387,54 @@ async def get_pipeline_executions(pipeline_id: str):
     """
     logger.info(f"Request for executions of pipeline: {pipeline_id}")
     
+    try:
+        # Versuche, die Pipeline-Ausführungen aus der Datenbank zu holen
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+        
+        # SQL-Abfrage für die Pipeline-Ausführungen
+        cursor.execute("""
+            SELECT 
+                execution_id,
+                pipeline_id,
+                start_time,
+                end_time,
+                status,
+                trigger_type
+            FROM 
+                ml_pipeline_executions
+            WHERE 
+                pipeline_id = %s
+            ORDER BY 
+                start_time DESC
+        """, (pipeline_id,))
+        
+        executions = cursor.fetchall()
+        
+        if executions and len(executions) > 0:
+            logger.info(f"Found {len(executions)} executions for pipeline {pipeline_id} in database")
+            
+            # Format für die API-Antwort umwandeln
+            formatted_executions = []
+            
+            for execution in executions:
+                formatted_executions.append({
+                    "id": execution['execution_id'],
+                    "pipelineId": execution['pipeline_id'],
+                    "startTime": execution['start_time'].isoformat() if execution['start_time'] else None,
+                    "endTime": execution['end_time'].isoformat() if execution['end_time'] else None,
+                    "status": execution['status'],
+                    "trigger": execution['trigger_type']
+                })
+            
+            cursor.close()
+            return formatted_executions
+    
+    except Exception as e:
+        logger.error(f"Error retrieving executions for pipeline {pipeline_id} from database: {str(e)}")
+        logger.info(f"Falling back to mock execution data for pipeline {pipeline_id}")
+    
+    # Mock-Daten als Fallback verwenden
     # Current date for realistic timestamps
     current_time = datetime.now()
     one_day_ago = current_time - timedelta(days=1)
@@ -1400,6 +1451,10 @@ async def get_pipeline_executions(pipeline_id: str):
     ]
     
     executions = [execution for execution in all_executions if execution["pipelineId"] == pipeline_id]
+    
+    # Add is_mock_data flag
+    for execution in executions:
+        execution["is_mock_data"] = True
     
     return executions
 
@@ -1484,7 +1539,8 @@ async def get_model_metrics(
             "topic_separation": 0.68,
             "avg_topic_similarity": 0.43,
             "execution_time": 183.4,
-            "topic_quality": 0.75
+            "topic_quality": 0.75,
+            "is_mock_data": True
         }
     elif model_name == "sentiment_analysis":
         return {
@@ -1496,7 +1552,8 @@ async def get_model_metrics(
             "execution_time": 162.7,
             "uniqueness_score": 0.79,
             "silhouette_score": 0.67,
-            "topic_separation": 0.72
+            "topic_separation": 0.72,
+            "is_mock_data": True
         }
     else:
         return {
@@ -1508,7 +1565,8 @@ async def get_model_metrics(
             "accuracy": 0.91,
             "precision": 0.88,
             "recall": 0.85,
-            "f1_score": 0.86
+            "f1_score": 0.86,
+            "is_mock_data": True
         }
 
 @app.get("/api/mlops/models/{model_name}/versions")
