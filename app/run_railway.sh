@@ -4,6 +4,13 @@
 echo "Starting Railway deployment..."
 echo "Current directory: $(pwd)"
 
+# Installiere NLTK und lade benötigte Daten herunter
+echo "Setting up NLTK..."
+python setup_nltk.py
+if [ $? -ne 0 ]; then
+    echo "Warning: NLTK setup failed, but continuing anyway"
+fi
+
 # Port aus Umgebungsvariable übernehmen oder Standard verwenden
 PORT=${PORT:-8000}
 echo "Using port: $PORT"

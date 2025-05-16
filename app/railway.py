@@ -22,7 +22,7 @@ PORT = 8000
 
 def check_dependencies():
     """Überprüfe, ob alle notwendigen Abhängigkeiten installiert sind"""
-    required_modules = ["fastapi", "uvicorn", "sqlalchemy", "pandas", "pydantic"]
+    required_modules = ["fastapi", "uvicorn", "sqlalchemy", "pandas", "pydantic", "nltk"]
     missing_modules = []
     
     for module in required_modules:
@@ -67,6 +67,23 @@ def main():
     if not check_dependencies():
         logger.error("Abhängigkeiten fehlen, beende Programm")
         sys.exit(1)
+    
+    # Stelle sicher, dass NLTK-Daten vorhanden sind
+    try:
+        logger.info("Checking NLTK data...")
+        import nltk
+        try:
+            nltk.data.find('tokenizers/punkt')
+            nltk.data.find('taggers/averaged_perceptron_tagger')
+            logger.info("NLTK data already exists")
+        except LookupError:
+            logger.info("Downloading NLTK data...")
+            nltk.download('punkt')
+            nltk.download('averaged_perceptron_tagger')
+            logger.info("NLTK data downloaded successfully")
+    except Exception as e:
+        logger.error(f"Error with NLTK data: {e}")
+        # Nicht beenden, da es möglicherweise noch funktionieren könnte
     
     # Setze PORT in Umgebungsvariable
     os.environ["PORT"] = str(PORT)

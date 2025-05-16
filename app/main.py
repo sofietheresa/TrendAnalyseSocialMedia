@@ -15,6 +15,14 @@ import random
 import nltk
 from nltk.tag import pos_tag
 
+# NLTK-Daten herunterladen (nur einmalig nötig)
+try:
+    nltk.data.find('tokenizers/punkt')
+    nltk.data.find('taggers/averaged_perceptron_tagger')
+except LookupError:
+    nltk.download('punkt')
+    nltk.download('averaged_perceptron_tagger')
+
 # Logging-Konfiguration
 logging.basicConfig(
     level=logging.DEBUG,
@@ -498,14 +506,6 @@ async def get_topic_model(request: TopicModelRequest):
         # Simulierte Ergebnisse basierend auf häufigen Wörtern für die Demo
         from collections import Counter
         import re
-        
-        # Lade benötigte NLTK-Komponenten, wenn sie nicht vorhanden sind
-        try:
-            nltk.data.find('tokenizers/punkt')
-            nltk.data.find('taggers/averaged_perceptron_tagger')
-        except LookupError:
-            nltk.download('punkt')
-            nltk.download('averaged_perceptron_tagger')
         
         # Einfache Textbereinigung
         def clean_text(text):
