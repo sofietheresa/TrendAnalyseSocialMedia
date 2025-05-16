@@ -597,49 +597,71 @@ async def get_topic_model(request: TopicModelRequest):
         noun_counts = Counter(all_nouns)
         top_nouns = noun_counts.most_common(100)
         
-        # Topic-Gruppen erzeugen (simuliert)
-        num_topics = min(request.num_topics, 5)  # Maximal 5 Topics
-        topic_keywords = {}
-        
-        # Simulierte Topic-Kohärenz-Metriken
-        topic_coherence = random.uniform(0.35, 0.6)
-        topic_diversity = random.uniform(0.7, 0.9)
-        
-        # Nomen in Topic-Gruppen aufteilen
-        nouns_per_topic = 10
-        for i in range(num_topics):
-            start_idx = i * nouns_per_topic
-            end_idx = start_idx + nouns_per_topic
-            if start_idx < len(top_nouns):
-                words = [word for word, count in top_nouns[start_idx:end_idx]]
-                topic_keywords[i] = words
-        
-        # Topic-Namen generieren - nur einzelne Nomen verwenden
-        topic_names = {}
-        for topic_id, words in topic_keywords.items():
-            if len(words) > 0:
-                # Verwende nur das erste Nomen als Themenname (stellen sicher, dass es ein Nomen ist)
-                # POS-Tagging-Check
-                try:
-                    first_word = words[0]
-                    pos = pos_tag([first_word])[0][1]
-                    if pos.startswith('NN'):
-                        topic_names[topic_id] = first_word.capitalize()
-                    else:
-                        # Suche nach dem ersten Wort, das ein Nomen ist
-                        noun_found = False
-                        for word in words:
-                            pos = pos_tag([word])[0][1]
-                            if pos.startswith('NN'):
-                                topic_names[topic_id] = word.capitalize()
-                                noun_found = True
-                                break
-                        if not noun_found:
-                            topic_names[topic_id] = f"Topic {topic_id+1}"
-                except:
+        # Wenn keine ausreichenden Nomen gefunden wurden, Fallback-Themen verwenden
+        if len(top_nouns) < 10:
+            logger.warning(f"Zu wenige Nomen gefunden ({len(top_nouns)}), verwende Fallback-Themen")
+            # Fallback-Themen (immer verfügbar)
+            fallback_themes = [
+                ("technology", ["technology", "innovation", "digital", "future", "devices", "software", "hardware", "internet", "computing", "electronics"]),
+                ("entertainment", ["entertainment", "movies", "music", "shows", "streaming", "performance", "concert", "celebrity", "cinema", "series"]),
+                ("health", ["health", "wellness", "fitness", "medicine", "exercise", "nutrition", "diet", "wellbeing", "healthcare", "lifestyle"]),
+                ("science", ["science", "research", "discovery", "laboratory", "experiment", "academic", "knowledge", "innovation", "theory", "physics"]),
+                ("gaming", ["gaming", "games", "console", "player", "esports", "virtual", "multiplayer", "competition", "character", "simulation"])
+            ]
+            
+            # Verwende Fallback-Themen
+            topic_keywords = {}
+            for i, (theme_name, keywords) in enumerate(fallback_themes[:request.num_topics]):
+                topic_keywords[i] = keywords
+            
+            # Verwende Fallback-Namen
+            topic_names = {}
+            for i, (theme_name, _) in enumerate(fallback_themes[:request.num_topics]):
+                topic_names[i] = theme_name.capitalize()
+        else:
+            # Topic-Gruppen erzeugen
+            num_topics = min(request.num_topics, 5)  # Maximal 5 Topics
+            topic_keywords = {}
+            
+            # Simulierte Topic-Kohärenz-Metriken
+            topic_coherence = random.uniform(0.35, 0.6)
+            topic_diversity = random.uniform(0.7, 0.9)
+            
+            # Nomen in Topic-Gruppen aufteilen
+            nouns_per_topic = 10
+            for i in range(num_topics):
+                start_idx = i * nouns_per_topic
+                end_idx = start_idx + nouns_per_topic
+                if start_idx < len(top_nouns):
+                    words = [word for word, count in top_nouns[start_idx:end_idx]]
+                    topic_keywords[i] = words
+            
+            # Topic-Namen generieren - nur einzelne Nomen verwenden
+            topic_names = {}
+            for topic_id, words in topic_keywords.items():
+                if len(words) > 0:
+                    # Verwende nur das erste Nomen als Themenname (stellen sicher, dass es ein Nomen ist)
+                    # POS-Tagging-Check
+                    try:
+                        first_word = words[0]
+                        pos = pos_tag([first_word])[0][1]
+                        if pos.startswith('NN'):
+                            topic_names[topic_id] = first_word.capitalize()
+                        else:
+                            # Suche nach dem ersten Wort, das ein Nomen ist
+                            noun_found = False
+                            for word in words:
+                                pos = pos_tag([word])[0][1]
+                                if pos.startswith('NN'):
+                                    topic_names[topic_id] = word.capitalize()
+                                    noun_found = True
+                                    break
+                            if not noun_found:
+                                topic_names[topic_id] = f"Topic {topic_id+1}"
+                    except:
+                        topic_names[topic_id] = f"Topic {topic_id+1}"
+                else:
                     topic_names[topic_id] = f"Topic {topic_id+1}"
-            else:
-                topic_names[topic_id] = f"Topic {topic_id+1}"
         
         # Ergebnisse formatieren
         topics_result = []

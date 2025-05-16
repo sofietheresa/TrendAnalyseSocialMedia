@@ -248,7 +248,27 @@ function configureMockServer(app) {
   app.post('/api/topic-model', (req, res) => {
     const { start_date, end_date, platforms, num_topics } = req.body;
     
-    // Topic model response
+    // Generiere Datumsbereich für den Topic-Verlauf
+    const currentDate = new Date();
+    const startDate = start_date ? new Date(start_date) : new Date(currentDate.getTime() - 7*24*60*60*1000);
+    const endDate = end_date ? new Date(end_date) : new Date();
+    
+    // Erstelle ein Array mit allen Tagen im Bereich
+    const dateArray = [];
+    let tempDate = new Date(startDate);
+    while (tempDate <= endDate) {
+      dateArray.push(tempDate.toISOString().split('T')[0]);
+      tempDate = new Date(tempDate.setDate(tempDate.getDate() + 1));
+    }
+    
+    // Sicherstellen, dass mindestens 7 Tage vorhanden sind für die Visualisierung
+    while (dateArray.length < 7) {
+      const lastDate = new Date(dateArray[dateArray.length - 1]);
+      const nextDate = new Date(lastDate.setDate(lastDate.getDate() + 1));
+      dateArray.push(nextDate.toISOString().split('T')[0]);
+    }
+    
+    // Topic model response - immer 5 Topics liefern
     const topicResponse = {
       topics: [
         {
@@ -296,29 +316,32 @@ function configureMockServer(app) {
         "youtube", "tiktok", "reddit", "video", "watch", "follow", "post", "comment", 
         "user", "channel", "subscribers", "instagram", "twitter", "facebook"
       ],
-      topic_counts_by_date: {
-        "0": { 
-          "2023-12-09": 58, "2023-12-10": 62, "2023-12-11": 59, 
-          "2023-12-12": 65, "2023-12-13": 71, "2023-12-14": 68, "2023-12-15": 49 
-        },
-        "1": { 
-          "2023-12-09": 51, "2023-12-10": 54, "2023-12-11": 57, 
-          "2023-12-12": 53, "2023-12-13": 59, "2023-12-14": 63, "2023-12-15": 50 
-        },
-        "2": { 
-          "2023-12-09": 46, "2023-12-10": 48, "2023-12-11": 52, 
-          "2023-12-12": 54, "2023-12-13": 55, "2023-12-14": 57, "2023-12-15": 44 
-        },
-        "3": { 
-          "2023-12-09": 38, "2023-12-10": 41, "2023-12-11": 39, 
-          "2023-12-12": 43, "2023-12-13": 45, "2023-12-14": 48, "2023-12-15": 35 
-        },
-        "4": { 
-          "2023-12-09": 32, "2023-12-10": 34, "2023-12-11": 36, 
-          "2023-12-12": 35, "2023-12-13": 38, "2023-12-14": 39, "2023-12-15": 31 
-        }
-      }
+      topic_counts_by_date: {}
     };
+    
+    // Generiere für jeden Topic den zeitlichen Verlauf
+    topicResponse.topics.forEach((topic, index) => {
+      const topicId = topic.id;
+      topicResponse.topic_counts_by_date[topicId] = {};
+      
+      // Basiswert für dieses Topic
+      const baseValue = 40 + Math.floor(Math.random() * 30) * (5 - index);
+      
+      // Für jeden Tag einen Wert erzeugen mit leichtem Trend
+      dateArray.forEach((date, i) => {
+        if (i === 0) {
+          // Startwert
+          topicResponse.topic_counts_by_date[topicId][date] = baseValue;
+        } else {
+          // Vorheriger Wert plus Trend plus Zufall
+          const prevValue = topicResponse.topic_counts_by_date[topicId][dateArray[i-1]];
+          const trend = (Math.random() * 0.2 - 0.05) * prevValue;  // Leichte Steigung
+          const noise = (Math.random() * 0.2 - 0.1) * prevValue;    // Zufällige Schwankung
+          const newValue = Math.max(1, Math.floor(prevValue + trend + noise));  // Nie unter 1
+          topicResponse.topic_counts_by_date[topicId][date] = newValue;
+        }
+      });
+    });
     
     res.json(topicResponse);
   });

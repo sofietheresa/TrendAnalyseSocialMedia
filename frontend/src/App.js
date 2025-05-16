@@ -83,20 +83,20 @@ const Homepage = () => {
           console.error("Error from topic model API:", response.error);
         } else {
           if (Array.isArray(response.topics)) {
-            // Filter out topics with id -1 or name "Other" or empty names
+            // Weniger strenge Filterung für Topics
             const filteredTopics = response.topics.filter(topic => 
               topic.id !== -1 && 
-              topic.name !== "Other" && 
-              topic.name !== "-1" &&
               topic.name && 
-              topic.name.trim() !== '' &&
-              topic.name.length >= 3
+              topic.name.trim() !== ''
             );
             
-            // Sort by weight (importance) if available
-            const sortedTopics = filteredTopics.sort((a, b) => 
-              (b.weight || 0) - (a.weight || 0)
-            );
+            // Falls keine Topics übrig bleiben und die ursprüngliche Liste nicht leer war,
+            // verwende die ursprüngliche Liste ohne Filterung
+            const sortedTopics = filteredTopics.length > 0 
+              ? filteredTopics.sort((a, b) => (b.weight || 0) - (a.weight || 0))
+              : response.topics.length > 0
+                ? response.topics.sort((a, b) => (b.weight || 0) - (a.weight || 0))
+                : [];
             
             setTopics(sortedTopics);
             
@@ -164,23 +164,21 @@ const Homepage = () => {
     console.log("Processing trends for topics:", topTopics);
     console.log("With counts by date:", countsByDate);
     
-    // Always use exactly 5 topics for consistency, don't filter by count
+    // Weniger strenge Filterung für Topics im Chart
     const filteredTopics = topTopics
-      .filter(topic => 
-        topic.id !== -1 && 
-        topic.name !== "Other" && 
-        topic.name !== "-1" && 
-        topic.name && 
-        topic.name.trim() !== '' &&
-        topic.name.length >= 3
-      )
+      .filter(topic => topic.name && topic.name.trim() !== '')
       .slice(0, 5);  // Always take top 5
+    
+    // Falls keine Topics gefiltert werden konnten, aber die ursprüngliche Liste nicht leer ist
+    const topicsToUse = filteredTopics.length > 0 
+      ? filteredTopics 
+      : topTopics.slice(0, 5);
     
     // Get all unique dates across all topics
     const allDates = new Set();
     
     // For each topic, collect all available dates
-    filteredTopics.forEach(topic => {
+    topicsToUse.forEach(topic => {
       if (topic.id && countsByDate[topic.id]) {
         Object.keys(countsByDate[topic.id]).forEach(date => allDates.add(date));
       } else {
@@ -196,10 +194,10 @@ const Homepage = () => {
       return;
     }
     
-    // Prepare chart data - ensure we include all 5 topics
+    // Prepare chart data - ensure we include all available topics
     const trendsData = {
       labels: sortedDates.map(date => new Date(date).toLocaleDateString('de-DE')),
-      datasets: filteredTopics.map((topic, index) => {
+      datasets: topicsToUse.map((topic, index) => {
         // Generate colors based on index
         const colors = [
           '#232252', // dark blue
@@ -507,8 +505,9 @@ const Homepage = () => {
         </div>
       ) : !loading && !error ? (
         <div className="no-data-message">
-          <p>No trending topics found for the selected time period.</p>
-          <p>Try selecting a different date range or check back later.</p>
+          <p>Keine Trending-Topics gefunden für den ausgewählten Zeitraum.</p>
+          <p>Bitte wähle einen anderen Zeitraum oder versuche es später erneut.</p>
+          <p className="small-hint">Wenn du keine Zeitraum gewählt hast, werden die Daten der letzten 3 Tage analysiert.</p>
         </div>
       ) : null}
     </main>
