@@ -381,29 +381,58 @@ export const fetchTopicModel = async (startDate = null, endDate = null, platform
 };
 
 /**
- * Fetch model drift data
+ * Verbesserte Funktion zum Abrufen von Modell-Drift-Daten direkt aus der DB
  * 
- * @param {string} modelName - Model name
- * @param {string} version - Optional model version
- * @returns {Promise<Object>} - Drift metrics
+ * @param {string} modelName - Modellname
+ * @param {string} version - Optionale Modellversion
+ * @returns {Promise<Object>} - Drift-Metriken
  */
 export const fetchModelDrift = async (modelName, version = null) => {
   try {
-    const url = `/api/mlops/models/${modelName}/drift${version ? `?version=${version}` : ''}`;
-    console.log(`Fetching model drift from: ${url}`);
+    // Always reset mock data status at start of request
+    setMockDataStatus(false);
     
-    const response = await api.get(url);
-    console.log('Model drift response:', response.data);
+    // Versuche zuerst DB-Endpunkt
+    try {
+      const dbUrl = `/api/db/models/${modelName}/drift${version ? `?version=${version}` : ''}`;
+      console.log(`Abrufen von DB-Modell-Drift-Daten von: ${dbUrl}`);
+      
+      const dbResponse = await api.get(dbUrl, { timeout: 30000 });
+      console.log('DB-Modell-Drift-Antwort:', dbResponse.data);
+      return dbResponse.data;
+    } catch (dbError) {
+      console.warn(`DB-Endpunkt für Drift fehlgeschlagen: ${dbError.message}`);
+    }
+    
+    // Versuche ML-Ops API-Endpunkt
+    const url = `/api/mlops/models/${modelName}/drift${version ? `?version=${version}` : ''}`;
+    console.log(`Abrufen von ML-Ops-Modell-Drift-Daten von: ${url}`);
+    
+    const response = await api.get(url, { timeout: 30000 });
+    console.log('ML-Ops-Modell-Drift-Antwort:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error fetching model drift data:', error);
-    // Return empty data instead of mock data
-    return { 
-      timestamp: "",
-      dataset_drift: false,
-      share_of_drifted_columns: 0,
-      drifted_columns: []
-    };
+    console.error('Fehler beim Abrufen von Modell-Drift-Daten:', error);
+    
+    // Versuche alternativen Endpunkt als letzten Ausweg
+    try {
+      console.log(`Abrufen von Drift-Daten über Fallback-Endpunkt für ${modelName}`);
+      const fallbackUrl = `/api/models/${modelName}/drift${version ? `?version=${version}` : ''}`;
+      const fallbackResponse = await api.get(fallbackUrl, { timeout: 30000 });
+      console.log('Fallback-Drift-Antwort:', fallbackResponse.data);
+      return fallbackResponse.data;
+    } catch (fallbackError) {
+      console.error('Fallback-Endpunkt für Drift-Daten fehlgeschlagen:', fallbackError);
+      
+      // Leere Daten zurückgeben anstatt Mock-Daten
+      return { 
+        timestamp: "",
+        dataset_drift: false,
+        share_of_drifted_columns: 0,
+        drifted_columns: [],
+        confusionMatrix: null
+      };
+    }
   }
 };
 
@@ -627,41 +656,97 @@ export const executePipeline = async (pipelineId) => {
 };
 
 /**
- * Fetch model versions
+ * Verbesserte Funktion zum Abrufen von Modellversionen direkt aus der DB
  * 
- * @param {string} modelName - Model name
- * @returns {Promise<Array>} - Model versions
+ * @param {string} modelName - Modellname
+ * @returns {Promise<Array>} - Modellversionen
  */
 export const fetchModelVersions = async (modelName) => {
   try {
-    console.log(`Fetching model versions for: ${modelName}`);
-    const response = await api.get(`/api/mlops/models/${modelName}/versions`);
-    console.log('Model versions response:', response.data);
-    // Ensure we always return an array
+    // Always reset mock data status at start of request
+    setMockDataStatus(false);
+    
+    // Versuche zuerst DB-Endpunkt
+    try {
+      console.log(`Abrufen von DB-Modellversionen für: ${modelName}`);
+      const dbResponse = await api.get(`/api/db/models/${modelName}/versions`, { timeout: 30000 });
+      console.log('DB-Modellversionen-Antwort:', dbResponse.data);
+      
+      // Stelle sicher, dass wir immer ein Array zurückgeben
+      if (Array.isArray(dbResponse.data) && dbResponse.data.length > 0) {
+        return dbResponse.data;
+      }
+      console.warn('Keine gültigen Versionen von DB-Endpunkt erhalten');
+    } catch (dbError) {
+      console.warn(`DB-Endpunkt für Versionen fehlgeschlagen: ${dbError.message}`);
+    }
+    
+    // Versuche ML-Ops API-Endpunkt
+    console.log(`Abrufen von ML-Ops-Modellversionen für: ${modelName}`);
+    const response = await api.get(`/api/mlops/models/${modelName}/versions`, { timeout: 30000 });
+    console.log('ML-Ops-Modellversionen-Antwort:', response.data);
+    
+    // Stelle sicher, dass wir immer ein Array zurückgeben
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
-    console.error('Error fetching model versions:', error);
-    return [];
+    console.error('Fehler beim Abrufen von Modellversionen:', error);
+    
+    // Versuche alternativen Endpunkt als letzten Ausweg
+    try {
+      console.log(`Abrufen von Versionen über Fallback-Endpunkt für ${modelName}`);
+      const fallbackResponse = await api.get(`/api/models/${modelName}/versions`, { timeout: 30000 });
+      console.log('Fallback-Versionen-Antwort:', fallbackResponse.data);
+      return Array.isArray(fallbackResponse.data) ? fallbackResponse.data : [];
+    } catch (fallbackError) {
+      console.error('Fallback-Endpunkt für Versionen fehlgeschlagen:', fallbackError);
+      return [];
+    }
   }
 };
 
 /**
- * Fetch model metrics
+ * Verbesserte Funktion zum Abrufen von Modellmetriken direkt aus der DB
  * 
- * @param {string} modelName - Model name
- * @param {string} version - Optional model version
- * @returns {Promise<Object>} - Model metrics
+ * @param {string} modelName - Modellname
+ * @param {string} version - Optionale Modellversion
+ * @returns {Promise<Object>} - Modellmetriken
  */
 export const fetchModelMetrics = async (modelName, version = null) => {
   try {
+    // Always reset mock data status at start of request
+    setMockDataStatus(false);
+
+    // Versuche zuerst DB-Endpunkt
+    try {
+      console.log(`Abrufen von DB-Modellmetriken für ${modelName} ${version ? `(Version: ${version})` : ''}`);
+      const dbUrl = `/api/db/models/${modelName}/metrics${version ? `?version=${version}` : ''}`;
+      const dbResponse = await api.get(dbUrl, { timeout: 30000 });
+      console.log('DB-Modellmetriken-Antwort:', dbResponse.data);
+      return dbResponse.data;
+    } catch (dbError) {
+      console.warn(`DB-Endpunkt für Metriken fehlgeschlagen: ${dbError.message}`);
+    }
+
+    // Versuche ML-Ops API-Endpunkt
     const url = `/api/mlops/models/${modelName}/metrics${version ? `?version=${version}` : ''}`;
-    console.log(`Fetching model metrics from: ${url}`);
-    const response = await api.get(url);
-    console.log('Model metrics response:', response.data);
+    console.log(`Abrufen von ML-Ops-Modellmetriken von: ${url}`);
+    const response = await api.get(url, { timeout: 30000 });
+    console.log('ML-Ops-Modellmetriken-Antwort:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error fetching model metrics:', error);
-    return {};
+    console.error('Fehler beim Abrufen von Modellmetriken:', error);
+    
+    // Versuche alternativen Endpunkt als letzten Ausweg
+    try {
+      console.log(`Abrufen von Metriken über Fallback-Endpunkt für ${modelName}`);
+      const fallbackUrl = `/api/models/${modelName}/evaluation`;
+      const fallbackResponse = await api.get(fallbackUrl, { timeout: 30000 });
+      console.log('Fallback-Metriken-Antwort:', fallbackResponse.data);
+      return fallbackResponse.data;
+    } catch (fallbackError) {
+      console.error('Fallback-Endpunkt für Metriken fehlgeschlagen:', fallbackError);
+      return {};
+    }
   }
 };
 
