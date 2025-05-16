@@ -294,12 +294,32 @@ def train_topic_model(data=None):
     
     # Create topic model pipeline
     n_topics = len(set(y_train))
+    
+    # Definiere erweiterte Stop-Words-Liste
+    stop_words = [
+        # Allgemeine Stopwörter
+        'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until', 'while',
+        'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through',
+        'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in',
+        'out', 'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here',
+        'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few',
+        'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own',
+        'same', 'so', 'than', 'too', 'very', 's', 't', 'can', 'will', 'just', 'don',
+        'should', 'now', 'im', 'ive', 'youre', 'youve',
+        
+        # Social Media spezifische Begriffe
+        'like', 'follow', 'share', 'comment', 'subscribe', 'subscribers', 'user', 'users',
+        'post', 'posts', 'video', 'videos', 'channel', 'channels', 'account', 'accounts',
+        'reddit', 'tiktok', 'youtube', 'instagram', 'twitter', 'facebook', 'social',
+        'media', 'trending', 'viral', 'influencer', 'content', 'creator', 'stream', 'live'
+    ]
+    
     topic_model = Pipeline([
         ('tfidf', TfidfVectorizer(
             max_df=0.95, 
             min_df=2,
             max_features=1000,
-            stop_words='english'
+            stop_words=stop_words
         )),
         ('nmf', NMF(n_components=n_topics, random_state=42))
     ])

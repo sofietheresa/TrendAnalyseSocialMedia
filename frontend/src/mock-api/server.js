@@ -292,6 +292,10 @@ function configureMockServer(app) {
         start_date: start_date || new Date(Date.now() - 7*24*60*60*1000).toISOString().split('T')[0],
         end_date: end_date || new Date().toISOString().split('T')[0]
       },
+      special_stopwords: [
+        "youtube", "tiktok", "reddit", "video", "watch", "follow", "post", "comment", 
+        "user", "channel", "subscribers", "instagram", "twitter", "facebook"
+      ],
       topic_counts_by_date: {
         "0": { 
           "2023-12-09": 58, "2023-12-10": 62, "2023-12-11": 59, 

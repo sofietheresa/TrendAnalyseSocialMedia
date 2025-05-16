@@ -526,12 +526,26 @@ async def get_topic_model(request: TopicModelRequest):
         ]
         
         # Stopwörter
-        stopwords = ["the", "and", "a", "to", "of", "in", "i", "it", "is", "that", "this", 
-                    "for", "with", "on", "you", "was", "be", "are", "have", "my", "at", "not", 
-                    "but", "we", "they", "so", "what", "all", "me", "like", "just", "do", "can", 
-                    "or", "about", "would", "from", "an", "as", "your", "if", "will", "there", 
-                    "by", "how", "get", "amp", "im", "its", "http", "https", "com", "www", "youtube",
-                    "tiktok", "reddit", "video", "watch", "follow", "post", "comment", "user", "channel"]
+        stopwords = [
+            # Artikel und häufige Wörter
+            "the", "and", "a", "to", "of", "in", "i", "it", "is", "that", "this", 
+            "for", "with", "on", "you", "was", "be", "are", "have", "my", "at", "not", 
+            "but", "we", "they", "so", "what", "all", "me", "like", "just", "do", "can", 
+            "or", "about", "would", "from", "an", "as", "your", "if", "will", "there", 
+            "by", "how", "get",
+            
+            # Social Media spezifische Begriffe
+            "amp", "im", "its", "http", "https", "com", "www", "youtube",
+            "tiktok", "reddit", "video", "watch", "follow", "post", "comment", 
+            "user", "channel", "subscribers"
+        ]
+        
+        # Spezielle Social-Media-Stopwords für das Frontend
+        special_stopwords = [
+            "amp", "im", "its", "http", "https", "com", "www", "youtube",
+            "tiktok", "reddit", "video", "watch", "follow", "post", "comment", 
+            "user", "channel", "subscribers"
+        ]
         
         # Funktion, um nur Nomen zu extrahieren
         def extract_nouns(text_list):
@@ -555,17 +569,22 @@ async def get_topic_model(request: TopicModelRequest):
                     all_nouns.extend(nouns)
                 except Exception as e:
                     logger.warning(f"Fehler beim POS-Tagging: {e}")
-                    # Im Fehlerfall versuchen wir, Wörter basierend auf Länge und Häufigkeit zu filtern
-                    # Dies ist ein Fallback und nicht so präzise wie POS-Tagging
+                    # Im Fehlerfall versuchen wir, POS-Tagging für einzelne Wörter durchzuführen
+                    # Dies ist ein Fallback und immer noch auf Nomen beschränkt
                     try:
                         clean = clean_text(text)
                         words = clean.split()
-                        # Längere Wörter mit höherer Wahrscheinlichkeit Nomen
-                        fallback_nouns = [word.lower() for word in words 
-                                         if len(word) > 4 
-                                         and word.lower() not in stopwords 
-                                         and word.lower() not in generic_nouns]
-                        all_nouns.extend(fallback_nouns)
+                        
+                        # Versuche, einzelne Wörter zu taggen
+                        for word in words:
+                            if len(word) > 3 and word.lower() not in stopwords and word.lower() not in generic_nouns:
+                                try:
+                                    tag = pos_tag([word])[0][1]
+                                    if tag.startswith('NN'):
+                                        all_nouns.append(word.lower())
+                                except:
+                                    # Wenn das Tagging fehlschlägt, ignoriere das Wort
+                                    pass
                     except Exception as fallback_error:
                         logger.error(f"Auch Fallback-Methode fehlgeschlagen: {fallback_error}")
             
@@ -599,10 +618,28 @@ async def get_topic_model(request: TopicModelRequest):
         topic_names = {}
         for topic_id, words in topic_keywords.items():
             if len(words) > 0:
-                # Verwende nur das erste Nomen als Themenname
-                topic_names[topic_id] = words[0].capitalize()
+                # Verwende nur das erste Nomen als Themenname (stellen sicher, dass es ein Nomen ist)
+                # POS-Tagging-Check
+                try:
+                    first_word = words[0]
+                    pos = pos_tag([first_word])[0][1]
+                    if pos.startswith('NN'):
+                        topic_names[topic_id] = first_word.capitalize()
+                    else:
+                        # Suche nach dem ersten Wort, das ein Nomen ist
+                        noun_found = False
+                        for word in words:
+                            pos = pos_tag([word])[0][1]
+                            if pos.startswith('NN'):
+                                topic_names[topic_id] = word.capitalize()
+                                noun_found = True
+                                break
+                        if not noun_found:
+                            topic_names[topic_id] = f"Topic {topic_id+1}"
+                except:
+                    topic_names[topic_id] = f"Topic {topic_id+1}"
             else:
-                topic_names[topic_id] = f"Topic {topic_id}"
+                topic_names[topic_id] = f"Topic {topic_id+1}"
         
         # Ergebnisse formatieren
         topics_result = []
@@ -665,7 +702,8 @@ async def get_topic_model(request: TopicModelRequest):
                 "start_date": start_date.strftime('%Y-%m-%d'),
                 "end_date": end_date.strftime('%Y-%m-%d')
             },
-            "topic_counts_by_date": topic_counts_by_date
+            "topic_counts_by_date": topic_counts_by_date,
+            "special_stopwords": special_stopwords  # Füge die speziellen Stopwords hinzu
         }
     except Exception as e:
         logger.error(f"Fehler im Topic-Model-Endpunkt: {str(e)}")

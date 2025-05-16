@@ -49,6 +49,7 @@ const Homepage = () => {
   const [topicCounts, setTopicCounts] = useState({});
   const [topicTrends, setTopicTrends] = useState([]);
   const [topicSentiments, setTopicSentiments] = useState({});
+  const [specialStopwords, setSpecialStopwords] = useState([]);
 
   // Get sentiment emoji based on sentiment score
   const getSentimentEmoji = (sentiment) => {
@@ -105,6 +106,11 @@ const Homepage = () => {
               
               // Process topic trends data for the chart
               processTopicTrends(sortedTopics, response.topic_counts_by_date);
+            }
+            
+            // Check for special stopwords
+            if (response.special_stopwords && Array.isArray(response.special_stopwords)) {
+              setSpecialStopwords(response.special_stopwords);
             }
             
             // Get sentiment data from response if available, otherwise generate mock data
@@ -324,7 +330,54 @@ const Homepage = () => {
     }
   };
 
-    return (    <main className="app-content">      {/* Title with proper margin for fixed navbar */}      <h1 className="main-title" style={{ marginTop: '20px', marginBottom: '40px' }}>        <span style={{ fontWeight: 900, letterSpacing: '0.03em' }}>SOCIAL MEDIA</span>        <br />        <span style={{ fontWeight: 400, fontSize: '0.8em' }}>Trend Analysis</span>      </h1>
+  // Hinzufügen nach dem Topic Trends Chart
+  const renderSpecialStopwords = () => {
+    if (!specialStopwords || specialStopwords.length === 0) return null;
+    
+    return (
+      <div className="special-stopwords-container" style={{
+        marginTop: '20px',
+        marginBottom: '30px',
+        width: '100%',
+        maxWidth: '1000px',
+        margin: '20px auto',
+        padding: '15px',
+        backgroundColor: 'rgba(255, 255, 255, 0.85)',
+        borderRadius: '15px',
+        boxShadow: '0 4px 30px rgba(0, 0, 0, 0.05)'
+      }}>
+        <h3 style={{
+          fontSize: '1.1rem',
+          color: '#232252',
+          marginBottom: '10px',
+          textAlign: 'center'
+        }}>
+          Ausgeschlossene Social-Media-Begriffe
+        </h3>
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: '8px'
+        }}>
+          {specialStopwords.map((word, index) => (
+            <span key={index} style={{
+              padding: '4px 10px',
+              backgroundColor: 'rgba(147, 100, 235, 0.1)',
+              color: '#64748B',
+              borderRadius: '20px',
+              fontSize: '0.9rem',
+              fontWeight: '500'
+            }}>
+              {word}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  return (    <main className="app-content">      {/* Title with proper margin for fixed navbar */}      <h1 className="main-title" style={{ marginTop: '20px', marginBottom: '40px' }}>        <span style={{ fontWeight: 900, letterSpacing: '0.03em' }}>SOCIAL MEDIA</span>        <br />        <span style={{ fontWeight: 400, fontSize: '0.8em' }}>Trend Analysis</span>      </h1>
       
       {/* Date Range Filter - Position unchanged */}
       <div className="filter-section">
@@ -422,6 +475,9 @@ const Homepage = () => {
               </div>
             )}
           </div>
+          
+          {/* Render Special Stopwords Section */}
+          {renderSpecialStopwords()}
           
           {/* Topic Post Counts */}
           <div className="topic-post-counts-section">
