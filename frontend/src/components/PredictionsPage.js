@@ -49,7 +49,7 @@ const PredictionsPage = () => {
         
         console.log("Received prediction data:", response);
         
-        // Überprüfen, ob wir Demo-Daten verwenden
+        // Set demo data status - this will always be false with our updated API
         setUsingDemoData(getMockDataStatus() || response.demo_data === true);
         
         if (response.error) {
@@ -75,8 +75,8 @@ const PredictionsPage = () => {
         }
       } catch (err) {
         console.error("Error fetching prediction data:", err);
-        setError(err.message || "Fehler beim Laden der Daten");
-        setUsingDemoData(true); // Setze auf Demo-Daten bei Fehler
+        setError("Failed to fetch prediction data from the database. Please try again later.");
+        setPredictions([]);
       } finally {
         setLoading(false);
       }

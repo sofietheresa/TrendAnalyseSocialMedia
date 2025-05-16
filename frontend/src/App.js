@@ -173,6 +173,7 @@ const Homepage = () => {
             } else {
               // No topics at all
               setTopics([]);
+              setError("No topics were found in the database. Please try a different date range.");
             }
             
             // Process topic counts by date if available
@@ -215,6 +216,7 @@ const Homepage = () => {
             setTopics([]);
             setTopicCounts({});
             setTopicSentiments({});
+            setError("Invalid data received from the database. Please try again later.");
           }
           
           setTimeRange(response.time_range || {
@@ -224,10 +226,11 @@ const Homepage = () => {
         }
       } catch (err) {
         console.error("Error fetching topic data:", err);
-        setError(err.message || "Error loading data");
+        setError("Failed to fetch topic data from the database. Please try again later.");
         setTopics([]);
         setTopicCounts({});
         setTopicSentiments({});
+        setTopicTrends([]);
       } finally {
         setLoading(false);
       }

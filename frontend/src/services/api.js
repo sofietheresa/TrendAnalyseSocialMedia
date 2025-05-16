@@ -26,14 +26,16 @@ export const useMockApi = false; // Using real API server
 console.log('Using mock API:', useMockApi);
 
 // Create a global state for tracking mock data usage
-export let usingMockData = false; // Using real data
+export let usingMockData = false; // Always using real data
 
 // Function to check and set mock data usage state
 export const setMockDataStatus = (isMockData) => {
-    usingMockData = isMockData;
+    // Override to always use real data
+    usingMockData = false;
+    
     // Dispatch an event so components can react
     window.dispatchEvent(new CustomEvent('mockdatachange', { 
-        detail: { usingMockData } 
+        detail: { usingMockData: false } 
     }));
 };
 
@@ -579,86 +581,16 @@ export const fetchPredictions = async (startDate = null, endDate = null) => {
             } catch (basicError) {
                 console.error('Error fetching from basic endpoint:', basicError);
                 
-                // Wenn alle API-Anfragen fehlschlagen, verwenden wir qualitativ hochwertige Demodaten
-                console.log("All API endpoints failed, using realistic demo data");
-                
-                // Mock Data Status setzen
-                setMockDataStatus(true);
-                
-                // Aktuelles Datum für die Simulation
-                const currentDate = new Date();
-                const oneWeek = 7 * 24 * 60 * 60 * 1000;
-                
-                // Standardwerte für Datumsbereiche setzen, falls nicht angegeben
-                const actualStartDate = startDate ? new Date(startDate) : new Date(currentDate.getTime() - oneWeek);
-                const actualEndDate = endDate ? new Date(endDate) : new Date(currentDate.getTime() + oneWeek);
-                
-                // Realistische Vorhersagethemen
-                const topics = [
-                    {
-                        topic_id: "tech_ai_ethics",
-                        topic_name: "KI-Ethik und Regulierung",
-                        confidence: 0.92,
-                        sentiment_score: 0.15,
-                        keywords: ["Künstliche Intelligenz", "Regulierung", "Ethik", "EU AI Act", "Datenschutz"],
-                        forecast_max: 154,
-                        forecast_data: generateForecastData(actualStartDate, actualEndDate, 90, 154)
-                    },
-                    {
-                        topic_id: "vr_fitness",
-                        topic_name: "Virtual Reality Fitness",
-                        confidence: 0.85,
-                        sentiment_score: 0.67,
-                        keywords: ["VR Training", "Fitness", "Metaverse", "Gamification", "Bewegung"],
-                        forecast_max: 120,
-                        forecast_data: generateForecastData(actualStartDate, actualEndDate, 60, 120)
-                    },
-                    {
-                        topic_id: "sustainable_gaming",
-                        topic_name: "Nachhaltiges Gaming",
-                        confidence: 0.78,
-                        sentiment_score: 0.42,
-                        keywords: ["Green Gaming", "Energieeffizienz", "CO2-Fußabdruck", "Umweltfreundlich"],
-                        forecast_max: 87,
-                        forecast_data: generateForecastData(actualStartDate, actualEndDate, 42, 87)
-                    },
-                    {
-                        topic_id: "quantum_computing",
-                        topic_name: "Quantencomputing für Alle",
-                        confidence: 0.71,
-                        sentiment_score: 0.21,
-                        keywords: ["Quantencomputer", "Qubits", "Cloud Quantum", "Forschung", "Algorithmen"],
-                        forecast_max: 65,
-                        forecast_data: generateForecastData(actualStartDate, actualEndDate, 35, 65)
-                    },
-                    {
-                        topic_id: "web3_app",
-                        topic_name: "Web3 Anwendungen im Alltag",
-                        confidence: 0.68,
-                        sentiment_score: -0.12,
-                        keywords: ["Blockchain", "Dezentralisierung", "DApps", "Smart Contracts", "Tokens"],
-                        forecast_max: 78,
-                        forecast_data: generateForecastData(actualStartDate, actualEndDate, 40, 78)
-                    }
-                ];
-                
-                // Trendlinien für alle Themen generieren
-                const prediction_trends = {};
-                topics.forEach(topic => {
-                    prediction_trends[topic.topic_id] = generateTrendData(actualStartDate, actualEndDate);
-                });
-                
-                // Formatierte Zeitbereiche für die Antwort
-                const time_range = {
-                    start_date: actualStartDate.toISOString().split('T')[0],
-                    end_date: actualEndDate.toISOString().split('T')[0]
-                };
-                
+                // Return an empty response instead of mock data
+                console.error("All API endpoints failed, returning empty data");
                 return {
-                    predictions: topics,
-                    prediction_trends,
-                    time_range,
-                    demo_data: true
+                    predictions: [],
+                    prediction_trends: {},
+                    time_range: {
+                        start_date: startDate || new Date().toISOString().split('T')[0],
+                        end_date: endDate || new Date().toISOString().split('T')[0]
+                    },
+                    error: "Failed to fetch prediction data from all available endpoints. No data available."
                 };
             }
         }
