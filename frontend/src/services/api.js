@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // API URL configuration - using a unified API that includes both main and drift API functionality
 const API_URL = process.env.REACT_APP_API_URL || 
-                'http://localhost:3001';  // Mock API server
+                'http://localhost:8000';  // FastAPI server
 
 console.log('API_URL set to:', API_URL);
 
@@ -601,6 +601,34 @@ export const fetchModelMetrics = async (modelName, version = null) => {
     console.error('Error fetching model metrics:', error);
     return {};
   }
+};
+
+// New function to fetch posts related to a specific topic
+export const fetchPostsByTopic = async (topicId) => {
+    try {
+        console.log(`Fetching posts for topic ID: ${topicId}`);
+        
+        // Always reset mock data status at start of request
+        setMockDataStatus(false);
+        
+        // Try to fetch from the main DB endpoint
+        const response = await api.get(`/api/db/topics/${topicId}/posts`);
+        console.log(`Posts for topic ${topicId} response:`, response.data);
+        return response.data;
+    } catch (error) {
+        console.error(`Error fetching posts for topic ${topicId}:`, error);
+        
+        // Try alternative endpoint
+        try {
+            console.log("Trying alternative endpoint for topic posts...");
+            const altResponse = await api.get(`/api/topics/${topicId}/posts`);
+            console.log("Alternative topic posts response:", altResponse.data);
+            return altResponse.data;
+        } catch (altError) {
+            console.error('Error fetching from alternative endpoint:', altError);
+            throw new Error(`Failed to fetch posts for topic ${topicId}. Please try again later.`);
+        }
+    }
 };
 
 export default api; 

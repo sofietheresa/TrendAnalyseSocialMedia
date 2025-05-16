@@ -8,7 +8,7 @@ import Documentation from './components/Documentation';
 import ModelEvaluation from './components/ModelEvaluation';
 import PipelinePage from './components/PipelinePage';
 import PredictionsPage from './components/PredictionsPage';
-import { fetchTopicModel, fetchPredictions, fetchRecentData } from './services/api';
+import { fetchTopicModel, fetchPredictions, fetchRecentData, fetchPostsByTopic } from './services/api';
 import { Line } from 'react-chartjs-2';
 import MockDataNotification from './components/MockDataNotification';
 import AccessGate from './components/AccessGate';
@@ -73,16 +73,19 @@ const Homepage = () => {
       // Fetch posts related to this topic
       console.log(`Fetching posts for topic ID ${topicId}: ${topicName}`);
       
-      // Try to fetch topic-specific posts
       try {
-        const response = await fetch(`/api/topics/${topicId}/posts`);
-        if (response.ok) {
-          const data = await response.json();
-          setTopicPosts(data);
+        // Use our dedicated API function to fetch posts by topic from the database
+        const posts = await fetchPostsByTopic(topicId);
+        
+        if (posts && posts.length > 0) {
+          console.log(`Found ${posts.length} posts for topic ${topicName}`);
+          setTopicPosts(posts);
           return;
+        } else {
+          console.log(`No posts found for topic ${topicName} using fetchPostsByTopic`);
         }
       } catch (err) {
-        console.warn("Failed to fetch from topic-specific endpoint:", err);
+        console.warn("Failed to fetch posts using fetchPostsByTopic:", err);
       }
       
       // Fallback to recent data filtering by topic ID
@@ -98,31 +101,18 @@ const Homepage = () => {
             (post.text && post.text.toLowerCase().includes(topicName.toLowerCase())) ||
             (post.content && post.content.toLowerCase().includes(topicName.toLowerCase()))
           );
-          setTopicPosts(filteredPosts);
+           
+          if (filteredPosts.length > 0) {
+            console.log(`Found ${filteredPosts.length} filtered posts for topic ${topicName}`);
+            setTopicPosts(filteredPosts);
+            return;
+          } else {
+            console.log(`No filtered posts found for topic ${topicName}`);
+            setTopicPosts([]);
+          }
         } else {
-          // If no data found, create some dummy posts for the topic
-          const dummyPosts = [
-            {
-              platform: "Reddit",
-              date: new Date().toISOString(),
-              title: `Discussion about ${topicName}`,
-              content: `This is a popular discussion mentioning the topic "${topicName}" with many engagement metrics.`,
-              sentiment_score: Math.random() * 2 - 1 // Random sentiment between -1 and 1
-            },
-            {
-              platform: "Twitter",
-              date: new Date(Date.now() - 86400000).toISOString(), // Yesterday
-              content: `Trending post about ${topicName} with lots of retweets and comments!`,
-              sentiment_score: Math.random() * 2 - 1
-            },
-            {
-              platform: "TikTok",
-              date: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-              content: `Popular TikTok video discussing "${topicName}" that went viral recently.`,
-              sentiment_score: Math.random() * 2 - 1
-            }
-          ];
-          setTopicPosts(dummyPosts);
+          console.log(`No recent data found to filter posts for topic ${topicName}`);
+          setTopicPosts([]);
         }
       } catch (err) {
         console.error("Error fetching topic posts:", err);
