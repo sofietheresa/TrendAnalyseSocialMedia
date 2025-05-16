@@ -1,17 +1,17 @@
 import axios from 'axios';
 
-// API URL configuration - using local development server for testing
+// API URL configuration - using a unified API that includes both main and drift API functionality
 const API_URL = process.env.REACT_APP_API_URL || 
-                'http://localhost:8000';
+                'http://localhost:8002';
 
 console.log('API_URL set to:', API_URL);
 
-// Verbesserte Axios-Konfiguration
+// Improved Axios configuration
 const api = axios.create({
     baseURL: API_URL,
     headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache',  // Verhindert Caching von Antworten
+        'Cache-Control': 'no-cache',  // Prevents caching of responses
     },
     // Longer timeout for potentially slow connections
     timeout: 45000,
@@ -598,24 +598,9 @@ export const fetchPipelines = async (pipelineId = null) => {
     
     console.log(`Fetching pipelines from: ${url}`);
     
-    // Try with multiple retries
-    for (let retry = 0; retry < MAX_RETRIES; retry++) {
-      try {
-        const response = await api.get(url);
-        console.log('Pipeline response:', response.data);
-        return response.data;
-      } catch (error) {
-        // Only retry on network errors or 5xx errors
-        if (retry < MAX_RETRIES - 1 && (!error.response || error.response.status >= 500)) {
-          console.log(`Retry ${retry + 1}/${MAX_RETRIES} for pipeline data...`);
-          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (retry + 1)));
-        } else {
-          throw error;
-        }
-      }
-    }
-    
-    throw new Error('Failed to fetch pipeline data after all retries');
+    const response = await api.get(url);
+    console.log('Pipeline response:', response.data);
+    return response.data;
   } catch (error) {
     console.error('Error fetching pipeline data:', error);
     // Return empty object instead of error message
@@ -634,25 +619,11 @@ export const fetchPipelineExecutions = async (pipelineId) => {
     const url = `/api/mlops/pipelines/${pipelineId}/executions`;
     console.log(`Fetching pipeline executions from: ${url}`);
     
-    // Try with multiple retries
-    for (let retry = 0; retry < MAX_RETRIES; retry++) {
-      try {
-        const response = await api.get(url);
-        console.log('Pipeline executions response:', response.data);
-        // Ensure we always return an array
-        return Array.isArray(response.data) ? response.data : [];
-      } catch (error) {
-        // Only retry on network errors or 5xx errors
-        if (retry < MAX_RETRIES - 1 && (!error.response || error.response.status >= 500)) {
-          console.log(`Retry ${retry + 1}/${MAX_RETRIES} for pipeline executions...`);
-          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (retry + 1)));
-        } else {
-          throw error;
-        }
-      }
-    }
-    
-    throw new Error('Failed to fetch pipeline executions after all retries');
+    // Use the unified API
+    const response = await api.get(url);
+    console.log('Pipeline executions response:', response.data);
+    // Ensure we always return an array
+    return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('Error fetching pipeline executions:', error);
     // Return empty array instead of error message
@@ -673,24 +644,9 @@ export const executePipeline = async (pipelineId) => {
     const url = `/api/mlops/pipelines/${pipelineId}/execute`;
     console.log(`Executing pipeline at: ${url}`);
     
-    // Try with multiple retries
-    for (let retry = 0; retry < MAX_RETRIES; retry++) {
-      try {
-        const response = await api.post(url);
-        console.log('Pipeline execution response:', response.data);
-        return response.data;
-      } catch (error) {
-        // Only retry on network errors or 5xx errors
-        if (retry < MAX_RETRIES - 1 && (!error.response || error.response.status >= 500)) {
-          console.log(`Retry ${retry + 1}/${MAX_RETRIES} for pipeline execution...`);
-          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (retry + 1)));
-        } else {
-          throw error;
-        }
-      }
-    }
-    
-    throw new Error('Failed to execute pipeline after all retries');
+    const response = await api.post(url);
+    console.log('Pipeline execution response:', response.data);
+    return response.data;
   } catch (error) {
     console.error('Error executing pipeline:', error);
     // Return error object with empty data
@@ -756,24 +712,9 @@ export const fetchModelDrift = async (modelName, version = null) => {
     const url = `/api/mlops/models/${modelName}/drift${version ? `?version=${version}` : ''}`;
     console.log(`Fetching model drift from: ${url}`);
     
-    // Try with multiple retries
-    for (let retry = 0; retry < MAX_RETRIES; retry++) {
-      try {
-        const response = await api.get(url);
-        console.log('Model drift response:', response.data);
-        return response.data;
-      } catch (error) {
-        // Only retry on network errors or 5xx errors
-        if (retry < MAX_RETRIES - 1 && (!error.response || error.response.status >= 500)) {
-          console.log(`Retry ${retry + 1}/${MAX_RETRIES} for model drift data...`);
-          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (retry + 1)));
-        } else {
-          throw error;
-        }
-      }
-    }
-    
-    throw new Error('Failed to fetch model drift data after all retries');
+    const response = await api.get(url);
+    console.log('Model drift response:', response.data);
+    return response.data;
   } catch (error) {
     console.error('Error fetching model drift data:', error);
     // Return empty data instead of mock data

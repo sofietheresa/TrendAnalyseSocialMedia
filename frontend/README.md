@@ -110,7 +110,7 @@ npm run start:with-mock
 
 The application uses the following environment variables:
 
-- `REACT_APP_API_URL`: The URL of the API server (default: `http://localhost:8000`)
+- `REACT_APP_API_URL`: The URL of the API server (default: `http://localhost:8002`)
 - `REACT_APP_MOCK_API_URL`: The URL of the mock API server (default: `http://localhost:3001`)
 - `REACT_APP_USE_MOCK_API`: Set to `true` to force using mock data
 
@@ -136,4 +136,20 @@ To build the application for production:
 npm run build
 ```
 
-This will create a `build` directory with the compiled application. 
+This will create a `build` directory with the compiled application.
+
+## Environment Variables
+
+The application can be configured using the following environment variables:
+
+- `REACT_APP_API_URL`: The URL of the API server (default: `http://localhost:8002`)
+- `REACT_APP_MOCK_API_URL`: The URL of the mock API server (default: `http://localhost:3001`)
+
+## API Integration
+
+The frontend communicates with a unified API that includes all required functionality:
+
+- Core data endpoints (/api/...)
+- ML operations endpoints (/api/mlops/...)
+
+All API requests are sent to the URL specified in `REACT_APP_API_URL`, which defaults to `http://localhost:8002`. 

@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
 import uvicorn
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 import os
 from pathlib import Path
@@ -16,25 +16,37 @@ import numpy as np
 from fastapi.security import APIKeyHeader
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
+import random
+import sys
+
+# Add the current directory to the Python path to enable relative imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Import models and database
-from models import get_db, RedditData, TikTokData, YouTubeData, init_db, Base, engine
+try:
+    from src.models import get_db, RedditData, TikTokData, YouTubeData, init_db, Base, engine
+except ImportError as e:
+    logger.warning(f"Could not import database models: {e}")
+    try:
+        from models import get_db, RedditData, TikTokData, YouTubeData, init_db, Base, engine
+    except ImportError as e:
+        logger.warning(f"Could not import database models (2nd attempt): {e}")
 
 # Environment variables and configuration
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 
-# Modell-Download beim Start
-from src.model_loader import download_models
-
-# Import pipeline components
-from src.pipelines.steps.data_ingestion import ingest_data
-from src.pipelines.steps.preprocessing import preprocess_data
-from src.pipelines.steps.data_exploration import explore_data
-from src.pipelines.steps.predictions import make_predictions
-
-# Import API routers
-from src.api import api_router
-from src.api.mlops_api import router as mlops_router, DriftMetrics
+# Define DriftMetrics model for direct endpoints
+class DriftMetrics(BaseModel):
+    timestamp: str
+    dataset_drift: bool
+    share_of_drifted_columns: float
+    drifted_columns: List[str]
 
 # Define the PipelineExecution model for direct endpoints
 class PipelineExecution(BaseModel):
@@ -45,9 +57,42 @@ class PipelineExecution(BaseModel):
     status: str
     trigger: str
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Import API routers - use try/except to handle the case where these modules might not exist
+try:
+    # Modell-Download beim Start
+    from src.model_loader import download_models
+
+    # Import pipeline components
+    from src.pipelines.steps.data_ingestion import ingest_data
+    from src.pipelines.steps.preprocessing import preprocess_data
+    from src.pipelines.steps.data_exploration import explore_data
+    from src.pipelines.steps.predictions import make_predictions
+
+    # Import API routers
+    from src.api import api_router
+    from src.api.mlops_api import router as mlops_router
+    
+    has_api_routers = True
+except ImportError as e:
+    logger.warning(f"Could not import modules with src prefix: {e}")
+    try:
+        # Try again without the src prefix
+        from model_loader import download_models
+
+        # Import pipeline components
+        from pipelines.steps.data_ingestion import ingest_data
+        from pipelines.steps.preprocessing import preprocess_data
+        from pipelines.steps.data_exploration import explore_data
+        from pipelines.steps.predictions import make_predictions
+
+        # Import API routers
+        from api import api_router
+        from api.mlops_api import router as mlops_router
+        
+        has_api_routers = True
+    except ImportError as e:
+        logger.warning(f"Could not import modules: {e}")
+        has_api_routers = False
 
 # Global variables for service status
 service_ready = False
@@ -55,7 +100,7 @@ initialization_error = None
 
 app = FastAPI(
     title="Social Media Trend Analysis API",
-    description="API for analyzing social media trends",
+    description="API for analyzing social media trends and ML model operations",
     version="1.0.0",
 )
 
@@ -68,6 +113,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Define model registry path globally
+MODEL_REGISTRY_PATH = Path("models/registry").resolve()
+MODEL_REGISTRY_PATH.mkdir(parents=True, exist_ok=True)
 
 # API Key Security
 API_KEY = os.getenv("API_KEY", "your-api-key")
@@ -121,6 +170,15 @@ try:
     download_models()
 except Exception as e:
     logging.error(f"Fehler beim Herunterladen der Modelle: {str(e)}")
+    # Try alternative import if the first one fails
+    try:
+        if 'src.model_loader' in sys.modules:
+            from src.model_loader import download_models
+        else:
+            from model_loader import download_models
+        download_models()
+    except Exception as e:
+        logging.error(f"Fehler beim Herunterladen der Modelle (2. Versuch): {str(e)}")
 
 try:
     qdrant_client = QdrantClient(url=QDRANT_URL)
@@ -245,6 +303,11 @@ async def sync_data(request: Request, db: Session = Depends(get_db)):
             detail=f"Datenbankfehler: {str(e)}"
         )
 
+@app.get("/")
+async def root():
+    """Root endpoint for the API"""
+    return {"message": "Social Media Trend Analysis API running"}
+
 @app.get("/data", dependencies=[Depends(verify_api_key)])
 async def get_data(db: Session = Depends(get_db)):
     """Alle Daten aus allen Plattform-Tabellen abrufen"""
@@ -293,9 +356,12 @@ async def get_data(db: Session = Depends(get_db)):
             detail=f"Datenbankfehler: {str(e)}"
         )
 
-# Register routers
-app.include_router(api_router, prefix="/api", tags=["api"])
-app.include_router(mlops_router, prefix="/api/mlops", tags=["mlops"])
+# Register routers if they were successfully imported
+if has_api_routers:
+    app.include_router(api_router, prefix="/api", tags=["api"])
+    app.include_router(mlops_router, prefix="/api/mlops", tags=["mlops"])
+else:
+    logger.warning("API routers could not be registered due to missing imports")
 
 # Add a direct route for model drift to ensure it's accessible
 @app.get("/api/mlops/models/{model_name}/drift", response_model=DriftMetrics, tags=["direct"])
@@ -306,7 +372,7 @@ async def get_model_drift(
     """
     Get data drift metrics for a specific model version
     """
-    logger.info(f"DIRECT: Request for drift metrics of model: {model_name}, version: {version}")
+    logger.info(f"Request for drift metrics of model: {model_name}, version: {version}")
     
     # Set default version if not provided
     if not version:
@@ -314,8 +380,7 @@ async def get_model_drift(
         logger.info(f"No version specified, using default: {version}")
     
     # Check for actual drift metrics in model registry
-    model_registry_path = Path("models/registry").resolve()
-    drift_path = model_registry_path / model_name / version / "drift_metrics.json"
+    drift_path = MODEL_REGISTRY_PATH / model_name / version / "drift_metrics.json"
     logger.info(f"Checking for drift metrics at: {drift_path}")
     
     try:
@@ -323,27 +388,125 @@ async def get_model_drift(
             logger.info(f"Found drift metrics at {drift_path}")
             with open(drift_path, "r") as f:
                 drift_metrics = json.load(f)
-                return DriftMetrics(**drift_metrics)
+                result = DriftMetrics(**drift_metrics)
+                logger.info(f"Returning drift metrics: {result}")
+                return result
         else:
             logger.warning(f"No drift metrics found at {drift_path}, using mock data")
     except Exception as e:
         logger.error(f"Error reading drift metrics: {e}")
     
     # Return mock drift metrics if no actual metrics found
-    return DriftMetrics(
+    result = DriftMetrics(
         timestamp=datetime.now().isoformat(),
         dataset_drift=True,
         share_of_drifted_columns=0.25,
         drifted_columns=["text_length", "sentiment_score", "engagement_rate"]
     )
+    logger.info(f"Returning mock drift metrics: {result}")
+    return result
 
-# Direct pipeline endpoints from drift_api.py
+@app.get("/api/db/predictions")
+async def get_predictions(
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None)
+):
+    """
+    Get topic predictions from ML models.
+    
+    Query Parameters:
+    - start_date: (optional) Start date for the prediction period (YYYY-MM-DD)
+    - end_date: (optional) End date for the prediction period (YYYY-MM-DD)
+    
+    Returns prediction data for future trends based on ML models.
+    """
+    try:
+        # Use default dates if not provided
+        if not start_date:
+            start_date = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+        if not end_date:
+            end_date = (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')
+            
+        # Convert to datetime objects
+        start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+        end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+        
+        # Generate prediction data (mock data for now)
+        # In a real implementation, this would use ML models to generate predictions
+        # For now, we'll return mock data
+        
+        # Generate 5 mock topic predictions
+        predictions = []
+        topics = [
+            "AI Technologies", 
+            "Climate Change", 
+            "Digital Privacy",
+            "Remote Work",
+            "Blockchain Applications"
+        ]
+        
+        for i, topic in enumerate(topics):
+            # Generate a confidence score between 0.65 and 0.95
+            confidence = 0.65 + (i * 0.06)
+            if confidence > 0.95:
+                confidence = 0.95
+                
+            # Generate a sentiment score between -0.7 and 0.7
+            sentiment = -0.7 + (i * 0.35)
+            
+            predictions.append({
+                "topic_id": i + 1,
+                "topic_name": topic,
+                "confidence": confidence,
+                "sentiment_score": sentiment,
+                "keywords": [f"keyword{j+1}" for j in range(5)],
+                "predicted_growth": 15 + (i * 5),
+                "current_volume": 100 + (i * 50)
+            })
+        
+        # Generate prediction trends data
+        prediction_trends = {}
+        
+        # Generate dates between start and end date
+        delta = end_dt - start_dt
+        dates = [(start_dt + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(delta.days + 1)]
+        
+        # Generate trend data for each topic
+        for prediction in predictions:
+            topic_id = prediction["topic_id"]
+            prediction_trends[topic_id] = {}
+            
+            # Base value depends on confidence
+            base_value = int(prediction["confidence"] * 100)
+            
+            # Generate trend values for each date with some randomness
+            for date in dates:
+                # Add some random fluctuation to create a trend
+                fluctuation = random.randint(-10, 20)
+                value = max(5, base_value + fluctuation + (dates.index(date) * 3))
+                prediction_trends[topic_id][date] = value
+        
+        response = {
+            'predictions': predictions,
+            'time_range': {
+                'start_date': start_date,
+                'end_date': end_date
+            },
+            'prediction_trends': prediction_trends
+        }
+        
+        return response
+    except Exception as e:
+        logger.error(f"Error in get_predictions: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Direct pipeline endpoints directly accessible at /api/mlops/pipelines
 @app.get("/api/mlops/pipelines", tags=["direct"])
 async def get_pipelines():
     """
     Get all ML pipelines status
     """
-    logger.info("Direct request for all pipelines")
+    logger.info("Request for all pipelines")
     
     # Return mock pipeline data
     pipelines = {
@@ -373,7 +536,7 @@ async def get_pipeline(pipeline_id: str):
     """
     Get details for a specific pipeline
     """
-    logger.info(f"Direct request for pipeline: {pipeline_id}")
+    logger.info(f"Request for pipeline: {pipeline_id}")
     
     pipelines = {
         "trend_analysis": {
@@ -405,7 +568,7 @@ async def get_pipeline_executions(pipeline_id: str):
     """
     Get executions for a specific pipeline
     """
-    logger.info(f"Direct request for executions of pipeline: {pipeline_id}")
+    logger.info(f"Request for executions of pipeline: {pipeline_id}")
     
     # Mock executions - in production this would be retrieved from a database
     all_executions = [
@@ -425,7 +588,7 @@ async def execute_pipeline(pipeline_id: str):
     """
     Execute a specific pipeline
     """
-    logger.info(f"Direct request to execute pipeline: {pipeline_id}")
+    logger.info(f"Request to execute pipeline: {pipeline_id}")
     
     # Map pipeline ID to model name
     pipeline_to_model = {
@@ -458,16 +621,12 @@ async def execute_pipeline(pipeline_id: str):
 @app.get("/debug/routes")
 async def debug_routes():
     """
-    Debug endpoint to list all registered routes in the application
+    List all available routes for debugging
     """
-    routes = []
-    for route in app.routes:
-        routes.append({
-            "path": route.path,
-            "name": route.name,
-            "methods": list(route.methods) if hasattr(route, "methods") else None
-        })
-    
+    routes = [
+        {"path": route.path, "name": route.name, "methods": list(route.methods) if hasattr(route, "methods") else None}
+        for route in app.routes
+    ]
     return {"routes": routes}
 
 @app.get("/ping")
@@ -475,7 +634,13 @@ async def ping():
     """
     Simple ping endpoint for checking if the API is running
     """
-    return {"status": "ok", "message": "API is running"}
+    return {"status": "ok", "message": "pong"}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    # Print all routes for debugging
+    print("Available routes:")
+    for route in app.routes:
+        print(f"Path: {route.path}, Name: {route.name}, Methods: {list(route.methods) if hasattr(route, 'methods') else None}")
+    
+    # Start server
+    uvicorn.run(app, host="0.0.0.0", port=8002) 
