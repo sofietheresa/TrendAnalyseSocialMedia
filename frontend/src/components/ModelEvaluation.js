@@ -399,23 +399,50 @@ const ModelEvaluation = () => {
   };
   
   // Topic distribution doughnut chart data
-  const topicDistributionData = {
-    labels: ['Topic 1', 'Topic 2', 'Topic 3', 'Topic 4', 'Topic 5', 'Other Topics'],
-    datasets: [
-      {
-        data: [25, 20, 18, 15, 12, 10],
-        backgroundColor: [
-          '#232252',
-          '#2e6cdb',
-          '#9364eb',
-          '#e750ae',
-          '#f8986f',
-          '#e1e5eb'
-        ],
-        borderWidth: 1
-      }
-    ]
-  };
+  const topicDistributionData = React.useMemo(() => {
+    if (metrics && metrics.topic_distribution && Array.isArray(metrics.topic_distribution)) {
+      // Use real data if available
+      const labels = metrics.topic_distribution.map(t => t.name || `Topic ${t.id}`);
+      const data = metrics.topic_distribution.map(t => t.count || t.percentage || 0);
+      
+      return {
+        labels,
+        datasets: [
+          {
+            data,
+            backgroundColor: [
+              '#232252',
+              '#2e6cdb',
+              '#9364eb',
+              '#e750ae',
+              '#f8986f',
+              '#e1e5eb'
+            ],
+            borderWidth: 1
+          }
+        ]
+      };
+    }
+    
+    // Fallback to mock data
+    return {
+      labels: ['Topic 1', 'Topic 2', 'Topic 3', 'Topic 4', 'Topic 5', 'Other Topics'],
+      datasets: [
+        {
+          data: [25, 20, 18, 15, 12, 10],
+          backgroundColor: [
+            '#232252',
+            '#2e6cdb',
+            '#9364eb',
+            '#e750ae',
+            '#f8986f',
+            '#e1e5eb'
+          ],
+          borderWidth: 1
+        }
+      ]
+    };
+  }, [metrics]);
   
   // Topic distribution options
   const topicDistributionOptions = {
