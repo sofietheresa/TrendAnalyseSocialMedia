@@ -26,7 +26,7 @@ export const useMockApi = false; // Set to false to use real API endpoints
 console.log('Using mock API:', useMockApi);
 
 // Create a global state for tracking mock data usage
-export let usingMockData = useMockApi; // Initialize with our config value
+export let usingMockData = false; // Initialize with false to force real data
 
 // Function to check and set mock data usage state
 export const setMockDataStatus = (isMockData) => {
@@ -292,17 +292,6 @@ export const fetchTopics = async (startDate, endDate) => {
 // New function to fetch topic model data with BERT
 export const fetchTopicModel = async (startDate = null, endDate = null, platforms = ["reddit", "tiktok", "youtube"], numTopics = 5) => {
     try {
-        // Check if we should use mock data by configuration
-        if (useMockApi) {
-            console.log(`Using mock topic model data by configuration`);
-            setMockDataStatus(true);
-            
-            // Generate mock topic data
-            const mockTopicData = generateMockTopicData(numTopics, startDate, endDate);
-            
-            return mockTopicData;
-        }
-        
         // Always reset mock data status at start of request
         setMockDataStatus(false);
         
@@ -332,173 +321,62 @@ export const fetchTopicModel = async (startDate = null, endDate = null, platform
     } catch (error) {
         console.error('Error fetching topic model data:', error);
         
-        // Mark as using mock data
-        setMockDataStatus(true);
-        
-        // Generate mock topic data as fallback
-        const mockTopicData = generateMockTopicData(numTopics, startDate, endDate);
-        return mockTopicData;
+        // Try alternative endpoint if main endpoint fails
+        try {
+            console.log("Trying alternative endpoint for topic model data...");
+            const altResponse = await api.get('/api/db/topics', {
+                params: {
+                    start_date: startDate,
+                    end_date: endDate
+                }
+            });
+            
+            console.log("Alternative topic model response:", altResponse.data);
+            return altResponse.data;
+        } catch (altError) {
+            console.error('Error fetching from alternative endpoint:', altError);
+            
+            // Last resort - only if both API calls fail
+            setMockDataStatus(true);
+            return {
+                topics: [],
+                topic_counts_by_date: {},
+                metrics: {},
+                time_range: {
+                    start_date: startDate || new Date(Date.now() - 3*24*60*60*1000).toISOString().split('T')[0],
+                    end_date: endDate || new Date().toISOString().split('T')[0]
+                },
+                error: "Keine Themendaten verfügbar. Bitte versuchen Sie es später erneut."
+            };
+        }
     }
 };
 
 /**
- * Generates mock topic model data for testing and development
- * @param {number} numTopics - Number of topics to generate
- * @param {string} startDate - Start date for time range (ISO format)
- * @param {string} endDate - End date for time range (ISO format)
- * @returns {Object} Mock topic model data
+ * Fetch model drift data
+ * 
+ * @param {string} modelName - Model name
+ * @param {string} version - Optional model version
+ * @returns {Promise<Object>} - Drift metrics
  */
-const generateMockTopicData = (numTopics = 5, startDate = null, endDate = null) => {
-    // Use provided dates or generate defaults
-    const actualStartDate = startDate || new Date(Date.now() - 3*24*60*60*1000).toISOString().split('T')[0];
-    const actualEndDate = endDate || new Date().toISOString().split('T')[0];
+export const fetchModelDrift = async (modelName, version = null) => {
+  try {
+    const url = `/api/mlops/models/${modelName}/drift${version ? `?version=${version}` : ''}`;
+    console.log(`Fetching model drift from: ${url}`);
     
-    // Convert dates to Date objects for calculations
-    const startDateObj = new Date(actualStartDate);
-    const endDateObj = new Date(actualEndDate);
-    
-    // Calculate number of days in the range
-    const diffTime = Math.abs(endDateObj - startDateObj);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    
-    // Generate date array for the range
-    const dateArray = [];
-    for (let i = 0; i < diffDays; i++) {
-        const date = new Date(startDateObj);
-        date.setDate(date.getDate() + i);
-        dateArray.push(date.toISOString().split('T')[0]);
-    }
-    
-    // Generate realistic topic names
-    const mockTopicNames = [
-        "Nachhaltigkeit & Umweltschutz",
-        "Wirtschaftliche Entwicklung",
-        "Digitale Transformation",
-        "Politische Diskussionen",
-        "Künstliche Intelligenz",
-        "Gesundheit & Wohlbefinden",
-        "Technologische Innovation",
-        "Work-Life-Balance",
-        "Energiewende & Klimaschutz",
-        "Gesellschaftlicher Wandel"
-    ];
-    
-    // Generate mock topics
-    const mockTopics = [];
-    
-    // Add "Other" topic as ID -1
-    mockTopics.push({
-        id: -1,
-        name: "Other",
-        keywords: ["miscellaneous", "various", "other", "misc", "etc"],
-        weight: 0.05,
-        coherence_score: 0.35
-    });
-    
-    // Add regular topics
-    for (let i = 0; i < Math.min(numTopics, mockTopicNames.length); i++) {
-        mockTopics.push({
-            id: i,
-            name: mockTopicNames[i],
-            keywords: generateMockKeywords(mockTopicNames[i]),
-            weight: (0.95 - (i * 0.1)).toFixed(2),
-            coherence_score: (0.9 - (i * 0.05)).toFixed(2)
-        });
-    }
-    
-    // Generate mock topic counts by date
-    const mockTopicCountsByDate = {};
-    
-    // For each topic (except "Other")
-    for (let i = 0; i < mockTopics.length; i++) {
-        if (mockTopics[i].id === -1) continue;
-        
-        const topicId = mockTopics[i].id;
-        mockTopicCountsByDate[topicId] = {};
-        
-        // Generate random counts for each date with some trend pattern
-        // Topics earlier in the list get higher numbers to show as "trending"
-        const baseCount = 50 - (i * 5);
-        
-        dateArray.forEach(date => {
-            // Generate random count with trend pattern
-            const dayOfMonth = new Date(date).getDate();
-            const trendFactor = Math.sin(dayOfMonth / 5) + 1; // Creates a wave pattern
-            const randomVariation = Math.random() * 15;
-            
-            // Ensure count is positive
-            const count = Math.max(5, Math.floor((baseCount + randomVariation) * trendFactor));
-            
-            mockTopicCountsByDate[topicId][date] = count;
-        });
-    }
-    
-    return {
-        topics: mockTopics,
-        topic_counts_by_date: mockTopicCountsByDate,
-        metrics: {
-            coherence_score: 0.78,
-            diversity_score: 0.65,
-            document_coverage: 0.92,
-            total_documents: 15764
-        },
-        time_range: {
-            start_date: actualStartDate,
-            end_date: actualEndDate
-        },
-        isMockData: true
+    const response = await api.get(url);
+    console.log('Model drift response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching model drift data:', error);
+    // Return empty data instead of mock data
+    return { 
+      timestamp: "",
+      dataset_drift: false,
+      share_of_drifted_columns: 0,
+      drifted_columns: []
     };
-};
-
-// Funktion zur Generierung von realistischen Keywords für ein Thema
-const generateMockKeywords = (topicName) => {
-    // Vordefinierte Keywords für bestimmte Themen
-    const keywordsByTopic = {
-        "Nachhaltigkeit & Umweltschutz": ["umweltschutz", "nachhaltigkeit", "klimaschutz", "recycling", "umweltbewusstsein", "ressourcenschonung", "ökologisch"],
-        "Wirtschaftliche Entwicklung": ["wirtschaftswachstum", "konjunktur", "finanzmärkte", "inflation", "wirtschaftspolitik", "arbeitsmarkt", "investitionen"],
-        "Digitale Transformation": ["digitalisierung", "digital", "transformation", "industrie4.0", "automatisierung", "prozessoptimierung", "digitale-strategie"],
-        "Politische Diskussionen": ["politik", "demokratie", "wahlen", "parteien", "gesetzgebung", "bundestag", "diskurs", "politische-debatte"],
-        "Künstliche Intelligenz": ["ki", "ai", "maschinelles-lernen", "deep-learning", "neuronale-netze", "chatgpt", "algorithmik", "chatbots"],
-        "Gesundheit & Wohlbefinden": ["gesundheit", "wohlbefinden", "prävention", "fitness", "ernährung", "mental-health", "gesundheitsvorsorge"],
-        "Technologische Innovation": ["innovation", "technologie", "forschung", "entwicklung", "hightech", "zukunftstechnologien", "tech-trends"],
-        "Work-Life-Balance": ["work-life-balance", "homeoffice", "remote-arbeit", "arbeitszeitmodelle", "freizeit", "vereinbarkeit", "lebensqualität"],
-        "Energiewende & Klimaschutz": ["energiewende", "erneuerbare-energien", "klimaneutralität", "co2-reduktion", "klimaschutz", "solarenergie", "windkraft"],
-        "Gesellschaftlicher Wandel": ["gesellschaftswandel", "demografie", "wertewandel", "diversität", "inklusion", "integration", "sozialer-wandel"]
-    };
-    
-    // Wenn vorhandene Keywords für das Thema existieren, diese verwenden
-    if (keywordsByTopic[topicName]) {
-        return keywordsByTopic[topicName];
-    }
-    
-    // Generische Keywords für nicht definierte Themen
-    const words = topicName.toLowerCase().split(/\s+|&/);
-    const baseKeywords = words.filter(w => w.length > 3);
-    
-    // Zusätzliche generische Keywords hinzufügen
-    const genericKeywords = ["diskussion", "trend", "entwicklung", "thema", "debatte"];
-    
-    // Kombinationen erstellen
-    const combinedKeywords = [];
-    for (let i = 0; i < Math.min(baseKeywords.length, 2); i++) {
-        for (let j = i + 1; j < baseKeywords.length; j++) {
-            combinedKeywords.push(`${baseKeywords[i]}-${baseKeywords[j]}`);
-        }
-    }
-    
-    // Ergebnisarray aus Basis, Kombinationen und Generika erstellen
-    const result = [...baseKeywords];
-    
-    // Füge einige (nicht alle) kombinierte Keywords hinzu
-    if (combinedKeywords.length > 0) {
-        result.push(...combinedKeywords.slice(0, Math.min(3, combinedKeywords.length)));
-    }
-    
-    // Füge einige generische Keywords hinzu
-    result.push(...genericKeywords.slice(0, 3));
-    
-    // Begrenze die Gesamtanzahl der Keywords
-    return result.slice(0, 7);
+  }
 };
 
 export const fetchSourceStats = async () => {
@@ -595,18 +473,47 @@ export const fetchAnalysisData = async () => {
     }
 };
 
-export const fetchPredictions = async () => {
+export const fetchPredictions = async (startDate = null, endDate = null) => {
     try {
-        const response = await api.get('/api/db/predictions');
+        // Versuche zuerst, Vorhersagen von der Haupt-API zu holen
+        console.log("Fetching predictions with params:", { startDate, endDate });
+        
+        const response = await api.get('/api/db/predictions', {
+            params: {
+                start_date: startDate,
+                end_date: endDate
+            }
+        });
+        
+        console.log("Received predictions:", response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching predictions:', error);
-        if (error.response) {
-            throw new Error(`Serverfehler: ${error.response.data.detail || 'Unbekannter Fehler'}`);
-        } else if (error.request) {
-            throw new Error('Keine Verbindung zum Server möglich');
-        } else {
-            throw new Error('Fehler beim Laden der Vorhersagen');
+        
+        // Versuche alternative Endpunkte, falls der Hauptendpunkt fehlschlägt
+        try {
+            console.log("Trying alternative endpoint for predictions...");
+            const altResponse = await api.get('/api/predictions', {
+                params: {
+                    start_date: startDate,
+                    end_date: endDate
+                }
+            });
+            
+            console.log("Alternative predictions response:", altResponse.data);
+            return altResponse.data;
+        } catch (altError) {
+            console.error('Error fetching from alternative endpoint:', altError);
+            
+            // Als letzten Ausweg leere Daten zurückgeben statt eines Fehlers
+            return { 
+                predictions: [],
+                time_range: {
+                    start_date: startDate || new Date(Date.now() - 3*24*60*60*1000).toISOString().split('T')[0],
+                    end_date: endDate || new Date(Date.now() + 14*24*60*60*1000).toISOString().split('T')[0]
+                },
+                error: "Keine Vorhersagedaten verfügbar. Bitte versuchen Sie es später erneut."
+            };
         }
     }
 };
@@ -726,33 +633,6 @@ export const fetchModelMetrics = async (modelName, version = null) => {
   } catch (error) {
     console.error('Error fetching model metrics:', error);
     return {};
-  }
-};
-
-/**
- * Fetch model drift data
- * 
- * @param {string} modelName - Model name
- * @param {string} version - Optional model version
- * @returns {Promise<Object>} - Drift metrics
- */
-export const fetchModelDrift = async (modelName, version = null) => {
-  try {
-    const url = `/api/mlops/models/${modelName}/drift${version ? `?version=${version}` : ''}`;
-    console.log(`Fetching model drift from: ${url}`);
-    
-    const response = await api.get(url);
-    console.log('Model drift response:', response.data);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching model drift data:', error);
-    // Return empty data instead of mock data
-    return { 
-      timestamp: "",
-      dataset_drift: false,
-      share_of_drifted_columns: 0,
-      drifted_columns: []
-    };
   }
 };
 

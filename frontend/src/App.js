@@ -8,7 +8,7 @@ import Documentation from './components/Documentation';
 import ModelEvaluation from './components/ModelEvaluation';
 import PipelinePage from './components/PipelinePage';
 import PredictionsPage from './components/PredictionsPage';
-import { fetchTopicModel } from './services/api';
+import { fetchTopicModel, fetchPredictions } from './services/api';
 import { Line } from 'react-chartjs-2';
 import MockDataNotification from './components/MockDataNotification';
 import AccessGate from './components/AccessGate';
@@ -107,9 +107,20 @@ const Homepage = () => {
               processTopicTrends(sortedTopics, response.topic_counts_by_date);
             }
             
-            // Generate mock sentiment data for topics (this would be replaced with real data)
-            const sentiments = generateMockSentiments(sortedTopics);
-            setTopicSentiments(sentiments);
+            // Get sentiment data from response if available, otherwise generate mock data
+            if (response.topic_sentiments) {
+              setTopicSentiments(response.topic_sentiments);
+            } else {
+              // Generate basic sentiment data when API doesn't provide it
+              const basicSentiments = sortedTopics.reduce((acc, topic) => {
+                if (topic.id) {
+                  // Default to neutral (0) if no sentiment is provided
+                  acc[topic.id] = topic.sentiment_score || "0";
+                }
+                return acc;
+              }, {});
+              setTopicSentiments(basicSentiments);
+            }
           } else {
             console.warn("Invalid topics format:", response.topics);
             setTopics([]);
@@ -130,17 +141,6 @@ const Homepage = () => {
 
     fetchTopicData();
   }, [dateFilter.startDate, dateFilter.endDate]);
-
-  // Generate random sentiment scores for each topic (mock data for demo)
-  const generateMockSentiments = (topics) => {
-    return topics.reduce((acc, topic) => {
-      if (topic.id) {
-        // Generate a random sentiment between -0.8 and 0.8
-        acc[topic.id] = (Math.random() * 1.6 - 0.8).toFixed(2);
-      }
-      return acc;
-    }, {});
-  };
 
   // Process topic trends data for the chart
   const processTopicTrends = (topTopics, countsByDate) => {

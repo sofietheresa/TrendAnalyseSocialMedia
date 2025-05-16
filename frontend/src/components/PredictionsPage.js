@@ -38,7 +38,10 @@ const PredictionsPage = () => {
         setError(null);
         console.log("Fetching prediction data with filters:", dateFilter);
         
-        const response = await fetchPredictions();
+        const response = await fetchPredictions(
+          dateFilter.startDate || null, 
+          dateFilter.endDate || null
+        );
         
         console.log("Received prediction data:", response);
         
