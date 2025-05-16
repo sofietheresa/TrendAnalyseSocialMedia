@@ -3,7 +3,6 @@ import { fetchPredictions } from '../services/api';
 import { Line } from 'react-chartjs-2';
 import { formatDate, formatWeekday } from '../utils/dateUtils';
 import './PredictionsPage.css';
-import { getMockDataStatus } from '../services/api';
 import ModelVersionBadge from './ModelVersionBadge';
 import './ModelVersionBadge.css';
 
@@ -21,7 +20,6 @@ const PredictionsPage = () => {
     endDate: ''
   });
   const [predictionTrends, setPredictionTrends] = useState([]);
-  const [usingDemoData, setUsingDemoData] = useState(false);
 
   // Get sentiment emoji based on sentiment score
   const getSentimentEmoji = (sentiment) => {
@@ -48,9 +46,6 @@ const PredictionsPage = () => {
         );
         
         console.log("Received prediction data:", response);
-        
-        // Always use real data, never demo data
-        setUsingDemoData(false);
         
         if (response.error) {
           setError(response.error);
