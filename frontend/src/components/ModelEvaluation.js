@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { fetchTopicModel, fetchModelVersions, fetchModelMetrics, fetchModelDrift } from '../services/api';
 import { formatDate, formatDateTime, formatNumber } from '../utils/dateUtils';
 import './ModelEvaluation.css';
+import ModelVersionBadge from './ModelVersionBadge';
+import './ModelVersionBadge.css';
 import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, RadialLinearScale } from 'chart.js';
 import { Radar, Line, Bar, Doughnut } from 'react-chartjs-2';
 
@@ -565,6 +567,14 @@ const ModelEvaluation = () => {
       <div className="model-evaluation-header">
         <h1 className="page-title">Model Evaluation</h1>
         <p className="schedule-info">Pipeline runs automatically every 6 hours to evaluate model performance</p>
+        {selectedModel === 'topic_model' && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '15px' }}>
+            <ModelVersionBadge 
+              version={modelVersions.find(v => v.id === selectedVersion)?.name || 'V1.0.2'} 
+              date={modelVersions.find(v => v.id === selectedVersion)?.date ? formatDateTime(modelVersions.find(v => v.id === selectedVersion)?.date) : '16.5.2025, 20:28:13'} 
+            />
+          </div>
+        )}
       </div>
       
       {/* Model Selector */}

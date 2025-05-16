@@ -4,6 +4,8 @@ import { Line } from 'react-chartjs-2';
 import { formatDate, formatWeekday } from '../utils/dateUtils';
 import './PredictionsPage.css';
 import { getMockDataStatus } from '../services/api';
+import ModelVersionBadge from './ModelVersionBadge';
+import './ModelVersionBadge.css';
 
 const PredictionsPage = () => {
   const [predictions, setPredictions] = useState([]);
@@ -230,6 +232,11 @@ const PredictionsPage = () => {
         <span style={{ fontWeight: 400, fontSize: '0.8em' }}>Machine Learning Forecasts</span>
         {usingDemoData && <span className="demo-data-badge">Demo-Daten</span>}
       </h1>
+      
+      {/* Model Version Badge */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+        <ModelVersionBadge version="V1.0.2" date="16.5.2025, 20:28:13" />
+      </div>
       
       {/* Date Range Filter */}
       <div className="filter-section">

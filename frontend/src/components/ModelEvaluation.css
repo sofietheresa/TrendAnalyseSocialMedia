@@ -65,6 +65,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .version-card:hover {
@@ -85,11 +87,14 @@
   font-weight: 600;
   color: #232252;
   margin-bottom: 5px;
+  padding-right: 70px;
+  line-height: 1.2;
 }
 
 .version-date {
   font-size: 0.85rem;
   color: #64748B;
+  line-height: 1.2;
 }
 
 .version-status {
@@ -103,6 +108,7 @@
   background-color: rgba(22, 163, 74, 0.1);
   padding: 3px 6px;
   border-radius: 4px;
+  white-space: nowrap;
 }
 
 .no-versions, .no-steps {

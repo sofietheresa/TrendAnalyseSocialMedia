@@ -364,7 +364,7 @@ cd frontend && npm start</pre>
                         </td>
                     </tr>
                     <tr>
-                        <td><code>/api/mlops/models/{model_name}/drift</code></td>
+                        <td><code>/api/mlops/models/{'{model_name}'}/drift</code></td>
                         <td>GET</td>
                         <td>Ruft Modell-Drift-Metriken ab</td>
                         <td><code>model_name</code> (erforderlich)</td>
@@ -376,19 +376,19 @@ cd frontend && npm start</pre>
                         <td>keine</td>
                     </tr>
                     <tr>
-                        <td><code>/api/mlops/pipelines/{pipeline_id}</code></td>
+                        <td><code>/api/mlops/pipelines/{'{pipeline_id}'}</code></td>
                         <td>GET</td>
                         <td>Ruft Details zu einer bestimmten Pipeline ab</td>
                         <td><code>pipeline_id</code> (erforderlich)</td>
                     </tr>
                     <tr>
-                        <td><code>/api/mlops/pipelines/{pipeline_id}/executions</code></td>
+                        <td><code>/api/mlops/pipelines/{'{pipeline_id}'}/executions</code></td>
                         <td>GET</td>
                         <td>Ruft Ausführungen einer Pipeline ab</td>
                         <td><code>pipeline_id</code> (erforderlich)</td>
                     </tr>
                     <tr>
-                        <td><code>/api/mlops/pipelines/{pipeline_id}/execute</code></td>
+                        <td><code>/api/mlops/pipelines/{'{pipeline_id}'}/execute</code></td>
                         <td>POST</td>
                         <td>Führt eine Pipeline aus</td>
                         <td>

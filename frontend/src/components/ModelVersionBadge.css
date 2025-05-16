@@ -1,0 +1,24 @@
+.model-version-badge {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #16a34a;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background-color: rgba(22, 163, 74, 0.05);
+  max-width: 200px;
+  margin: 10px 0;
+}
+
+.model-version-header {
+  color: #232252;
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.model-version-date {
+  color: #64748B;
+  font-size: 0.8rem;
+  line-height: 1.2;
+} 
