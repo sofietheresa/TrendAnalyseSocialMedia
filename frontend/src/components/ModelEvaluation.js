@@ -171,6 +171,62 @@ const ModelEvaluation = () => {
     });
   };
   
+  // Handle version selection
+  const handleVersionSelect = async (versionId) => {
+    if (versionId === selectedVersion) return;
+    
+    setSelectedVersion(versionId);
+    
+    try {
+      setLoading(true);
+      // Fetch metrics for the selected version
+      const metricsData = await fetchModelMetrics(selectedModel, versionId);
+      console.log('Fetched metrics for selected version:', metricsData);
+      
+      if (!metricsData || metricsData.error) {
+        throw new Error('Failed to fetch valid metrics data');
+      }
+      
+      setMetrics(metricsData);
+
+      // For trend prediction model, update forecast data
+      if (selectedModel === 'trend_prediction' && metricsData.forecast_data) {
+        setForecastData(metricsData.forecast_data);
+        
+        // Update feature importance if available
+        if (metricsData.feature_importance) {
+          setFeatureImportance(metricsData.feature_importance);
+        }
+      }
+      
+      // For sentiment analysis, update example classifications
+      if (selectedModel === 'sentiment_analysis' && metricsData.example_classifications) {
+        setSentimentExamples(metricsData.example_classifications);
+      }
+      
+      // Fetch drift metrics for relevant model types
+      if (selectedModel === 'topic_model' || selectedModel === 'sentiment_analysis') {
+        try {
+          const driftData = await fetchModelDrift(selectedModel, versionId);
+          console.log('Fetched drift data for selected version:', driftData);
+          
+          if (driftData && !driftData.error && driftData.confusionMatrix) {
+            setConfusionMatrix(driftData.confusionMatrix);
+          }
+        } catch (err) {
+          console.error('Error fetching drift data:', err);
+          setConfusionMatrix(null);
+        }
+      }
+      
+    } catch (err) {
+      console.error("Error fetching metrics for selected version:", err);
+      setError(`Failed to load metrics for version: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   // Prepare radar chart data
   const radarChartData = {
     labels: [
@@ -611,7 +667,7 @@ const ModelEvaluation = () => {
               <div 
                 key={version.id}
                 className={`version-card ${selectedVersion === version.id ? 'active' : ''} ${version.status === 'production' ? 'production' : ''}`}
-                onClick={() => setSelectedVersion(version.id)}
+                onClick={() => handleVersionSelect(version.id)}
               >
                 <div className="version-name">{version.name}</div>
                 <div className="version-date">{formatDateTime(version.date)}</div>

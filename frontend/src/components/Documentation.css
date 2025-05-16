@@ -239,4 +239,20 @@
         margin-bottom: 1rem;
         position: static;
     }
+}
+
+.documentation-tabs .nav-link {
+    color: #232252 !important; /* Make sure tab text is always dark blue */
+    font-weight: 500;
+}
+
+.documentation-tabs .nav-link.active {
+    font-weight: 600;
+    background-color: rgba(46, 108, 219, 0.1);
+    border-bottom: 2px solid #232252;
+}
+
+.documentation-tabs .nav-link:hover {
+    opacity: 0.8;
+    background-color: rgba(46, 108, 219, 0.05);
 } 
