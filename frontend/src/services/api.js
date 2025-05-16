@@ -90,6 +90,9 @@ const apiCall = async (
 export const fetchScraperStatus = async () => {
   console.log("Fetching scraper status...");
   try {
+    // Always reset mock data status at start of request
+    setMockDataStatus(false);
+    
     const response = await apiCall("/api/scraper-status");
     console.log("Scraper status raw response:", response);
 
@@ -114,6 +117,9 @@ export const fetchScraperStatus = async () => {
 export const fetchDailyStats = async () => {
   console.log("Fetching daily stats...");
   try {
+    // Always reset mock data status at start of request
+    setMockDataStatus(false);
+    
     return await apiCall("/api/daily-stats");
   } catch (error) {
     console.error("Error fetching daily stats:", error);
