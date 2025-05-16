@@ -299,23 +299,37 @@ async def get_model_drift(
     """
     Get data drift metrics for a specific model version
     """
-    logger.info(f"Request for drift metrics of model: {model_name}, version: {version}")
+    logger.info(f"MLOps API: Request for drift metrics of model: {model_name}, version: {version}")
+    
+    # Set default version if not provided
+    if not version:
+        version = "v1.0.2"  # Default to latest version
+        logger.info(f"No version specified, using default: {version}")
     
     # Check for actual drift metrics in model registry
-    if version:
-        drift_path = MODEL_REGISTRY_PATH / model_name / version / "drift_metrics.json"
+    drift_path = MODEL_REGISTRY_PATH / model_name / version / "drift_metrics.json"
+    logger.info(f"Checking for drift metrics at: {drift_path}")
+    
+    try:
         if drift_path.exists():
+            logger.info(f"Found drift metrics at {drift_path}")
             with open(drift_path, "r") as f:
                 drift_metrics = json.load(f)
                 return DriftMetrics(**drift_metrics)
+        else:
+            logger.warning(f"No drift metrics found at {drift_path}, using mock data")
+    except Exception as e:
+        logger.error(f"Error reading drift metrics: {e}")
     
     # Return mock drift metrics if no actual metrics found
-    return DriftMetrics(
+    result = DriftMetrics(
         timestamp=datetime.now().isoformat(),
         dataset_drift=True,
         share_of_drifted_columns=0.25,
         drifted_columns=["text_length", "sentiment_score", "engagement_rate"]
     )
+    logger.info(f"Returning mock drift metrics: {result}")
+    return result
 
 @router.post("/pipelines/{pipeline_id}/execute")
 async def execute_pipeline(pipeline_id: str):

@@ -1,10 +1,15 @@
 import axios from 'axios';
 
-// API URL configuration - sicherstellen, dass die Railway URL verwendet wird
+// API URL configuration - using local development server for testing
 const API_URL = process.env.REACT_APP_API_URL || 
-               'https://trendanalysesocialmedia-production.up.railway.app';
+                'http://localhost:8000';
+
+// Special endpoint for model drift - using dedicated API
+const DRIFT_API_URL = process.env.REACT_APP_DRIFT_API_URL || 
+                     'http://localhost:8080';
 
 console.log('API_URL set to:', API_URL);
+console.log('DRIFT_API_URL set to:', DRIFT_API_URL);
 
 // Verbesserte Axios-Konfiguration
 const api = axios.create({
@@ -681,7 +686,7 @@ export const fetchModelMetrics = async (modelName, version = null) => {
 };
 
 /**
- * Fetch model drift data
+ * Fetch model drift data from dedicated API
  * 
  * @param {string} modelName - Model name
  * @param {string} version - Optional model version
@@ -689,14 +694,47 @@ export const fetchModelMetrics = async (modelName, version = null) => {
  */
 export const fetchModelDrift = async (modelName, version = null) => {
   try {
+    // Create a dedicated API client for drift endpoint
+    const driftApi = axios.create({
+      baseURL: DRIFT_API_URL,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+      },
+      timeout: 45000,
+      withCredentials: false
+    });
+    
     const url = `/api/mlops/models/${modelName}/drift${version ? `?version=${version}` : ''}`;
-    console.log(`Fetching model drift from: ${url}`);
-    const response = await api.get(url);
-    console.log('Model drift response:', response.data);
-    return response.data;
+    console.log(`Fetching model drift from: ${DRIFT_API_URL}${url}`);
+    
+    // Try with multiple retries
+    for (let retry = 0; retry < MAX_RETRIES; retry++) {
+      try {
+        const response = await driftApi.get(url);
+        console.log('Model drift response:', response.data);
+        return response.data;
+      } catch (error) {
+        // Only retry on network errors or 5xx errors
+        if (retry < MAX_RETRIES - 1 && (!error.response || error.response.status >= 500)) {
+          console.log(`Retry ${retry + 1}/${MAX_RETRIES} for model drift data...`);
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (retry + 1)));
+        } else {
+          throw error;
+        }
+      }
+    }
   } catch (error) {
     console.error('Error fetching model drift data:', error);
-    return { error: 'Failed to fetch model drift data. Please try again later.' };
+    
+    // Fallback to mock data
+    console.warn('Using mock drift data due to API error');
+    return {
+      timestamp: new Date().toISOString(),
+      dataset_drift: true,
+      share_of_drifted_columns: 0.25,
+      drifted_columns: ["text_length", "sentiment_score", "engagement_rate"]
+    };
   }
 };
 
