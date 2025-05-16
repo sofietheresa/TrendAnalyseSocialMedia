@@ -327,6 +327,27 @@ async def get_daily_stats():
         logger.error(f"Fehler im Tägliche-Statistiken-Endpunkt: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/db/topics")
+async def get_db_topics(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None
+):
+    """
+    Liefert Topics aus der Datenbank für den angegebenen Zeitraum.
+    Diese Funktion dient als Alternative zum /api/topic-model Endpunkt.
+    """
+    logger.info(f"DB-Topics-Endpunkt aufgerufen mit start_date={start_date}, end_date={end_date}")
+    
+    # Verwende die gleiche Implementierung wie get_topic_model, aber als GET-Endpunkt
+    request = TopicModelRequest(
+        start_date=start_date,
+        end_date=end_date,
+        platforms=["reddit", "tiktok", "youtube"],
+        num_topics=5
+    )
+    
+    return await get_topic_model(request)
+
 # Topic-Modellierungsschema
 class TopicModelRequest(BaseModel):
     start_date: Optional[str] = None
