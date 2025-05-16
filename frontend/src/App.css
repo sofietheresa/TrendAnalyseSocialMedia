@@ -1552,3 +1552,217 @@ html, body, #root {
   font-size: 0.9rem;
 }
 
+/* Topic Posts Modal Styles */
+.topic-posts-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.topic-posts-modal-content {
+  background-color: white;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.topic-posts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 2;
+  border-radius: 15px 15px 0 0;
+}
+
+.topic-posts-header h2 {
+  margin: 0;
+  color: #232252;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.close-modal-btn {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: #64748B;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.close-modal-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #232252;
+}
+
+.topic-posts-list {
+  padding: 15px 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.topic-post-item {
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.topic-post-item:hover {
+  transform: translateY(-2px);
+}
+
+.topic-post-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.topic-post-source {
+  display: flex;
+  align-items: center;
+}
+
+.source-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #9364eb;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.source-icon.reddit {
+  background-color: #ff4500;
+}
+
+.source-icon.twitter {
+  background-color: #1DA1F2;
+}
+
+.source-icon.instagram {
+  background-color: #E1306C;
+}
+
+.source-icon.tiktok {
+  background-color: #69C9D0;
+}
+
+.source-icon.youtube {
+  background-color: #FF0000;
+}
+
+.source-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #64748B;
+}
+
+.topic-post-date {
+  font-size: 0.8rem;
+  color: #94A3B8;
+}
+
+.topic-post-content {
+  margin-bottom: 10px;
+}
+
+.topic-post-title {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+  color: #232252;
+}
+
+.topic-post-text {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #334155;
+  margin: 0;
+  white-space: pre-line;
+}
+
+.topic-post-sentiment {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.1);
+}
+
+.sentiment-value {
+  font-size: 0.85rem;
+  color: #64748B;
+}
+
+.no-posts-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #64748B;
+}
+
+/* Make topic stacks and cards look clickable */
+.topic-stack, .topic-post-counts-card {
+  transition: all 0.2s ease;
+}
+
+.topic-stack:hover, .topic-post-counts-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 768px) {
+  .topic-posts-modal-content {
+    width: 95%;
+    max-height: 95vh;
+  }
+  
+  .topic-posts-header h2 {
+    font-size: 1.3rem;
+  }
+}
+

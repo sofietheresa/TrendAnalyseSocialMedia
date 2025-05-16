@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // API URL configuration - using a unified API that includes both main and drift API functionality
 const API_URL = process.env.REACT_APP_API_URL || 
-                'http://localhost:8002';
+                'http://localhost:3001';  // Mock API server
 
 console.log('API_URL set to:', API_URL);
 
@@ -21,12 +21,12 @@ const api = axios.create({
 
 // IMPORTANT: Set this to false when real FastAPI endpoints are available
 // This is a temporary configuration until the backend API is fully implemented
-export const useMockApi = false; // Set to false to use real API endpoints
+export const useMockApi = true; // Using mock API server
 
 console.log('Using mock API:', useMockApi);
 
 // Create a global state for tracking mock data usage
-export let usingMockData = false; // Initialize with false to force real data
+export let usingMockData = true; // Using mock data
 
 // Function to check and set mock data usage state
 export const setMockDataStatus = (isMockData) => {

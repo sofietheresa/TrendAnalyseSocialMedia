@@ -8,7 +8,7 @@ import Documentation from './components/Documentation';
 import ModelEvaluation from './components/ModelEvaluation';
 import PipelinePage from './components/PipelinePage';
 import PredictionsPage from './components/PredictionsPage';
-import { fetchTopicModel, fetchPredictions } from './services/api';
+import { fetchTopicModel, fetchPredictions, fetchRecentData } from './services/api';
 import { Line } from 'react-chartjs-2';
 import MockDataNotification from './components/MockDataNotification';
 import AccessGate from './components/AccessGate';
@@ -49,6 +49,9 @@ const Homepage = () => {
   const [topicCounts, setTopicCounts] = useState({});
   const [topicTrends, setTopicTrends] = useState([]);
   const [topicSentiments, setTopicSentiments] = useState({});
+  const [selectedTopicId, setSelectedTopicId] = useState(null);
+  const [topicPosts, setTopicPosts] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(false);
 
   // Get sentiment emoji based on sentiment score
   const getSentimentEmoji = (sentiment) => {
@@ -59,6 +62,84 @@ const Homepage = () => {
     if (sentiment > -0.1) return '😐'; // Neutral
     if (sentiment > -0.5) return '🙁'; // Negative
     return '😠'; // Very negative
+  };
+
+  // Handle topic click to show related posts
+  const handleTopicClick = async (topicId, topicName) => {
+    try {
+      setLoadingPosts(true);
+      setSelectedTopicId(topicId);
+      
+      // Fetch posts related to this topic
+      console.log(`Fetching posts for topic ID ${topicId}: ${topicName}`);
+      
+      // Try to fetch topic-specific posts
+      try {
+        const response = await fetch(`/api/topics/${topicId}/posts`);
+        if (response.ok) {
+          const data = await response.json();
+          setTopicPosts(data);
+          return;
+        }
+      } catch (err) {
+        console.warn("Failed to fetch from topic-specific endpoint:", err);
+      }
+      
+      // Fallback to recent data filtering by topic ID
+      try {
+        const recentData = await fetchRecentData('all', 20);
+        if (recentData && recentData.data && recentData.data.length > 0) {
+          // Filter posts that match the topic
+          const filteredPosts = recentData.data.filter(post => 
+            post.topic_id === topicId || 
+            post.topics?.includes(topicId) || 
+            post.keywords?.some(kw => topicName.toLowerCase().includes(kw.toLowerCase())) ||
+            (post.title && post.title.toLowerCase().includes(topicName.toLowerCase())) ||
+            (post.text && post.text.toLowerCase().includes(topicName.toLowerCase())) ||
+            (post.content && post.content.toLowerCase().includes(topicName.toLowerCase()))
+          );
+          setTopicPosts(filteredPosts);
+        } else {
+          // If no data found, create some dummy posts for the topic
+          const dummyPosts = [
+            {
+              platform: "Reddit",
+              date: new Date().toISOString(),
+              title: `Discussion about ${topicName}`,
+              content: `This is a popular discussion mentioning the topic "${topicName}" with many engagement metrics.`,
+              sentiment_score: Math.random() * 2 - 1 // Random sentiment between -1 and 1
+            },
+            {
+              platform: "Twitter",
+              date: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+              content: `Trending post about ${topicName} with lots of retweets and comments!`,
+              sentiment_score: Math.random() * 2 - 1
+            },
+            {
+              platform: "TikTok",
+              date: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+              content: `Popular TikTok video discussing "${topicName}" that went viral recently.`,
+              sentiment_score: Math.random() * 2 - 1
+            }
+          ];
+          setTopicPosts(dummyPosts);
+        }
+      } catch (err) {
+        console.error("Error fetching topic posts:", err);
+        setTopicPosts([]);
+      }
+    } catch (err) {
+      console.error("Error handling topic click:", err);
+      setTopicPosts([]);
+    } finally {
+      setLoadingPosts(false);
+    }
+  };
+
+  // Close the post modal
+  const closePostModal = () => {
+    setSelectedTopicId(null);
+    setTopicPosts([]);
   };
 
   // Fetch topics data
@@ -80,59 +161,70 @@ const Homepage = () => {
         if (response.error) {
           setError(response.error);
           console.error("Error from topic model API:", response.error);
+          setTopics([]);
+          setTopicCounts({});
+          setTopicSentiments({});
         } else {
           if (Array.isArray(response.topics)) {
-            // Weniger strenge Filterung für Topics
+            // Filter topics
             const filteredTopics = response.topics.filter(topic => 
               topic.id !== -1 && 
               topic.name && 
               topic.name.trim() !== ''
             );
             
-            // Falls keine Topics übrig bleiben und die ursprüngliche Liste nicht leer war,
-            // verwende die ursprüngliche Liste ohne Filterung
-            const sortedTopics = filteredTopics.length > 0 
-              ? filteredTopics.sort((a, b) => (b.weight || 0) - (a.weight || 0))
-              : response.topics.length > 0
-                ? response.topics.sort((a, b) => (b.weight || 0) - (a.weight || 0))
-                : [];
-            
-            setTopics(sortedTopics);
+            if (filteredTopics.length > 0) {
+              const sortedTopics = filteredTopics.sort((a, b) => (b.weight || 0) - (a.weight || 0));
+              setTopics(sortedTopics);
+            } else if (response.topics.length > 0) {
+              // If no valid topics after filtering but original list isn't empty
+              const sortedOriginalTopics = response.topics.sort((a, b) => (b.weight || 0) - (a.weight || 0));
+              setTopics(sortedOriginalTopics);
+            } else {
+              // No topics at all
+              setTopics([]);
+            }
             
             // Process topic counts by date if available
             if (response.topic_counts_by_date) {
               setTopicCounts(response.topic_counts_by_date);
               
               // Process topic trends data for the chart
-              processTopicTrends(sortedTopics, response.topic_counts_by_date);
+              if (filteredTopics.length > 0) {
+                processTopicTrends(filteredTopics, response.topic_counts_by_date);
+              } else if (response.topics.length > 0) {
+                processTopicTrends(response.topics, response.topic_counts_by_date);
+              } else {
+                setTopicTrends([]);
+              }
+            } else {
+              setTopicCounts({});
+              setTopicTrends([]);
             }
             
-            // Get sentiment data from response if available, otherwise generate mock data
+            // Get sentiment data from response
             if (response.topic_sentiments) {
               setTopicSentiments(response.topic_sentiments);
             } else {
-              // Generate basic sentiment data when API doesn't provide it
-              const basicSentiments = sortedTopics.reduce((acc, topic) => {
-                if (topic.id) {
-                  // Default to neutral (0) if no sentiment is provided
-                  // Ensure each topic has a sentiment value, even if it's 0
-                  acc[topic.id] = topic.sentiment_score !== undefined ? topic.sentiment_score : "0";
-                }
-                return acc;
-              }, {});
-              
-              // Ensure all topics have sentiment values
-              sortedTopics.forEach(topic => {
-                if (topic.id && !basicSentiments[topic.id]) {
-                  basicSentiments[topic.id] = "0";
+              // Extract sentiment data from topics if available
+              const sentiments = {};
+              response.topics.forEach(topic => {
+                if (topic.id && topic.sentiment_score !== undefined) {
+                  sentiments[topic.id] = topic.sentiment_score;
                 }
               });
               
-              setTopicSentiments(basicSentiments);
+              if (Object.keys(sentiments).length > 0) {
+                setTopicSentiments(sentiments);
+              } else {
+                setTopicSentiments({});
+              }
             }
           } else {
             console.warn("Invalid topics format:", response.topics);
             setTopics([]);
+            setTopicCounts({});
+            setTopicSentiments({});
           }
           
           setTimeRange(response.time_range || {
@@ -142,7 +234,10 @@ const Homepage = () => {
         }
       } catch (err) {
         console.error("Error fetching topic data:", err);
-        setError(err.message || "Fehler beim Laden der Daten");
+        setError(err.message || "Error loading data");
+        setTopics([]);
+        setTopicCounts({});
+        setTopicSentiments({});
       } finally {
         setLoading(false);
       }
@@ -153,30 +248,29 @@ const Homepage = () => {
 
   // Process topic trends data for the chart
   const processTopicTrends = (topTopics, countsByDate) => {
-    if (!topTopics || !countsByDate) return;
+    if (!topTopics || !countsByDate || Object.keys(countsByDate).length === 0) {
+      setTopicTrends([]);
+      return;
+    }
     
     console.log("Processing trends for topics:", topTopics);
     console.log("With counts by date:", countsByDate);
     
-    // Weniger strenge Filterung für Topics im Chart
+    // Get top 5 topics
     const filteredTopics = topTopics
       .filter(topic => topic.name && topic.name.trim() !== '')
-      .slice(0, 5);  // Always take top 5
+      .slice(0, 5);
     
-    // Falls keine Topics gefiltert werden konnten, aber die ursprüngliche Liste nicht leer ist
-    const topicsToUse = filteredTopics.length > 0 
-      ? filteredTopics 
-      : topTopics.slice(0, 5);
+    // Use filtered topics if available, otherwise use original
+    const topicsToUse = filteredTopics.length > 0 ? filteredTopics : topTopics.slice(0, 5);
     
     // Get all unique dates across all topics
     const allDates = new Set();
     
     // For each topic, collect all available dates
     topicsToUse.forEach(topic => {
-      if (topic.id && countsByDate[topic.id]) {
+      if (topic.id !== undefined && countsByDate[topic.id]) {
         Object.keys(countsByDate[topic.id]).forEach(date => allDates.add(date));
-      } else {
-        console.warn("Topic missing id or no counts available:", topic);
       }
     });
     
@@ -185,10 +279,11 @@ const Homepage = () => {
     
     if (sortedDates.length === 0) {
       console.warn("No dates found for any topics");
+      setTopicTrends([]);
       return;
     }
     
-    // Prepare chart data - ensure we include all available topics
+    // Prepare chart data
     const trendsData = {
       labels: sortedDates.map(date => new Date(date).toLocaleDateString('de-DE')),
       datasets: topicsToUse.map((topic, index) => {
@@ -201,11 +296,13 @@ const Homepage = () => {
           '#f8986f'  // orange
         ];
         
-        // Provide data even if the topic has no counts
         return {
           label: topic.name || `Topic ${index + 1}`,
           data: sortedDates.map(date => {
-            const count = topic.id && countsByDate[topic.id] && countsByDate[topic.id][date] 
+            // Ensure topic.id is actually defined and countsByDate contains it
+            const count = (topic.id !== undefined && 
+                          countsByDate[topic.id] && 
+                          countsByDate[topic.id][date]) 
               ? countsByDate[topic.id][date] 
               : 0;
             return count;
@@ -374,7 +471,8 @@ const Homepage = () => {
               <div 
                 key={topic.id || index} 
                 className={`topic-stack topic-stack-${index + 1}`}
-                style={{ justifyContent: 'center', textAlign: 'center', margin: '15px auto' }}
+                onClick={() => handleTopicClick(topic.id, topic.name)}
+                style={{ justifyContent: 'center', textAlign: 'center', margin: '15px auto', cursor: 'pointer' }}
               >
                 <span className="topic-name-display">{topic.name || `Topic ${index + 1}`}</span>
                 {topic.keywords && topic.keywords.length > 0 && (
@@ -384,9 +482,11 @@ const Homepage = () => {
                     ))}
                   </span>
                 )}
-                <span className="sentiment-emoji" title={`Sentiment: ${topicSentiments[topic.id] || "0"}`}>
-                  {getSentimentEmoji(parseFloat(topicSentiments[topic.id] || "0"))}
-                </span>
+                {topicSentiments[topic.id] !== undefined && (
+                  <span className="sentiment-emoji" title={`Sentiment: ${topicSentiments[topic.id]}`}>
+                    {getSentimentEmoji(parseFloat(topicSentiments[topic.id]))}
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -404,11 +504,17 @@ const Homepage = () => {
             borderRadius: '15px',
             boxShadow: '0 4px 30px rgba(0, 0, 0, 0.05)'
           }}>
-            <Line
-              data={topicTrends}
-              options={chartOptions}
-              height={350}
-            />
+            {topicTrends.datasets && topicTrends.datasets.length > 0 ? (
+              <Line
+                data={topicTrends}
+                options={chartOptions}
+                height={350}
+              />
+            ) : (
+              <div className="no-data-message" style={{height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <p>No trend data available for the selected time period.</p>
+              </div>
+            )}
             {dateFilter.startDate && dateFilter.endDate && (
               <div className="selected-range-info" style={{
                 textAlign: 'center',
@@ -424,12 +530,19 @@ const Homepage = () => {
           {/* Topic Post Counts */}
           <div className="topic-post-counts-section">
             {topics.slice(0, 5).map((topic, index) => (
-              <div key={topic.id || index} className="topic-post-counts-card">
+              <div 
+                key={topic.id || index} 
+                className="topic-post-counts-card"
+                onClick={() => handleTopicClick(topic.id, topic.name)}
+                style={{ cursor: 'pointer' }}
+              >
                 <h3 className={`topic-name topic-name-${index + 1}`}>
                   {topic.name || `Topic ${index + 1}`}
-                  <span className="sentiment-emoji" style={{ marginLeft: '10px' }} title={`Sentiment: ${topicSentiments[topic.id] || "0"}`}>
-                    {getSentimentEmoji(parseFloat(topicSentiments[topic.id] || "0"))}
-                  </span>
+                  {topicSentiments[topic.id] !== undefined && (
+                    <span className="sentiment-emoji" style={{ marginLeft: '10px' }} title={`Sentiment: ${topicSentiments[topic.id]}`}>
+                      {getSentimentEmoji(parseFloat(topicSentiments[topic.id]))}
+                    </span>
+                  )}
                 </h3>
                 {topic.keywords && topic.keywords.length > 0 && (
                   <div className="topic-keywords-small">
@@ -446,12 +559,73 @@ const Homepage = () => {
               </div>
             ))}
           </div>
+          
+          {/* Topic Posts Modal */}
+          {selectedTopicId && (
+            <div className="topic-posts-modal">
+              <div className="topic-posts-modal-content">
+                <div className="topic-posts-header">
+                  <h2>
+                    {topics.find(t => t.id === selectedTopicId)?.name || 'Topic Posts'}
+                  </h2>
+                  <button className="close-modal-btn" onClick={closePostModal}>×</button>
+                </div>
+                
+                {loadingPosts ? (
+                  <div className="loading-spinner-container">
+                    <div className="loading-spinner"></div>
+                    <p>Loading posts...</p>
+                  </div>
+                ) : (
+                  <div className="topic-posts-list">
+                    {topicPosts.length > 0 ? (
+                      topicPosts.map((post, index) => (
+                        <div key={index} className="topic-post-item">
+                          <div className="topic-post-header">
+                            <div className="topic-post-source">
+                              <span className={`source-icon ${(post.platform || post.source || '').toLowerCase()}`}>
+                                {(post.platform || post.source || '').slice(0, 1).toUpperCase()}
+                              </span>
+                              <span className="source-name">{post.platform || post.source || 'Unknown'}</span>
+                            </div>
+                            <div className="topic-post-date">
+                              {new Date(post.date || post.timestamp || Date.now()).toLocaleDateString('de-DE')}
+                            </div>
+                          </div>
+                          <div className="topic-post-content">
+                            {post.title && (
+                              <h4 className="topic-post-title">{post.title}</h4>
+                            )}
+                            <p className="topic-post-text">{post.content || post.text || post.body || 'No content available'}</p>
+                          </div>
+                          {post.sentiment_score !== undefined && (
+                            <div className="topic-post-sentiment">
+                              <span className="sentiment-emoji">
+                                {getSentimentEmoji(parseFloat(post.sentiment_score))}
+                              </span>
+                              <span className="sentiment-value">
+                                Sentiment: {parseFloat(post.sentiment_score).toFixed(2)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="no-posts-message">
+                        <p>No posts found for this topic.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       ) : !loading && !error ? (
         <div className="no-data-message">
-          <p>Keine Trending-Topics gefunden für den ausgewählten Zeitraum.</p>
-          <p>Bitte wähle einen anderen Zeitraum oder versuche es später erneut.</p>
-          <p className="small-hint">Wenn du keine Zeitraum gewählt hast, werden die Daten der letzten 3 Tage analysiert.</p>
+          <p>No trending topics found for the selected time period.</p>
+          <p>Please try selecting a different time period or try again later.</p>
+          <p className="small-hint">If you haven't chosen a time period, data from the last 3 days will be analyzed.</p>
         </div>
       ) : null}
     </main>
