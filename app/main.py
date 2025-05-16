@@ -1096,6 +1096,85 @@ async def get_pipelines():
     """
     logger.info("Request for all pipelines")
     
+    try:
+        # Versuche, die Pipeline-Daten aus der Datenbank zu holen
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+        
+        # SQL-Abfrage für Pipelines
+        cursor.execute("""
+            SELECT 
+                pipeline_id,
+                name,
+                description,
+                last_run,
+                next_scheduled_run,
+                average_runtime,
+                status
+            FROM 
+                ml_pipelines
+            WHERE 
+                active = true
+        """)
+        
+        db_pipelines = cursor.fetchall()
+        
+        if db_pipelines and len(db_pipelines) > 0:
+            logger.info(f"Found {len(db_pipelines)} pipelines in database")
+            
+            # Format für die API-Antwort umwandeln
+            pipelines = {}
+            
+            for pipeline in db_pipelines:
+                pipeline_id = pipeline['pipeline_id']
+                
+                # Schritte für diese Pipeline abrufen
+                cursor.execute("""
+                    SELECT 
+                        step_id,
+                        name,
+                        description,
+                        status,
+                        runtime
+                    FROM 
+                        ml_pipeline_steps
+                    WHERE 
+                        pipeline_id = %s
+                    ORDER BY 
+                        sequence_order
+                """, (pipeline_id,))
+                
+                steps = cursor.fetchall()
+                steps_formatted = []
+                
+                for step in steps:
+                    steps_formatted.append({
+                        "id": step['step_id'],
+                        "name": step['name'],
+                        "description": step['description'],
+                        "status": step['status'],
+                        "runtime": step['runtime']
+                    })
+                
+                # Pipeline in das Dictionary einfügen
+                pipelines[pipeline_id] = {
+                    "name": pipeline['name'],
+                    "description": pipeline['description'],
+                    "steps": steps_formatted,
+                    "lastRun": pipeline['last_run'].isoformat() if pipeline['last_run'] else None,
+                    "nextScheduledRun": pipeline['next_scheduled_run'].isoformat() if pipeline['next_scheduled_run'] else "continuous",
+                    "averageRuntime": pipeline['average_runtime'],
+                    "status": pipeline['status']
+                }
+            
+            cursor.close()
+            return pipelines
+    
+    except Exception as e:
+        logger.error(f"Error retrieving pipeline data from database: {str(e)}")
+        logger.info("Falling back to mock pipeline data")
+    
+    # Mock-Daten als Fallback verwenden
     # Current date for realistic timestamps
     current_time = datetime.now()
     yesterday = current_time - timedelta(days=1)
@@ -1118,7 +1197,8 @@ async def get_pipelines():
             "lastRun": yesterday.isoformat(),
             "nextScheduledRun": tomorrow.isoformat(),
             "averageRuntime": "00:51:48",
-            "status": "completed"
+            "status": "completed",
+            "is_mock_data": True
         },
         "realtime_monitoring": {
             "name": "Realtime Monitoring Pipeline",
@@ -1133,7 +1213,8 @@ async def get_pipelines():
             "lastRun": current_time.isoformat(),
             "nextScheduledRun": "continuous",
             "averageRuntime": "00:25:30",
-            "status": "running"
+            "status": "running",
+            "is_mock_data": True
         },
         "model_training": {
             "name": "Model Training Pipeline",
@@ -1148,7 +1229,8 @@ async def get_pipelines():
             "lastRun": (yesterday - timedelta(days=1)).isoformat(),
             "nextScheduledRun": (tomorrow + timedelta(days=6)).isoformat(),
             "averageRuntime": "01:52:24",
-            "status": "failed"
+            "status": "failed",
+            "is_mock_data": True
         }
     }
     
