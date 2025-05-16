@@ -1243,6 +1243,80 @@ async def get_pipeline(pipeline_id: str):
     """
     logger.info(f"Request for pipeline: {pipeline_id}")
     
+    try:
+        # Versuche, die Pipeline-Daten aus der Datenbank zu holen
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+        
+        # SQL-Abfrage für die spezifische Pipeline
+        cursor.execute("""
+            SELECT 
+                pipeline_id,
+                name,
+                description,
+                last_run,
+                next_scheduled_run,
+                average_runtime,
+                status
+            FROM 
+                ml_pipelines
+            WHERE 
+                pipeline_id = %s
+                AND active = true
+        """, (pipeline_id,))
+        
+        pipeline_data = cursor.fetchone()
+        
+        if pipeline_data:
+            logger.info(f"Found pipeline {pipeline_id} in database")
+            
+            # Schritte für diese Pipeline abrufen
+            cursor.execute("""
+                SELECT 
+                    step_id,
+                    name,
+                    description,
+                    status,
+                    runtime
+                FROM 
+                    ml_pipeline_steps
+                WHERE 
+                    pipeline_id = %s
+                ORDER BY 
+                    sequence_order
+            """, (pipeline_id,))
+            
+            steps = cursor.fetchall()
+            steps_formatted = []
+            
+            for step in steps:
+                steps_formatted.append({
+                    "id": step['step_id'],
+                    "name": step['name'],
+                    "description": step['description'],
+                    "status": step['status'],
+                    "runtime": step['runtime']
+                })
+            
+            # Pipeline-Objekt erstellen
+            pipeline = {
+                "name": pipeline_data['name'],
+                "description": pipeline_data['description'],
+                "steps": steps_formatted,
+                "lastRun": pipeline_data['last_run'].isoformat() if pipeline_data['last_run'] else None,
+                "nextScheduledRun": pipeline_data['next_scheduled_run'].isoformat() if pipeline_data['next_scheduled_run'] else "continuous",
+                "averageRuntime": pipeline_data['average_runtime'],
+                "status": pipeline_data['status']
+            }
+            
+            cursor.close()
+            return pipeline
+    
+    except Exception as e:
+        logger.error(f"Error retrieving data for pipeline {pipeline_id} from database: {str(e)}")
+        logger.info(f"Falling back to mock data for pipeline {pipeline_id}")
+    
+    # Mock-Daten als Fallback verwenden
     # Current date for realistic timestamps
     current_time = datetime.now()
     yesterday = current_time - timedelta(days=1)
@@ -1264,7 +1338,8 @@ async def get_pipeline(pipeline_id: str):
             "lastRun": yesterday.isoformat(),
             "nextScheduledRun": tomorrow.isoformat(),
             "averageRuntime": "00:51:48",
-            "status": "completed"
+            "status": "completed",
+            "is_mock_data": True
         },
         "realtime_monitoring": {
             "name": "Realtime Monitoring Pipeline",
@@ -1279,7 +1354,8 @@ async def get_pipeline(pipeline_id: str):
             "lastRun": current_time.isoformat(),
             "nextScheduledRun": "continuous",
             "averageRuntime": "00:25:30",
-            "status": "running"
+            "status": "running",
+            "is_mock_data": True
         },
         "model_training": {
             "name": "Model Training Pipeline",
@@ -1294,14 +1370,12 @@ async def get_pipeline(pipeline_id: str):
             "lastRun": (yesterday - timedelta(days=1)).isoformat(),
             "nextScheduledRun": (tomorrow + timedelta(days=6)).isoformat(),
             "averageRuntime": "01:52:24",
-            "status": "failed"
+            "status": "failed",
+            "is_mock_data": True
         }
     }
     
-    if pipeline_id not in pipelines:
-        raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_id} not found")
-    
-    return pipelines[pipeline_id]
+    return pipelines
 
 @app.get("/api/mlops/pipelines/{pipeline_id}/executions")
 async def get_pipeline_executions(pipeline_id: str):
