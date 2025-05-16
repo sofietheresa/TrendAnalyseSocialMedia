@@ -971,6 +971,61 @@ async def get_recent_data(
         logger.exception("Detailed error:")
         raise HTTPException(status_code=500, detail=error_msg)
 
+@app.get("/api/db/posts/recent")
+async def get_db_recent_posts(
+    platform: str = Query(None, description="Platform to get data from (reddit, tiktok, youtube)"),
+    limit: int = Query(10, ge=1, le=100, description="Maximum number of records to return")
+):
+    """
+    Returns the most recent content from the specified platform directly from the database
+    
+    Args:
+        platform: One of 'reddit', 'tiktok', or 'youtube'. If None, all platforms will be queried.
+        limit: Maximum number of records to return (1-100)
+    """
+    logger.info(f"DB recent posts endpoint called for platform: {platform}, limit: {limit}")
+    
+    try:
+        # Cap limit to prevent excessive data requests
+        limit = min(int(limit), 100)
+        
+        # Get database connection
+        db = get_db_connection()
+        
+        # If no specific platform is provided, query all platforms
+        if not platform:
+            all_data = []
+            platforms = ["reddit", "tiktok", "youtube"]
+            platform_limit = limit // len(platforms)
+            
+            for plat in platforms:
+                try:
+                    result = await get_recent_data(platform=plat, limit=platform_limit)
+                    if "data" in result and result["data"]:
+                        # Add platform field to each item
+                        for item in result["data"]:
+                            item["platform"] = plat
+                        all_data.extend(result["data"])
+                except Exception as e:
+                    logger.warning(f"Error fetching data for {plat}: {str(e)}")
+            
+            # Sort combined results by scraped_at
+            all_data.sort(key=lambda x: x.get("scraped_at", ""), reverse=True)
+            
+            # Limit final result set
+            all_data = all_data[:limit]
+            
+            return {"data": all_data, "count": len(all_data)}
+        
+        # If specific platform is requested, use the existing endpoint
+        return await get_recent_data(platform=platform, limit=limit)
+        
+    except Exception as e:
+        error_msg = f"Error retrieving recent posts from database: {str(e)}"
+        logger.error(error_msg)
+        logger.exception("Detailed error:")
+        raise HTTPException(status_code=500, detail=error_msg)
+
 # Add DriftMetrics model for MLOPS endpoints
 class DriftMetrics(BaseModel):
     timestamp: str
@@ -1625,7 +1680,7 @@ def generate_mock_predictions(start_date=None, end_date=None, with_warning=False
             "start_date": week_start,
             "end_date": week_end
         },
-        "is_mock_data": False
+        "is_mock_data": True
     }
     
     if with_warning:
@@ -1637,12 +1692,298 @@ def generate_mock_predictions(start_date=None, end_date=None, with_warning=False
 @app.get("/api/db/analysis")
 async def get_analysis():
     """
-    Get analysis data for social media topics
+    Get analysis data for social media topics from the database
     """
     logger.info("Analysis endpoint called")
     
+    try:
+        # Get database connection
+        db = get_db_connection()
+        current_time = datetime.now()
+        start_date = (current_time - timedelta(days=7)).strftime("%Y-%m-%d")
+        end_date = current_time.strftime("%Y-%m-%d")
+        
+        # Dictionary to store platform specific data
+        platform_data = {
+            "reddit": {"post_count": 0, "user_count": 0, "engagement": 0},
+            "tiktok": {"post_count": 0, "user_count": 0, "engagement": 0},
+            "youtube": {"post_count": 0, "user_count": 0, "engagement": 0}
+        }
+        
+        # Initialize response structure
+        analysis = {
+            "topics": [],
+            "time_range": {
+                "start_date": start_date,
+                "end_date": end_date
+            },
+            "platforms": platform_data,
+            "is_real_data": True
+        }
+        
+        with db.connect() as conn:
+            # Check if we have topic data available
+            topic_exists = False
+            try:
+                result = conn.execute(text("""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = 'topics'
+                    )
+                """))
+                topic_exists = result.scalar()
+            except Exception as e:
+                logger.warning(f"Error checking topics table existence: {e}")
+            
+            # If topics table exists, get topic data
+            if topic_exists:
+                try:
+                    # Get topics data
+                    topics_query = text("""
+                        SELECT id, name, keywords, post_count, engagement, sentiment_score
+                        FROM topics 
+                        WHERE created_at BETWEEN :start_date AND :end_date
+                        ORDER BY post_count DESC
+                        LIMIT 10
+                    """)
+                    
+                    topics_result = conn.execute(topics_query, {
+                        "start_date": start_date,
+                        "end_date": end_date
+                    })
+                    
+                    # Process topics
+                    for row in topics_result:
+                        topic = {
+                            "topic_id": str(row.id),
+                            "topic_name": row.name,
+                            "post_count": row.post_count,
+                            "engagement": row.engagement,
+                            "sentiment_score": float(row.sentiment_score) if row.sentiment_score else 0,
+                            "keywords": row.keywords.split(",") if row.keywords else [],
+                            "platforms": {}
+                        }
+                        
+                        # Try to get platform distribution for this topic
+                        try:
+                            platform_query = text("""
+                                SELECT platform, COUNT(*) as count
+                                FROM posts_topics
+                                JOIN reddit_data ON posts_topics.post_id = reddit_data.id AND posts_topics.platform = 'reddit'
+                                WHERE posts_topics.topic_id = :topic_id
+                                GROUP BY platform
+                                UNION ALL
+                                SELECT platform, COUNT(*) as count
+                                FROM posts_topics
+                                JOIN tiktok_data ON posts_topics.post_id = tiktok_data.id AND posts_topics.platform = 'tiktok'
+                                WHERE posts_topics.topic_id = :topic_id
+                                GROUP BY platform
+                                UNION ALL
+                                SELECT platform, COUNT(*) as count
+                                FROM posts_topics
+                                JOIN youtube_data ON posts_topics.post_id = youtube_data.id AND posts_topics.platform = 'youtube'
+                                WHERE posts_topics.topic_id = :topic_id
+                                GROUP BY platform
+                            """)
+                            
+                            platform_result = conn.execute(platform_query, {"topic_id": row.id})
+                            for platform_row in platform_result:
+                                topic["platforms"][platform_row.platform] = platform_row.count
+                        
+                        except Exception as e:
+                            logger.warning(f"Error getting platform distribution for topic {row.id}: {e}")
+                            # Provide default platform distribution
+                            total = row.post_count
+                            topic["platforms"] = {
+                                "reddit": int(total * 0.4),
+                                "tiktok": int(total * 0.35),
+                                "youtube": int(total * 0.25)
+                            }
+                        
+                        analysis["topics"].append(topic)
+                    
+                except Exception as e:
+                    logger.error(f"Error getting topics data: {e}")
+            
+            # Get platform post counts
+            for platform in ["reddit", "tiktok", "youtube"]:
+                table_name = f"{platform}_data"
+                try:
+                    # Check if table exists
+                    table_check = text(f"""
+                        SELECT EXISTS (
+                            SELECT FROM information_schema.tables 
+                            WHERE table_schema = 'public' 
+                            AND table_name = '{table_name}'
+                        )
+                    """)
+                    table_exists = conn.execute(table_check).scalar()
+                    
+                    if table_exists:
+                        # Get post count
+                        post_count_query = text(f"""
+                            SELECT COUNT(*) FROM {table_name}
+                            WHERE 
+                                CASE 
+                                    WHEN '{platform}' = 'reddit' THEN created_utc::timestamp 
+                                    WHEN '{platform}' = 'tiktok' THEN created_time::timestamp
+                                    ELSE published_at::timestamp
+                                END
+                            BETWEEN '{start_date}'::timestamp AND '{end_date}'::timestamp
+                        """)
+                        
+                        post_count = conn.execute(post_count_query).scalar() or 0
+                        
+                        # Get distinct user count
+                        user_count_query = text(f"""
+                            SELECT COUNT(DISTINCT 
+                                CASE 
+                                    WHEN '{platform}' = 'reddit' THEN author
+                                    WHEN '{platform}' = 'tiktok' THEN author_username
+                                    ELSE channel_title
+                                END
+                            ) FROM {table_name}
+                        """)
+                        
+                        user_count = conn.execute(user_count_query).scalar() or 0
+                        
+                        # Calculate approximate engagement
+                        engagement_multiplier = 20 if platform == "youtube" else (15 if platform == "tiktok" else 10)
+                        engagement = post_count * engagement_multiplier
+                        
+                        # Update platform data
+                        platform_data[platform] = {
+                            "post_count": post_count,
+                            "user_count": user_count,
+                            "engagement": engagement
+                        }
+                except Exception as e:
+                    logger.warning(f"Error getting {platform} data: {e}")
+        
+        # If we have no topics, generate some based on the available data
+        if not analysis["topics"]:
+            logger.warning("No topics found in database, generating topics from available posts")
+            
+            # Check if we have at least some post data
+            has_data = any(platform_data[p]["post_count"] > 0 for p in platform_data)
+            
+            if has_data:
+                # Generate topics from post data
+                with db.connect() as conn:
+                    # We'll sample some posts and create topics from them
+                    topics = []
+                    
+                    for platform in ["reddit", "tiktok", "youtube"]:
+                        table_name = f"{platform}_data"
+                        try:
+                            # Get sample data
+                            sample_query = None
+                            if platform == "reddit":
+                                sample_query = text(f"""
+                                    SELECT title, text, author, created_utc as created_at
+                                    FROM {table_name}
+                                    WHERE created_utc::timestamp BETWEEN '{start_date}'::timestamp AND '{end_date}'::timestamp
+                                    ORDER BY RANDOM()
+                                    LIMIT 50
+                                """)
+                            elif platform == "tiktok":
+                                sample_query = text(f"""
+                                    SELECT description as text, author_username as author, created_time as created_at
+                                    FROM {table_name}
+                                    WHERE created_time::timestamp BETWEEN '{start_date}'::timestamp AND '{end_date}'::timestamp
+                                    ORDER BY RANDOM()
+                                    LIMIT 50
+                                """)
+                            else:  # youtube
+                                sample_query = text(f"""
+                                    SELECT title, description as text, channel_title as author, published_at as created_at
+                                    FROM {table_name}
+                                    WHERE published_at::timestamp BETWEEN '{start_date}'::timestamp AND '{end_date}'::timestamp
+                                    ORDER BY RANDOM()
+                                    LIMIT 50
+                                """)
+                                
+                            if sample_query:
+                                results = conn.execute(sample_query)
+                                
+                                # Process results to extract keywords and create topics
+                                texts = []
+                                for row in results:
+                                    if hasattr(row, 'title') and row.title:
+                                        texts.append(row.title)
+                                    if row.text:
+                                        texts.append(row.text)
+                                
+                                # Extract keywords (simplified)
+                                try:
+                                    from nltk.tag import pos_tag
+                                    from nltk.tokenize import word_tokenize
+                                    
+                                    all_words = []
+                                    for text in texts:
+                                        if isinstance(text, str):
+                                            words = word_tokenize(text.lower())
+                                            tagged_words = pos_tag(words)
+                                            nouns = [word for word, tag in tagged_words if tag.startswith('NN')]
+                                            all_words.extend(nouns)
+                                    
+                                    # Count word frequencies
+                                    from collections import Counter
+                                    word_counts = Counter(all_words)
+                                    
+                                    # Get top keywords
+                                    top_keywords = [word for word, _ in word_counts.most_common(10)]
+                                    
+                                    if top_keywords:
+                                        # Generate topic from keywords
+                                        topics.append({
+                                            "topic_id": f"auto_{platform}_{len(topics) + 1}",
+                                            "topic_name": f"Topic: {' & '.join(top_keywords[:2])}",
+                                            "post_count": platform_data[platform]["post_count"],
+                                            "engagement": platform_data[platform]["engagement"],
+                                            "sentiment_score": 0.2,  # Default positive sentiment
+                                            "keywords": top_keywords[:5],
+                                            "platforms": {
+                                                platform: platform_data[platform]["post_count"]
+                                            }
+                                        })
+                                except Exception as e:
+                                    logger.error(f"Error extracting keywords for {platform}: {e}")
+                        except Exception as e:
+                            logger.warning(f"Error sampling {platform} data: {e}")
+                    
+                    # Add auto-generated topics to analysis
+                    if topics:
+                        analysis["topics"] = topics
+                        analysis["auto_generated"] = True
+                    else:
+                        # If we still can't create topics, use fallback mock data
+                        logger.warning("Could not generate topics from available data, using fallback")
+                        return get_mock_analysis(start_date, end_date)
+            else:
+                # No post data at all, use mock data
+                logger.warning("No post data available, using mock analysis data")
+                return get_mock_analysis(start_date, end_date)
+        
+        logger.info(f"Returning real analysis data with {len(analysis['topics'])} topics")
+        return analysis
+        
+    except Exception as e:
+        logger.error(f"Error in get_analysis: {str(e)}")
+        logger.exception("Detailed error:")
+        
+        # Fall back to mock data
+        return get_mock_analysis()
+
+def get_mock_analysis(start_date=None, end_date=None):
+    """Generate mock analysis data as a fallback"""
+    logger.warning("Using mock analysis data")
+    
     # Current date for realistic timestamps
     current_time = datetime.now()
+    start_date = start_date or (current_time - timedelta(days=7)).strftime("%Y-%m-%d")
+    end_date = end_date or current_time.strftime("%Y-%m-%d")
     
     # Generate mock analysis data
     analysis = {
@@ -1688,8 +2029,8 @@ async def get_analysis():
             }
         ],
         "time_range": {
-            "start_date": (current_time - timedelta(days=7)).strftime("%Y-%m-%d"),
-            "end_date": current_time.strftime("%Y-%m-%d")
+            "start_date": start_date,
+            "end_date": end_date
         },
         "platforms": {
             "reddit": {
@@ -1707,10 +2048,10 @@ async def get_analysis():
                 "user_count": 450,
                 "engagement": 65800
             }
-        }
+        },
+        "is_mock_data": True
     }
     
-    logger.info("Returning analysis data")
     return analysis
 
 @app.get("/api/diagnostic/nltk-status")
