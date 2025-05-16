@@ -36,6 +36,15 @@ from src.pipelines.steps.predictions import make_predictions
 from src.api import api_router
 from src.api.mlops_api import router as mlops_router, DriftMetrics
 
+# Define the PipelineExecution model for direct endpoints
+class PipelineExecution(BaseModel):
+    id: str
+    pipelineId: str
+    startTime: str
+    endTime: Optional[str] = None
+    status: str
+    trigger: str
+
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -327,6 +336,123 @@ async def get_model_drift(
         share_of_drifted_columns=0.25,
         drifted_columns=["text_length", "sentiment_score", "engagement_rate"]
     )
+
+# Direct pipeline endpoints from drift_api.py
+@app.get("/api/mlops/pipelines", tags=["direct"])
+async def get_pipelines():
+    """
+    Get all ML pipelines status
+    """
+    logger.info("Direct request for all pipelines")
+    
+    # Return mock pipeline data
+    pipelines = {
+        "trend_analysis": {
+            "name": "Trend Analysis Pipeline",
+            "description": "Analyzes trends across social media platforms",
+            "steps": [
+                {"id": "data_ingestion", "name": "Data Ingestion", "description": "Collects data from social media APIs", "status": "completed", "runtime": "00:05:23"},
+                {"id": "preprocessing", "name": "Preprocessing", "description": "Cleans and prepares data for analysis", "status": "completed", "runtime": "00:08:47"},
+                {"id": "topic_modeling", "name": "Topic Modeling", "description": "Identifies key topics in the content", "status": "completed", "runtime": "00:15:32"},
+                {"id": "sentiment_analysis", "name": "Sentiment Analysis", "description": "Determines sentiment for each post", "status": "completed", "runtime": "00:09:18"},
+                {"id": "trend_detection", "name": "Trend Detection", "description": "Identifies emerging trends in topics", "status": "completed", "runtime": "00:06:42"},
+                {"id": "model_evaluation", "name": "Model Evaluation", "description": "Evaluates the performance of prediction models", "status": "completed", "runtime": "00:03:55"},
+                {"id": "visualization", "name": "Visualization", "description": "Prepares data for dashboard visualization", "status": "completed", "runtime": "00:02:11"}
+            ],
+            "lastRun": "2023-12-15T14:30:22",
+            "nextScheduledRun": "2023-12-16T14:30:00",
+            "averageRuntime": "00:51:48",
+            "status": "completed"
+        }
+    }
+    
+    return pipelines
+
+@app.get("/api/mlops/pipelines/{pipeline_id}", tags=["direct"])
+async def get_pipeline(pipeline_id: str):
+    """
+    Get details for a specific pipeline
+    """
+    logger.info(f"Direct request for pipeline: {pipeline_id}")
+    
+    pipelines = {
+        "trend_analysis": {
+            "name": "Trend Analysis Pipeline",
+            "description": "Analyzes trends across social media platforms",
+            "steps": [
+                {"id": "data_ingestion", "name": "Data Ingestion", "description": "Collects data from social media APIs", "status": "completed", "runtime": "00:05:23"},
+                {"id": "preprocessing", "name": "Preprocessing", "description": "Cleans and prepares data for analysis", "status": "completed", "runtime": "00:08:47"},
+                {"id": "topic_modeling", "name": "Topic Modeling", "description": "Identifies key topics in the content", "status": "completed", "runtime": "00:15:32"},
+                {"id": "sentiment_analysis", "name": "Sentiment Analysis", "description": "Determines sentiment for each post", "status": "completed", "runtime": "00:09:18"},
+                {"id": "trend_detection", "name": "Trend Detection", "description": "Identifies emerging trends in topics", "status": "completed", "runtime": "00:06:42"},
+                {"id": "model_evaluation", "name": "Model Evaluation", "description": "Evaluates the performance of prediction models", "status": "completed", "runtime": "00:03:55"},
+                {"id": "visualization", "name": "Visualization", "description": "Prepares data for dashboard visualization", "status": "completed", "runtime": "00:02:11"}
+            ],
+            "lastRun": "2023-12-15T14:30:22",
+            "nextScheduledRun": "2023-12-16T14:30:00",
+            "averageRuntime": "00:51:48",
+            "status": "completed"
+        }
+    }
+    
+    if pipeline_id not in pipelines:
+        raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_id} not found")
+    
+    return pipelines[pipeline_id]
+
+@app.get("/api/mlops/pipelines/{pipeline_id}/executions", tags=["direct"])
+async def get_pipeline_executions(pipeline_id: str):
+    """
+    Get executions for a specific pipeline
+    """
+    logger.info(f"Direct request for executions of pipeline: {pipeline_id}")
+    
+    # Mock executions - in production this would be retrieved from a database
+    all_executions = [
+        {"id": "exec-001", "pipelineId": "trend_analysis", "startTime": "2023-12-15T14:30:22", "endTime": "2023-12-15T15:22:10", "status": "completed", "trigger": "scheduled"},
+        {"id": "exec-002", "pipelineId": "trend_analysis", "startTime": "2023-12-14T14:30:15", "endTime": "2023-12-14T15:24:02", "status": "completed", "trigger": "scheduled"},
+        {"id": "exec-003", "pipelineId": "realtime_monitoring", "startTime": "2023-12-15T16:45:10", "endTime": None, "status": "running", "trigger": "manual"},
+        {"id": "exec-004", "pipelineId": "model_training", "startTime": "2023-12-14T09:15:33", "endTime": "2023-12-14T11:16:57", "status": "failed", "trigger": "manual"},
+        {"id": "exec-005", "pipelineId": "trend_analysis", "startTime": "2023-12-13T14:30:18", "endTime": "2023-12-13T15:25:33", "status": "completed", "trigger": "scheduled"},
+    ]
+    
+    executions = [execution for execution in all_executions if execution["pipelineId"] == pipeline_id]
+    
+    return executions
+
+@app.post("/api/mlops/pipelines/{pipeline_id}/execute", tags=["direct"])
+async def execute_pipeline(pipeline_id: str):
+    """
+    Execute a specific pipeline
+    """
+    logger.info(f"Direct request to execute pipeline: {pipeline_id}")
+    
+    # Map pipeline ID to model name
+    pipeline_to_model = {
+        "trend_analysis": "topic_model",
+        "realtime_monitoring": "anomaly_detector",
+        "model_training": "sentiment_classifier"
+    }
+    
+    if pipeline_id not in pipeline_to_model:
+        logger.error(f"Pipeline {pipeline_id} not found")
+        raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_id} not found")
+    
+    # Generate execution ID
+    execution_id = f"exec-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    
+    # In a real implementation, this would start the pipeline in a background task
+    
+    response = {
+        "execution_id": execution_id,
+        "pipeline_id": pipeline_id,
+        "status": "started",
+        "startTime": datetime.now().isoformat(),
+        "message": f"Pipeline {pipeline_id} execution started with ID {execution_id}"
+    }
+    
+    logger.info(f"Pipeline execution response: {response}")
+    return response
 
 # Debug endpoint to verify available routes
 @app.get("/debug/routes")

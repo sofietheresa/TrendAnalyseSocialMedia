@@ -22,7 +22,7 @@ Eine moderne Webanwendung zur Analyse von Social Media Trends auf TikTok, YouTub
 │   │   │   ├── tiktok_scraper.py
 │   │   │   └── youtube_scraper.py
 │   │   └── main_scraper.py  # Hauptscheduler
-│   ├── main.py           # FastAPI Hauptanwendung
+│   ├── main.py           # FastAPI Hauptanwendung (Enthält alle API-Endpunkte)
 │   ├── db_connection.py  # Datenbankverbindung
 │   └── models.py         # Datenmodelle
 ├── app/                  # Railway-Deployment
@@ -159,29 +159,20 @@ Dieses Projekt ist lizenziert unter der MIT-Lizenz.
 
 ## Running the Application
 
-### Backend Services
+### Backend Service
 
-The application consists of two backend services:
-
-1. **Main Backend**: Handles most API requests
-2. **Drift API**: A dedicated API for model drift metrics and ML pipeline operations
-
-To run both services:
+The application uses a single backend API for all endpoints:
 
 ```bash
-# Start the main backend
+# Start the backend API
 python src/main.py
-
-# Start the drift API (in a separate terminal)
-python drift_api.py
 ```
 
 ### Frontend
 
-The frontend requires the following environment variables:
+The frontend requires the following environment variable:
 
-- `REACT_APP_API_URL`: URL of the main backend API (default: http://localhost:8000)
-- `REACT_APP_DRIFT_API_URL`: URL of the drift API (default: http://localhost:8081)
+- `REACT_APP_API_URL`: URL of the API (default: http://localhost:8000)
 
 To run the frontend:
 
@@ -193,10 +184,20 @@ npm start
 
 ## Deployment
 
-Both backend services need to be deployed separately. Use the included `deploy.ps1` script to deploy to Railway:
+Deploy the application to Railway using:
 
 ```bash
-./deploy.ps1
+railway up
 ```
 
-After deployment, update your frontend environment variables with the deployed URLs.
+After deployment, update your frontend environment variable with the deployed URL.
+
+## Backend API Endpoints
+
+Key API endpoints:
+
+- `/api/mlops/models/{model_name}/drift` - Get model drift metrics
+- `/api/mlops/pipelines` - Get all pipelines
+- `/api/mlops/pipelines/{pipeline_id}` - Get specific pipeline
+- `/api/mlops/pipelines/{pipeline_id}/executions` - Get pipeline executions
+- `/api/mlops/pipelines/{pipeline_id}/execute` - Execute a pipeline

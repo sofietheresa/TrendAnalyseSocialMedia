@@ -4,12 +4,7 @@ import axios from 'axios';
 const API_URL = process.env.REACT_APP_API_URL || 
                 'http://localhost:8000';
 
-// Special endpoint for model drift - using dedicated API
-const DRIFT_API_URL = process.env.REACT_APP_DRIFT_API_URL || 
-                     'http://localhost:8081';
-
 console.log('API_URL set to:', API_URL);
-console.log('DRIFT_API_URL set to:', DRIFT_API_URL);
 
 // Verbesserte Axios-Konfiguration
 const api = axios.create({
@@ -21,17 +16,6 @@ const api = axios.create({
     // Longer timeout for potentially slow connections
     timeout: 45000,
     // Disable CORS credentials since we're using proxy
-    withCredentials: false
-});
-
-// Create a dedicated API client for the drift API endpoints
-const driftApi = axios.create({
-    baseURL: DRIFT_API_URL,
-    headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache',
-    },
-    timeout: 45000,
     withCredentials: false
 });
 
@@ -598,6 +582,8 @@ export const fetchPredictions = async () => {
     }
 };
 
+// ML-Ops API Functions
+
 /**
  * Fetch ML pipeline data
  * 
@@ -610,12 +596,12 @@ export const fetchPipelines = async (pipelineId = null) => {
       ? `/api/mlops/pipelines/${pipelineId}`
       : '/api/mlops/pipelines';
     
-    console.log(`Fetching pipelines from: ${DRIFT_API_URL}${url}`);
+    console.log(`Fetching pipelines from: ${url}`);
     
     // Try with multiple retries
     for (let retry = 0; retry < MAX_RETRIES; retry++) {
       try {
-        const response = await driftApi.get(url);
+        const response = await api.get(url);
         console.log('Pipeline response:', response.data);
         return response.data;
       } catch (error) {
@@ -632,7 +618,8 @@ export const fetchPipelines = async (pipelineId = null) => {
     throw new Error('Failed to fetch pipeline data after all retries');
   } catch (error) {
     console.error('Error fetching pipeline data:', error);
-    return { error: `Failed to fetch pipeline data: ${error.message}` };
+    // Return empty object instead of error message
+    return pipelineId ? {} : {};
   }
 };
 
@@ -645,12 +632,12 @@ export const fetchPipelines = async (pipelineId = null) => {
 export const fetchPipelineExecutions = async (pipelineId) => {
   try {
     const url = `/api/mlops/pipelines/${pipelineId}/executions`;
-    console.log(`Fetching pipeline executions from: ${DRIFT_API_URL}${url}`);
+    console.log(`Fetching pipeline executions from: ${url}`);
     
     // Try with multiple retries
     for (let retry = 0; retry < MAX_RETRIES; retry++) {
       try {
-        const response = await driftApi.get(url);
+        const response = await api.get(url);
         console.log('Pipeline executions response:', response.data);
         // Ensure we always return an array
         return Array.isArray(response.data) ? response.data : [];
@@ -668,7 +655,8 @@ export const fetchPipelineExecutions = async (pipelineId) => {
     throw new Error('Failed to fetch pipeline executions after all retries');
   } catch (error) {
     console.error('Error fetching pipeline executions:', error);
-    return { error: `Failed to fetch pipeline executions: ${error.message}` };
+    // Return empty array instead of error message
+    return [];
   }
 };
 
@@ -683,12 +671,12 @@ export const executePipeline = async (pipelineId) => {
     console.log(`Executing pipeline: ${pipelineId}`);
     
     const url = `/api/mlops/pipelines/${pipelineId}/execute`;
-    console.log(`Executing pipeline at: ${DRIFT_API_URL}${url}`);
+    console.log(`Executing pipeline at: ${url}`);
     
     // Try with multiple retries
     for (let retry = 0; retry < MAX_RETRIES; retry++) {
       try {
-        const response = await driftApi.post(url);
+        const response = await api.post(url);
         console.log('Pipeline execution response:', response.data);
         return response.data;
       } catch (error) {
@@ -705,7 +693,15 @@ export const executePipeline = async (pipelineId) => {
     throw new Error('Failed to execute pipeline after all retries');
   } catch (error) {
     console.error('Error executing pipeline:', error);
-    return { error: 'Failed to execute pipeline. Please try again later.' };
+    // Return error object with empty data
+    return { 
+      error: `Failed to execute pipeline: ${error.message}`,
+      execution_id: "", 
+      pipeline_id: pipelineId,
+      status: "failed",
+      startTime: "",
+      message: ""
+    };
   }
 };
 
@@ -724,7 +720,7 @@ export const fetchModelVersions = async (modelName) => {
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('Error fetching model versions:', error);
-    return { error: `Failed to fetch model versions: ${error.message}` };
+    return [];
   }
 };
 
@@ -744,12 +740,12 @@ export const fetchModelMetrics = async (modelName, version = null) => {
     return response.data;
   } catch (error) {
     console.error('Error fetching model metrics:', error);
-    return { error: 'Failed to fetch model metrics. Please try again later.' };
+    return {};
   }
 };
 
 /**
- * Fetch model drift data from dedicated API
+ * Fetch model drift data
  * 
  * @param {string} modelName - Model name
  * @param {string} version - Optional model version
@@ -758,12 +754,12 @@ export const fetchModelMetrics = async (modelName, version = null) => {
 export const fetchModelDrift = async (modelName, version = null) => {
   try {
     const url = `/api/mlops/models/${modelName}/drift${version ? `?version=${version}` : ''}`;
-    console.log(`Fetching model drift from: ${DRIFT_API_URL}${url}`);
+    console.log(`Fetching model drift from: ${url}`);
     
     // Try with multiple retries
     for (let retry = 0; retry < MAX_RETRIES; retry++) {
       try {
-        const response = await driftApi.get(url);
+        const response = await api.get(url);
         console.log('Model drift response:', response.data);
         return response.data;
       } catch (error) {
@@ -776,16 +772,16 @@ export const fetchModelDrift = async (modelName, version = null) => {
         }
       }
     }
+    
+    throw new Error('Failed to fetch model drift data after all retries');
   } catch (error) {
     console.error('Error fetching model drift data:', error);
-    
-    // Fallback to mock data
-    console.warn('Using mock drift data due to API error');
-    return {
-      timestamp: new Date().toISOString(),
-      dataset_drift: true,
-      share_of_drifted_columns: 0.25,
-      drifted_columns: ["text_length", "sentiment_score", "engagement_rate"]
+    // Return empty data instead of mock data
+    return { 
+      timestamp: "",
+      dataset_drift: false,
+      share_of_drifted_columns: 0,
+      drifted_columns: []
     };
   }
 };

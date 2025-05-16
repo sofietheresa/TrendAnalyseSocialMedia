@@ -2845,3 +2845,31 @@ psycopg2.InterfaceError: connection already closed
 2025-05-16 09:44:36,882 [INFO] Scraping subreddit: r/trendingsubreddits
 2025-05-16 09:44:39,651 [INFO] Found 100 posts in r/trendingsubreddits
 2025-05-16 09:44:39,652 [INFO] Found 138 unique posts out of 141 total posts
+2025-05-16 09:45:58,629 [INFO] Successfully processed 138 Reddit posts (0 inserted, 138 updated)
+2025-05-16 09:46:17,389 [INFO] Successfully processed 138 Reddit posts (0 inserted, 138 updated)
+2025-05-16 10:01:46,890 [INFO] Starting Reddit scraping...
+2025-05-16 10:01:46,890 [INFO] Connecting to Reddit API with ID: jl1Te...
+2025-05-16 10:01:46,891 [INFO] Successfully connected to Reddit API
+2025-05-16 10:01:46,892 [INFO] Scraping subreddit: r/all
+2025-05-16 10:01:48,844 [INFO] Found 6 posts in r/all
+2025-05-16 10:01:48,844 [INFO] Scraping subreddit: r/popular
+2025-05-16 10:01:50,405 [INFO] Found 11 posts in r/popular
+2025-05-16 10:01:50,406 [INFO] Scraping subreddit: r/trendingreddits
+2025-05-16 10:01:51,290 [INFO] Found 21 posts in r/trendingreddits
+2025-05-16 10:01:51,290 [INFO] Scraping subreddit: r/trendingsubreddits
+2025-05-16 10:01:53,596 [INFO] Found 100 posts in r/trendingsubreddits
+2025-05-16 10:01:53,596 [INFO] Found 135 unique posts out of 138 total posts
+2025-05-16 10:01:58,601 [INFO] Starting Reddit scraping...
+2025-05-16 10:01:58,601 [INFO] Connecting to Reddit API with ID: jl1Te...
+2025-05-16 10:01:58,602 [INFO] Successfully connected to Reddit API
+2025-05-16 10:01:58,603 [INFO] Scraping subreddit: r/all
+2025-05-16 10:02:00,302 [INFO] Found 6 posts in r/all
+2025-05-16 10:02:00,303 [INFO] Scraping subreddit: r/popular
+2025-05-16 10:02:01,589 [INFO] Found 11 posts in r/popular
+2025-05-16 10:02:01,589 [INFO] Scraping subreddit: r/trendingreddits
+2025-05-16 10:02:02,462 [INFO] Found 21 posts in r/trendingreddits
+2025-05-16 10:02:02,462 [INFO] Scraping subreddit: r/trendingsubreddits
+2025-05-16 10:02:05,355 [INFO] Found 100 posts in r/trendingsubreddits
+2025-05-16 10:02:05,356 [INFO] Found 135 unique posts out of 138 total posts
+2025-05-16 10:03:32,425 [INFO] Successfully processed 135 Reddit posts (0 inserted, 135 updated)
+2025-05-16 10:03:45,366 [INFO] Successfully processed 135 Reddit posts (0 inserted, 135 updated)

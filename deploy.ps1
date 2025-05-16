@@ -1,17 +1,12 @@
 # Deployment script for Railway
-# This script deploys both the drift API and the main backend to Railway
+# This script deploys the backend to Railway
 
-Write-Host "Deploying Trend Analysis Social Media apps to Railway..."
+Write-Host "Deploying Trend Analysis Social Media API to Railway..."
 
-# Step 1: Deploy the drift API
-Write-Host "`nStep 1: Deploying the drift API..."
-railway up --service drift-api
-
-# Step 2: Deploy the main backend
-Write-Host "`nStep 2: Deploying the main backend..."
-railway up --service main-api
+# Deploy the API
+Write-Host "Deploying the unified API..."
+railway up
 
 Write-Host "`nDeployment completed successfully!"
-Write-Host "Remember to set the following environment variables in your frontend:"
-Write-Host "- REACT_APP_API_URL: Your main API URL"
-Write-Host "- REACT_APP_DRIFT_API_URL: Your drift API URL" 
+Write-Host "Remember to set the following environment variable in your frontend:"
+Write-Host "- REACT_APP_API_URL: Your API URL from Railway" 
