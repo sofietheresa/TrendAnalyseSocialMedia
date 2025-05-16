@@ -494,4 +494,55 @@
   background-color: rgba(239, 68, 68, 0.15);
   color: #dc2626;
   border-left: 4px solid #dc2626;
+}
+
+/* Excluded Terms Section */
+.excluded-terms-container {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(147, 100, 235, 0.2);
+  border-radius: 10px;
+}
+
+.excluded-terms-container h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #232252;
+  font-size: 1.2rem;
+}
+
+.excluded-terms-description {
+  margin-bottom: 15px;
+  color: #64748B;
+  font-size: 0.95rem;
+}
+
+.excluded-terms-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.excluded-term {
+  background-color: rgba(35, 34, 82, 0.1);
+  color: #232252;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Responsive adjustments for excluded terms */
+@media (max-width: 768px) {
+  .excluded-terms-list {
+    gap: 8px;
+  }
+  
+  .excluded-term {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  }
 } 

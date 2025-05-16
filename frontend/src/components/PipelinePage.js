@@ -23,6 +23,19 @@ const PipelinePage = () => {
   });
   const [isExecuting, setIsExecuting] = useState(false);
   const [executionMessage, setExecutionMessage] = useState(null);
+  
+  // Excluded terms for analysis
+  const excludedTerms = [
+    "Social Media",
+    "twitter",
+    "instagram",
+    "tikrok", // Assuming the user meant "TikTok"
+    "Facebook",
+    "LinkedIn",
+    "YouTube",
+    "Snapchat",
+    "Pinterest"
+  ];
 
   // Fetch pipeline data on component mount and when selected pipeline changes
   useEffect(() => {
@@ -238,6 +251,19 @@ const PipelinePage = () => {
               <div className={`pipeline-status status-${pipelineData.status || 'unknown'}`}>
                 {(pipelineData.status || 'UNKNOWN').toUpperCase()}
               </div>
+            </div>
+          </div>
+          
+          {/* Excluded Terms Section */}
+          <div className="excluded-terms-container">
+            <h3>Excluded Terms</h3>
+            <p className="excluded-terms-description">
+              The following terms are excluded from the analysis to focus on specific content:
+            </p>
+            <div className="excluded-terms-list">
+              {excludedTerms.map((term, index) => (
+                <div key={index} className="excluded-term">{term}</div>
+              ))}
             </div>
           </div>
           
