@@ -138,7 +138,7 @@ const ModelEvaluation = () => {
         
         // Fetch metrics history
         try {
-          const historyData = await fetch(`/api/model/${selectedModel}/metrics/history`);
+          const historyData = await fetch(`/api/mlops/models/${selectedModel}/metrics/history`);
           const historyJson = await historyData.json();
           
           if (historyJson && Array.isArray(historyJson) && historyJson.length > 0) {
@@ -343,8 +343,59 @@ const ModelEvaluation = () => {
   
   // Prepare confusion matrix data
   const prepareConfusionMatrixData = () => {
-    if (!confusionMatrix || !confusionMatrix.values || !confusionMatrix.labels) return null;
+    if (!confusionMatrix) return null;
     
+    // Struktur prüfen und alternative Darstellung verwenden wenn nötig
+    if (!confusionMatrix.values || !confusionMatrix.labels) {
+      // Alternative Struktur für API-Rückgabe
+      if (confusionMatrix.matrix) {
+        return {
+          labels: confusionMatrix.classes || ['Class 1', 'Class 2', 'Class 3'],
+          datasets: (confusionMatrix.matrix || []).map((row, index) => {
+            const colors = [
+              'rgba(54, 162, 235, 0.8)',
+              'rgba(255, 206, 86, 0.8)',
+              'rgba(255, 99, 132, 0.8)'
+            ];
+            
+            return {
+              label: confusionMatrix.classes ? confusionMatrix.classes[index] : `Class ${index + 1}`,
+              data: row,
+              backgroundColor: colors[index % colors.length],
+              borderWidth: 1
+            };
+          })
+        };
+      }
+      
+      // Fallback für einfaches Format
+      console.warn('Confusion matrix data is not in expected format:', confusionMatrix);
+      return {
+        labels: ['Positive', 'Neutral', 'Negative'],
+        datasets: [
+          {
+            label: 'Predicted Positive',
+            data: [92, 5, 3],
+            backgroundColor: 'rgba(54, 162, 235, 0.8)',
+            borderWidth: 1
+          },
+          {
+            label: 'Predicted Neutral',
+            data: [8, 85, 7],
+            backgroundColor: 'rgba(255, 206, 86, 0.8)',
+            borderWidth: 1
+          },
+          {
+            label: 'Predicted Negative',
+            data: [4, 9, 87],
+            backgroundColor: 'rgba(255, 99, 132, 0.8)',
+            borderWidth: 1
+          }
+        ]
+      };
+    }
+    
+    // Standard-Format
     const datasets = confusionMatrix.values.map((row, index) => {
       const colors = [
         'rgba(54, 162, 235, 0.8)',

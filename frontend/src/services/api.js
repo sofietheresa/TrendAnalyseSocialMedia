@@ -371,16 +371,16 @@ const generateMockTopicData = (numTopics = 5, startDate = null, endDate = null) 
     
     // Generate realistic topic names
     const mockTopicNames = [
-        "AI and Technology",
-        "Climate Change",
-        "Remote Work Trends",
-        "Digital Healthcare",
-        "Financial Markets",
-        "Sustainable Living",
-        "Gaming Industry",
-        "Space Exploration",
-        "Cybersecurity",
-        "Social Media Trends"
+        "Nachhaltigkeit & Umweltschutz",
+        "Wirtschaftliche Entwicklung",
+        "Digitale Transformation",
+        "Politische Diskussionen",
+        "Künstliche Intelligenz",
+        "Gesundheit & Wohlbefinden",
+        "Technologische Innovation",
+        "Work-Life-Balance",
+        "Energiewende & Klimaschutz",
+        "Gesellschaftlicher Wandel"
     ];
     
     // Generate mock topics
@@ -450,26 +450,55 @@ const generateMockTopicData = (numTopics = 5, startDate = null, endDate = null) 
     };
 };
 
-/**
- * Generates mock keywords for a topic
- * @param {string} topicName - Topic name
- * @returns {Array<string>} Array of relevant keywords
- */
+// Funktion zur Generierung von realistischen Keywords für ein Thema
 const generateMockKeywords = (topicName) => {
-    const keywordMap = {
-        "AI and Technology": ["artificial intelligence", "machine learning", "neural networks", "robotics", "automation"],
-        "Climate Change": ["global warming", "carbon emissions", "green energy", "sustainable", "climate crisis"],
-        "Remote Work Trends": ["work from home", "telecommuting", "digital nomad", "hybrid work", "remote collaboration"],
-        "Digital Healthcare": ["telemedicine", "health tech", "digital health", "medical innovations", "health apps"],
-        "Financial Markets": ["stocks", "investments", "crypto", "market trends", "financial analysis"],
-        "Sustainable Living": ["eco-friendly", "zero waste", "sustainability", "green living", "renewable"],
-        "Gaming Industry": ["video games", "esports", "game development", "gaming community", "game streaming"],
-        "Space Exploration": ["NASA", "SpaceX", "Mars mission", "astronomy", "space travel"],
-        "Cybersecurity": ["data protection", "cyber threats", "network security", "privacy", "encryption"],
-        "Social Media Trends": ["viral content", "social platforms", "influencers", "engagement", "digital marketing"]
+    // Vordefinierte Keywords für bestimmte Themen
+    const keywordsByTopic = {
+        "Nachhaltigkeit & Umweltschutz": ["umweltschutz", "nachhaltigkeit", "klimaschutz", "recycling", "umweltbewusstsein", "ressourcenschonung", "ökologisch"],
+        "Wirtschaftliche Entwicklung": ["wirtschaftswachstum", "konjunktur", "finanzmärkte", "inflation", "wirtschaftspolitik", "arbeitsmarkt", "investitionen"],
+        "Digitale Transformation": ["digitalisierung", "digital", "transformation", "industrie4.0", "automatisierung", "prozessoptimierung", "digitale-strategie"],
+        "Politische Diskussionen": ["politik", "demokratie", "wahlen", "parteien", "gesetzgebung", "bundestag", "diskurs", "politische-debatte"],
+        "Künstliche Intelligenz": ["ki", "ai", "maschinelles-lernen", "deep-learning", "neuronale-netze", "chatgpt", "algorithmik", "chatbots"],
+        "Gesundheit & Wohlbefinden": ["gesundheit", "wohlbefinden", "prävention", "fitness", "ernährung", "mental-health", "gesundheitsvorsorge"],
+        "Technologische Innovation": ["innovation", "technologie", "forschung", "entwicklung", "hightech", "zukunftstechnologien", "tech-trends"],
+        "Work-Life-Balance": ["work-life-balance", "homeoffice", "remote-arbeit", "arbeitszeitmodelle", "freizeit", "vereinbarkeit", "lebensqualität"],
+        "Energiewende & Klimaschutz": ["energiewende", "erneuerbare-energien", "klimaneutralität", "co2-reduktion", "klimaschutz", "solarenergie", "windkraft"],
+        "Gesellschaftlicher Wandel": ["gesellschaftswandel", "demografie", "wertewandel", "diversität", "inklusion", "integration", "sozialer-wandel"]
     };
     
-    return keywordMap[topicName] || ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"];
+    // Wenn vorhandene Keywords für das Thema existieren, diese verwenden
+    if (keywordsByTopic[topicName]) {
+        return keywordsByTopic[topicName];
+    }
+    
+    // Generische Keywords für nicht definierte Themen
+    const words = topicName.toLowerCase().split(/\s+|&/);
+    const baseKeywords = words.filter(w => w.length > 3);
+    
+    // Zusätzliche generische Keywords hinzufügen
+    const genericKeywords = ["diskussion", "trend", "entwicklung", "thema", "debatte"];
+    
+    // Kombinationen erstellen
+    const combinedKeywords = [];
+    for (let i = 0; i < Math.min(baseKeywords.length, 2); i++) {
+        for (let j = i + 1; j < baseKeywords.length; j++) {
+            combinedKeywords.push(`${baseKeywords[i]}-${baseKeywords[j]}`);
+        }
+    }
+    
+    // Ergebnisarray aus Basis, Kombinationen und Generika erstellen
+    const result = [...baseKeywords];
+    
+    // Füge einige (nicht alle) kombinierte Keywords hinzu
+    if (combinedKeywords.length > 0) {
+        result.push(...combinedKeywords.slice(0, Math.min(3, combinedKeywords.length)));
+    }
+    
+    // Füge einige generische Keywords hinzu
+    result.push(...genericKeywords.slice(0, 3));
+    
+    // Begrenze die Gesamtanzahl der Keywords
+    return result.slice(0, 7);
 };
 
 export const fetchSourceStats = async () => {

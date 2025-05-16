@@ -82,23 +82,33 @@ const Homepage = () => {
           console.error("Error from topic model API:", response.error);
         } else {
           if (Array.isArray(response.topics)) {
-            // Filter out topics with id -1 or name "Other"
+            // Filter out topics with id -1 or name "Other" or empty names
             const filteredTopics = response.topics.filter(topic => 
-              topic.id !== -1 && topic.name !== "Other" && topic.name !== "-1"
+              topic.id !== -1 && 
+              topic.name !== "Other" && 
+              topic.name !== "-1" &&
+              topic.name && 
+              topic.name.trim() !== '' &&
+              topic.name.length >= 3
             );
             
-            setTopics(filteredTopics);
+            // Sort by weight (importance) if available
+            const sortedTopics = filteredTopics.sort((a, b) => 
+              (b.weight || 0) - (a.weight || 0)
+            );
+            
+            setTopics(sortedTopics);
             
             // Process topic counts by date if available
             if (response.topic_counts_by_date) {
               setTopicCounts(response.topic_counts_by_date);
               
               // Process topic trends data for the chart
-              processTopicTrends(filteredTopics, response.topic_counts_by_date);
+              processTopicTrends(sortedTopics, response.topic_counts_by_date);
             }
             
             // Generate mock sentiment data for topics (this would be replaced with real data)
-            const sentiments = generateMockSentiments(filteredTopics);
+            const sentiments = generateMockSentiments(sortedTopics);
             setTopicSentiments(sentiments);
           } else {
             console.warn("Invalid topics format:", response.topics);
@@ -139,10 +149,17 @@ const Homepage = () => {
     console.log("Processing trends for topics:", topTopics);
     console.log("With counts by date:", countsByDate);
     
-    // Filter out topics with id -1 or name "Other" and skip the first topic
-    const filteredTopics = topTopics.filter((topic, index) => 
-      topic.id !== -1 && topic.name !== "Other" && topic.name !== "-1" && index > 0
-    );
+    // Filter out low-quality topics and limit to top 5
+    const filteredTopics = topTopics
+      .filter(topic => 
+        topic.id !== -1 && 
+        topic.name !== "Other" && 
+        topic.name !== "-1" && 
+        topic.name && 
+        topic.name.trim() !== '' &&
+        (countsByDate[topic.id] && Object.values(countsByDate[topic.id]).some(count => count > 0))
+      )
+      .slice(0, 5);
     
     // Get all unique dates across all topics
     const allDates = new Set();
@@ -355,13 +372,21 @@ const Homepage = () => {
       {!loading && !error && topics && topics.length > 0 ? (
         <div className="topics-container">
           <div className="topics-stack-section" style={{ alignItems: 'center', textAlign: 'center' }}>
-            {topics.slice(1, 6).map((topic, index) => (
+            {topics.slice(0, 5).map((topic, index) => (
               <div 
                 key={topic.id || index} 
                 className={`topic-stack topic-stack-${index + 1}`}
                 style={{ justifyContent: 'center', textAlign: 'center', margin: '15px auto' }}
               >
-                {topic.name || `Topic ${index + 1}`} {topicSentiments[topic.id] && 
+                <span className="topic-name-display">{topic.name || `Topic ${index + 1}`}</span>
+                {topic.keywords && topic.keywords.length > 0 && (
+                  <span className="topic-keywords">
+                    {topic.keywords.slice(0, 3).map((kw, i) => (
+                      <span key={i} className="topic-keyword-tag">{kw}</span>
+                    ))}
+                  </span>
+                )}
+                {topicSentiments[topic.id] && 
                   <span className="sentiment-emoji" title={`Sentiment: ${topicSentiments[topic.id]}`}>
                     {getSentimentEmoji(parseFloat(topicSentiments[topic.id]))}
                   </span>
@@ -404,7 +429,7 @@ const Homepage = () => {
           
           {/* Topic Post Counts */}
           <div className="topic-post-counts-section">
-            {topics.slice(1, 6).map((topic, index) => topic.id && topicCounts[topic.id] ? (
+            {topics.slice(0, 5).map((topic, index) => topic.id && topicCounts[topic.id] ? (
               <div key={topic.id} className="topic-post-counts-card">
                 <h3 className={`topic-name topic-name-${index + 1}`}>
                   {topic.name || `Topic ${index + 1}`}
@@ -414,6 +439,13 @@ const Homepage = () => {
                     </span>
                   }
                 </h3>
+                {topic.keywords && topic.keywords.length > 0 && (
+                  <div className="topic-keywords-small">
+                    {topic.keywords.slice(0, 3).map((kw, i) => (
+                      <span key={i} className="topic-keyword-tag-small">{kw}</span>
+                    ))}
+                  </div>
+                )}
                 {renderTopicPostCounts(topic.id)}
               </div>
             ) : null)}
