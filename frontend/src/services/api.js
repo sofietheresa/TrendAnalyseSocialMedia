@@ -302,41 +302,80 @@ export const fetchTopicModel = async (startDate = null, endDate = null, platform
             num_topics: numTopics 
         });
         
-        const response = await api.post('/api/topic-model', {
-            start_date: startDate,
-            end_date: endDate,
-            platforms: platforms,
-            num_topics: numTopics
-        });
-        
-        console.log("Topic model response:", response.data);
-        
-        // Check if topics is actually an array to avoid rendering issues
-        if (response.data && !Array.isArray(response.data.topics)) {
-            console.warn("Invalid topics format in response:", response.data.topics);
-            response.data.topics = [];
+        // Try POST first with improved error handling and explicit timeout
+        try {
+            console.log("Trying POST method to /api/topic-model");
+            const response = await api.post('/api/topic-model', {
+                start_date: startDate,
+                end_date: endDate,
+                platforms: platforms,
+                num_topics: numTopics
+            }, {
+                timeout: 60000 // 60 second timeout
+            });
+            
+            console.log("Topic model POST response:", response.data);
+            
+            // Check if topics is actually an array to avoid rendering issues
+            if (response.data && !Array.isArray(response.data.topics)) {
+                console.warn("Invalid topics format in POST response:", response.data.topics);
+                response.data.topics = [];
+            }
+            
+            return response.data;
+        } 
+        catch (postError) {
+            console.warn(`POST request failed: ${postError.message}. Trying GET method...`);
+            
+            // If POST fails, try GET method
+            console.log("Trying GET method to /api/topic-model");
+            const getResponse = await api.get('/api/topic-model', {
+                params: {
+                    start_date: startDate,
+                    end_date: endDate,
+                    platforms: platforms.join(','),
+                    num_topics: numTopics
+                },
+                timeout: 60000 // 60 second timeout
+            });
+            
+            console.log("Topic model GET response:", getResponse.data);
+            
+            // Check if topics is actually an array to avoid rendering issues
+            if (getResponse.data && !Array.isArray(getResponse.data.topics)) {
+                console.warn("Invalid topics format in GET response:", getResponse.data.topics);
+                getResponse.data.topics = [];
+            }
+            
+            return getResponse.data;
         }
-        
-        return response.data;
     } catch (error) {
-        console.error('Error fetching topic model data:', error);
+        console.error('All topic model API endpoints failed:', error);
         
-        // Try alternative endpoint if main endpoint fails
+        // Try alternative endpoint if both main endpoints fail
         try {
             console.log("Trying alternative endpoint for topic model data...");
             const altResponse = await api.get('/api/db/topics', {
                 params: {
                     start_date: startDate,
                     end_date: endDate
-                }
+                },
+                timeout: 60000 // 60 second timeout
             });
             
             console.log("Alternative topic model response:", altResponse.data);
+            
+            // Check for valid data structure
+            if (altResponse.data && !Array.isArray(altResponse.data.topics)) {
+                console.warn("Invalid topics format in alternative response:", altResponse.data.topics);
+                altResponse.data.topics = [];
+            }
+            
             return altResponse.data;
         } catch (altError) {
             console.error('Error fetching from alternative endpoint:', altError);
             
-            // Last resort - only if both API calls fail
+            // Last resort - only if all API calls fail
             setMockDataStatus(true);
             return {
                 topics: [],

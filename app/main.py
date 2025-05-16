@@ -356,12 +356,45 @@ class TopicModelRequest(BaseModel):
     num_topics: Optional[int] = 5
 
 @app.post("/api/topic-model")
-async def get_topic_model(request: TopicModelRequest):
+async def post_topic_model(request: TopicModelRequest):
     """
     Führt ein BERTopic-basiertes Topic Modeling durch und liefert die wichtigsten Themen
-    im angegebenen Zeitraum sowie Evaluationsmetriken
+    im angegebenen Zeitraum sowie Evaluationsmetriken (POST Methode)
     """
-    logger.info(f"Topic-Modeling-Endpunkt aufgerufen mit {request}")
+    logger.info(f"Topic-Modeling POST-Endpunkt aufgerufen mit {request}")
+    return await get_topic_model(request)
+
+@app.get("/api/topic-model")
+async def get_topic_model_endpoint(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    platforms: Optional[str] = "reddit,tiktok,youtube",
+    num_topics: Optional[int] = 5
+):
+    """
+    Führt ein BERTopic-basiertes Topic Modeling durch und liefert die wichtigsten Themen
+    im angegebenen Zeitraum sowie Evaluationsmetriken (GET Methode)
+    """
+    logger.info(f"Topic-Modeling GET-Endpunkt aufgerufen mit start_date={start_date}, end_date={end_date}, platforms={platforms}, num_topics={num_topics}")
+    
+    # Parse platforms list if provided as comma-separated string
+    platform_list = platforms.split(",") if platforms else ["reddit", "tiktok", "youtube"]
+    
+    # Create request object
+    request = TopicModelRequest(
+        start_date=start_date,
+        end_date=end_date,
+        platforms=platform_list,
+        num_topics=num_topics
+    )
+    
+    return await get_topic_model(request)
+
+async def get_topic_model(request: TopicModelRequest):
+    """
+    Implementierung des Topic-Modeling
+    """
+    logger.info(f"Topic-Modeling-Implementierung aufgerufen mit {request}")
     
     try:
         # Default-Zeitraum: letzte 3 Tage
