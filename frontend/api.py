@@ -17,7 +17,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",  # React Dev Server
         "https://trendanalysesocialmedia.vercel.app",  # Produktions-URL
-        "https://trendanalysesocialmedia-production.up.railway.app"  # Railway App URL
+        "https://trendanalysesocialmedia-production.up.railway.app",  # Railway App URL
+        "https://trend-analyse-social-media.vercel.app"  # Vercel URL
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -399,7 +400,7 @@ async def get_pipeline_executions(pipeline_id: str):
 
 @app.post("/api/mlops/pipelines/{pipeline_id}/execute")
 async def execute_pipeline(pipeline_id: str):
-    """Trigger execution of a specific pipeline."""
+    """Trigger execution of a specific ML pipeline."""
     try:
         # Mock pipeline execution - in a real system this would trigger the actual pipeline
         execution_id = f"exec-{pipeline_id}-{int(datetime.now().timestamp())}"
@@ -408,7 +409,7 @@ async def execute_pipeline(pipeline_id: str):
             "execution_id": execution_id,
             "pipeline_id": pipeline_id,
             "status": "started",
-            "start_time": datetime.now().isoformat(),
+            "startTime": datetime.now().isoformat(),
             "message": f"Pipeline {pipeline_id} execution started successfully"
         }
         
