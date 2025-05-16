@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 // Set this to a secure random string in production
-const ACCESS_TOKEN = 'trend-analysis-access-2025';
+const ACCESS_TOKEN = 'social-media-trends-2025-secure';
 
 const AccessGate = ({ children }) => {
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -28,7 +28,7 @@ const AccessGate = ({ children }) => {
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
     
-    if (password === 'mlops2025') {
+    if (password === 'TrendAnalyse2025') {
       localStorage.setItem('accessToken', ACCESS_TOKEN);
       setIsAuthorized(true);
       setError('');

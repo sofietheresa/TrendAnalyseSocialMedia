@@ -24,17 +24,36 @@ const PipelinePage = () => {
   const [isExecuting, setIsExecuting] = useState(false);
   const [executionMessage, setExecutionMessage] = useState(null);
   
-  // Excluded terms for analysis
+  // Expanded list of excluded terms for analysis
   const excludedTerms = [
     "Social Media",
-    "twitter",
-    "instagram",
-    "tikrok", // Assuming the user meant "TikTok"
+    "Twitter",
+    "Instagram",
+    "TikTok", // Corrected from "tikrok"
     "Facebook",
     "LinkedIn",
     "YouTube",
     "Snapchat",
-    "Pinterest"
+    "Pinterest",
+    "Thread",
+    "Mastodon",
+    "Reddit",
+    "Discord",
+    "WhatsApp",
+    "Telegram",
+    "Follower",
+    "Likes",
+    "Comments",
+    "Share",
+    "Post",
+    "Story",
+    "Reels",
+    "Tweet",
+    "Hashtag",
+    "Influencer",
+    "Content",
+    "Viral",
+    "Engagement"
   ];
 
   // Fetch pipeline data on component mount and when selected pipeline changes
