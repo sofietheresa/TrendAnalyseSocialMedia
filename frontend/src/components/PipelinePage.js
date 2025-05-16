@@ -68,7 +68,7 @@ const PipelinePage = () => {
         console.log('All available pipelines:', allPipelines);
         
         if (!allPipelines || Object.keys(allPipelines).length === 0) {
-          throw new Error('No pipelines available');
+          throw new Error('No pipelines available in the database. Please check your database connection.');
         }
         
         // Fetch pipeline data from API
@@ -76,7 +76,7 @@ const PipelinePage = () => {
         console.log('Received pipeline data:', pipelineData);
         
         if (!pipelineData || pipelineData.error || typeof pipelineData !== 'object') {
-          throw new Error(`Failed to fetch pipeline data for ${selectedPipeline}`);
+          throw new Error(`Failed to fetch pipeline data for ${selectedPipeline}. The API returned an invalid response.`);
         }
         
         setPipelineData(pipelineData);
@@ -86,7 +86,7 @@ const PipelinePage = () => {
         console.log('Received executions data:', executionsData);
         
         if (!Array.isArray(executionsData)) {
-          throw new Error(`Failed to fetch pipeline executions for ${selectedPipeline}`);
+          throw new Error(`Failed to fetch pipeline executions for ${selectedPipeline}. The API returned an invalid response.`);
         }
         
         setExecutions(executionsData);

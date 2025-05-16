@@ -581,75 +581,12 @@ export const fetchPredictions = async (startDate = null, endDate = null) => {
             } catch (basicError) {
                 console.error('Error fetching from basic endpoint:', basicError);
                 
-                // Return an empty response instead of mock data
-                console.error("All API endpoints failed, returning empty data");
-                return {
-                    predictions: [],
-                    prediction_trends: {},
-                    time_range: {
-                        start_date: startDate || new Date().toISOString().split('T')[0],
-                        end_date: endDate || new Date().toISOString().split('T')[0]
-                    },
-                    error: "Failed to fetch prediction data from all available endpoints. No data available."
-                };
+                // Instead of returning empty data, throw an error to be handled by the component
+                throw new Error("Failed to fetch prediction data from all available endpoints. Please verify your database connection and try again later.");
             }
         }
     }
 };
-
-// Hilfsfunktion zum Generieren realistischer Prognosedaten
-function generateForecastData(startDate, endDate, minValue, maxValue) {
-    const forecast = {};
-    const currentDate = new Date(startDate);
-    const endDateObj = new Date(endDate);
-    
-    // Eine Woche an Prognosedaten generieren
-    while (currentDate <= endDateObj && Object.keys(forecast).length < 7) {
-        const dateString = currentDate.toISOString().split('T')[0];
-        
-        // Zufälligen Wert mit leichtem Trend nach oben erzeugen
-        const trendFactor = Object.keys(forecast).length / 10;
-        const baseValue = minValue + Math.random() * (maxValue - minValue);
-        const value = baseValue * (1 + trendFactor);
-        
-        forecast[dateString] = Math.min(maxValue, value);
-        
-        // Zum nächsten Tag
-        currentDate.setDate(currentDate.getDate() + 1);
-    }
-    
-    return forecast;
-}
-
-// Hilfsfunktion zum Generieren von Trenddaten
-function generateTrendData(startDate, endDate) {
-    const trends = {};
-    const currentDate = new Date(startDate);
-    const endDateObj = new Date(endDate);
-    
-    let lastValue = 10 + Math.random() * 30; // Startwert
-    const trendFactor = 0.2; // Sanfter Aufwärtstrend
-    const volatility = 0.4; // Schwankungen
-    
-    while (currentDate <= endDateObj) {
-        const dateString = currentDate.toISOString().split('T')[0];
-        
-        // Zufällige Schwankung mit leichtem Aufwärtstrend
-        const randomChange = (Math.random() - 0.5) * volatility;
-        const trendChange = trendFactor;
-        lastValue = lastValue * (1 + randomChange + trendChange);
-        
-        // Stelle sicher, dass der Wert nicht zu klein oder zu groß wird
-        lastValue = Math.max(5, Math.min(200, lastValue));
-        
-        trends[dateString] = Math.round(lastValue);
-        
-        // Zum nächsten Tag
-        currentDate.setDate(currentDate.getDate() + 1);
-    }
-    
-    return trends;
-}
 
 // ML-Ops API Functions
 

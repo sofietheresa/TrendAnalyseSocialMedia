@@ -49,22 +49,29 @@ const PredictionsPage = () => {
         
         console.log("Received prediction data:", response);
         
-        // Set demo data status - this will always be false with our updated API
-        setUsingDemoData(getMockDataStatus() || response.demo_data === true);
+        // Always use real data, never demo data
+        setUsingDemoData(false);
         
         if (response.error) {
           setError(response.error);
           console.error("Error from predictions API:", response.error);
         } else {
           if (Array.isArray(response.predictions)) {
-            setPredictions(response.predictions);
-            
-            // Process prediction trends data for the chart
-            if (response.prediction_trends) {
-              processPredictionTrends(response.predictions, response.prediction_trends);
+            if (response.predictions.length > 0) {
+              setPredictions(response.predictions);
+              
+              // Process prediction trends data for the chart
+              if (response.prediction_trends) {
+                processPredictionTrends(response.predictions, response.prediction_trends);
+              }
+            } else {
+              // Handle empty predictions array
+              setError("No prediction data found for the selected time period. Please try a different date range.");
+              setPredictions([]);
             }
           } else {
             console.warn("Invalid predictions format:", response.predictions);
+            setError("The data received from the server has an invalid format. Please contact an administrator.");
             setPredictions([]);
           }
           
@@ -75,7 +82,7 @@ const PredictionsPage = () => {
         }
       } catch (err) {
         console.error("Error fetching prediction data:", err);
-        setError("Failed to fetch prediction data from the database. Please try again later.");
+        setError(`Failed to fetch prediction data: ${err.message}`);
         setPredictions([]);
       } finally {
         setLoading(false);
@@ -230,7 +237,6 @@ const PredictionsPage = () => {
         <span style={{ fontWeight: 900, letterSpacing: '0.03em' }}>TOPIC PREDICTIONS</span>
         <br />
         <span style={{ fontWeight: 400, fontSize: '0.8em' }}>Machine Learning Forecasts</span>
-        {usingDemoData && <span className="demo-data-badge">Demo-Daten</span>}
       </h1>
       
       {/* Model Version Badge */}
@@ -287,7 +293,6 @@ const PredictionsPage = () => {
             <h2>Predicted Trending Topics</h2>
             <p className="predictions-subheader">
               ML-powered forecast of upcoming trends
-              {usingDemoData && <span className="demo-data-notice">Demo-Daten werden angezeigt</span>}
             </p>
           </div>
 

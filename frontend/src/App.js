@@ -173,7 +173,7 @@ const Homepage = () => {
             } else {
               // No topics at all
               setTopics([]);
-              setError("No topics were found in the database. Please try a different date range.");
+              setError("No topics were found in the database for the selected time period. Please try a different date range.");
             }
             
             // Process topic counts by date if available
@@ -191,6 +191,7 @@ const Homepage = () => {
             } else {
               setTopicCounts({});
               setTopicTrends([]);
+              console.warn("No topic counts by date found in the response");
             }
             
             // Get sentiment data from response
@@ -209,6 +210,7 @@ const Homepage = () => {
                 setTopicSentiments(sentiments);
               } else {
                 setTopicSentiments({});
+                console.warn("No sentiment data found in the response");
               }
             }
           } else {
@@ -216,7 +218,7 @@ const Homepage = () => {
             setTopics([]);
             setTopicCounts({});
             setTopicSentiments({});
-            setError("Invalid data received from the database. Please try again later.");
+            setError("The data received from the server has an invalid format. Please contact an administrator.");
           }
           
           setTimeRange(response.time_range || {
@@ -226,7 +228,7 @@ const Homepage = () => {
         }
       } catch (err) {
         console.error("Error fetching topic data:", err);
-        setError("Failed to fetch topic data from the database. Please try again later.");
+        setError(`Failed to fetch topic data: ${err.message}`);
         setTopics([]);
         setTopicCounts({});
         setTopicSentiments({});
