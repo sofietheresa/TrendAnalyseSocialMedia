@@ -806,7 +806,12 @@ async def get_pipelines():
     """
     logger.info("Request for all pipelines")
     
-    # Return mock pipeline data
+    # Current date for realistic timestamps
+    current_time = datetime.now()
+    yesterday = current_time - timedelta(days=1)
+    tomorrow = current_time + timedelta(days=1)
+    
+    # Return mock pipeline data with current dates
     pipelines = {
         "trend_analysis": {
             "name": "Trend Analysis Pipeline",
@@ -820,8 +825,8 @@ async def get_pipelines():
                 {"id": "model_evaluation", "name": "Model Evaluation", "description": "Evaluates the performance of prediction models", "status": "completed", "runtime": "00:03:55"},
                 {"id": "visualization", "name": "Visualization", "description": "Prepares data for dashboard visualization", "status": "completed", "runtime": "00:02:11"}
             ],
-            "lastRun": "2023-12-15T14:30:22",
-            "nextScheduledRun": "2023-12-16T14:30:00",
+            "lastRun": yesterday.isoformat(),
+            "nextScheduledRun": tomorrow.isoformat(),
             "averageRuntime": "00:51:48",
             "status": "completed"
         }
@@ -836,6 +841,11 @@ async def get_pipeline(pipeline_id: str):
     """
     logger.info(f"Request for pipeline: {pipeline_id}")
     
+    # Current date for realistic timestamps
+    current_time = datetime.now()
+    yesterday = current_time - timedelta(days=1)
+    tomorrow = current_time + timedelta(days=1)
+    
     pipelines = {
         "trend_analysis": {
             "name": "Trend Analysis Pipeline",
@@ -849,8 +859,8 @@ async def get_pipeline(pipeline_id: str):
                 {"id": "model_evaluation", "name": "Model Evaluation", "description": "Evaluates the performance of prediction models", "status": "completed", "runtime": "00:03:55"},
                 {"id": "visualization", "name": "Visualization", "description": "Prepares data for dashboard visualization", "status": "completed", "runtime": "00:02:11"}
             ],
-            "lastRun": "2023-12-15T14:30:22",
-            "nextScheduledRun": "2023-12-16T14:30:00",
+            "lastRun": yesterday.isoformat(),
+            "nextScheduledRun": tomorrow.isoformat(),
             "averageRuntime": "00:51:48",
             "status": "completed"
         }
@@ -868,13 +878,19 @@ async def get_pipeline_executions(pipeline_id: str):
     """
     logger.info(f"Request for executions of pipeline: {pipeline_id}")
     
-    # Mock executions - in production this would be retrieved from a database
+    # Current date for realistic timestamps
+    current_time = datetime.now()
+    one_day_ago = current_time - timedelta(days=1)
+    two_days_ago = current_time - timedelta(days=2)
+    three_days_ago = current_time - timedelta(days=3)
+    
+    # Mock executions with current dates
     all_executions = [
-        {"id": "exec-001", "pipelineId": "trend_analysis", "startTime": "2023-12-15T14:30:22", "endTime": "2023-12-15T15:22:10", "status": "completed", "trigger": "scheduled"},
-        {"id": "exec-002", "pipelineId": "trend_analysis", "startTime": "2023-12-14T14:30:15", "endTime": "2023-12-14T15:24:02", "status": "completed", "trigger": "scheduled"},
-        {"id": "exec-003", "pipelineId": "realtime_monitoring", "startTime": "2023-12-15T16:45:10", "endTime": None, "status": "running", "trigger": "manual"},
-        {"id": "exec-004", "pipelineId": "model_training", "startTime": "2023-12-14T09:15:33", "endTime": "2023-12-14T11:16:57", "status": "failed", "trigger": "manual"},
-        {"id": "exec-005", "pipelineId": "trend_analysis", "startTime": "2023-12-13T14:30:18", "endTime": "2023-12-13T15:25:33", "status": "completed", "trigger": "scheduled"},
+        {"id": "exec-001", "pipelineId": "trend_analysis", "startTime": one_day_ago.isoformat(), "endTime": (one_day_ago + timedelta(hours=1)).isoformat(), "status": "completed", "trigger": "scheduled"},
+        {"id": "exec-002", "pipelineId": "trend_analysis", "startTime": two_days_ago.isoformat(), "endTime": (two_days_ago + timedelta(hours=1)).isoformat(), "status": "completed", "trigger": "scheduled"},
+        {"id": "exec-003", "pipelineId": "realtime_monitoring", "startTime": current_time.isoformat(), "endTime": None, "status": "running", "trigger": "manual"},
+        {"id": "exec-004", "pipelineId": "model_training", "startTime": two_days_ago.isoformat(), "endTime": (two_days_ago + timedelta(hours=2)).isoformat(), "status": "failed", "trigger": "manual"},
+        {"id": "exec-005", "pipelineId": "trend_analysis", "startTime": three_days_ago.isoformat(), "endTime": (three_days_ago + timedelta(hours=1)).isoformat(), "status": "completed", "trigger": "scheduled"},
     ]
     
     executions = [execution for execution in all_executions if execution["pipelineId"] == pipeline_id]
@@ -913,4 +929,107 @@ async def execute_pipeline(pipeline_id: str):
     }
     
     logger.info(f"Pipeline execution response: {response}")
-    return response 
+    return response
+
+@app.get("/api/mlops/models/{model_name}/metrics")
+async def get_model_metrics(
+    model_name: str,
+    version: Optional[str] = Query(None, description="Model version")
+):
+    """
+    Get performance metrics for a specific model version
+    """
+    logger.info(f"Request for metrics of model: {model_name}, version: {version}")
+    
+    # Set default version if not provided
+    if not version:
+        version = "v1.0.2"  # Default to latest version
+        logger.info(f"No version specified, using default: {version}")
+    
+    # Define model registry path
+    model_registry_path = Path("models/registry").resolve()
+    model_registry_path.mkdir(parents=True, exist_ok=True)
+    
+    # Check for actual metrics in model registry
+    metrics_path = model_registry_path / model_name / version / "metrics.json"
+    logger.info(f"Checking for metrics at: {metrics_path}")
+    
+    try:
+        if metrics_path.exists():
+            logger.info(f"Found metrics at {metrics_path}")
+            with open(metrics_path, "r") as f:
+                metrics = json.load(f)
+                logger.info(f"Returning metrics: {metrics}")
+                return metrics
+        else:
+            logger.warning(f"No metrics found at {metrics_path}, using mock data")
+    except Exception as e:
+        logger.error(f"Error reading metrics: {e}")
+    
+    # Return mock metrics if no actual metrics found
+    if model_name == "topic_model":
+        return {
+            "coherence_score": 0.78,
+            "diversity_score": 0.65,
+            "document_coverage": 0.92,
+            "total_documents": 15764,
+            "uniqueness_score": 0.81,
+            "silhouette_score": 0.72,
+            "topic_separation": 0.68,
+            "avg_topic_similarity": 0.43,
+            "execution_time": 183.4,
+            "topic_quality": 0.75
+        }
+    elif model_name == "sentiment_analysis":
+        return {
+            "accuracy": 0.89,
+            "precision": 0.83,
+            "recall": 0.86,
+            "f1_score": 0.85,
+            "total_documents": 12500,
+            "execution_time": 162.7,
+            "uniqueness_score": 0.79,
+            "silhouette_score": 0.67,
+            "topic_separation": 0.72
+        }
+    else:
+        return {
+            "mean_absolute_error": 0.12,
+            "mean_squared_error": 0.05,
+            "r2_score": 0.87,
+            "total_predictions": 8742,
+            "execution_time": 97.3,
+            "accuracy": 0.91,
+            "precision": 0.88,
+            "recall": 0.85,
+            "f1_score": 0.86
+        }
+
+@app.get("/api/mlops/models/{model_name}/versions")
+async def get_model_versions(model_name: str):
+    """
+    Get available versions for a specific model
+    """
+    logger.info(f"Request for versions of model: {model_name}")
+    
+    # Current date for realistic timestamps
+    current_time = datetime.now()
+    one_week_ago = current_time - timedelta(days=7)
+    two_weeks_ago = current_time - timedelta(days=14)
+    
+    # Return mock version data with current dates
+    if model_name == "topic_model":
+        return [
+            {"id": "v1.0.2", "name": "Topic Model v1.0.2", "date": current_time.isoformat(), "status": "production"},
+            {"id": "v1.0.1", "name": "Topic Model v1.0.1", "date": one_week_ago.isoformat(), "status": "archived"},
+            {"id": "v1.0.0", "name": "Topic Model v1.0.0", "date": two_weeks_ago.isoformat(), "status": "archived"}
+        ]
+    elif model_name == "sentiment_analysis":
+        return [
+            {"id": "v2.0.1", "name": "Sentiment Analysis v2.0.1", "date": current_time.isoformat(), "status": "production"},
+            {"id": "v2.0.0", "name": "Sentiment Analysis v2.0.0", "date": (current_time - timedelta(days=10)).isoformat(), "status": "archived"}
+        ]
+    else:
+        return [
+            {"id": "v1.5.0", "name": "Trend Prediction v1.5.0", "date": current_time.isoformat(), "status": "production"}
+        ] 
