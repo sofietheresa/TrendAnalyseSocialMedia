@@ -11,6 +11,7 @@ from typing import List, Optional, Dict, Any
 import pandas as pd
 import json
 from pathlib import Path
+import random
 
 # Logging-Konfiguration
 logging.basicConfig(
@@ -508,7 +509,6 @@ async def get_topic_model(request: TopicModelRequest):
         # Simulierte Ergebnisse basierend auf häufigen Wörtern für die Demo
         from collections import Counter
         import re
-        import random
         
         # Einfache Textbereinigung
         def clean_text(text):
@@ -1032,4 +1032,187 @@ async def get_model_versions(model_name: str):
     else:
         return [
             {"id": "v1.5.0", "name": "Trend Prediction v1.5.0", "date": current_time.isoformat(), "status": "production"}
-        ] 
+        ]
+
+@app.get("/api/db/predictions")
+async def get_predictions():
+    """
+    Get trend predictions for social media topics
+    """
+    logger.info("Predictions endpoint called")
+    
+    # Current date for realistic timestamps
+    current_time = datetime.now()
+    week_start = current_time - timedelta(days=7)
+    week_end = current_time + timedelta(days=7)
+    
+    # Generate mock prediction data
+    predictions = [
+        {
+            "topic_id": "topic1",
+            "topic_name": "AI & Technology",
+            "current_count": 1250,
+            "predicted_count": 1520,
+            "growth_rate": 21.6,
+            "confidence": 0.85,
+            "sentiment_score": 0.32,
+            "keywords": ["artificial intelligence", "machine learning", "neural networks", "chatgpt", "generative AI"]
+        },
+        {
+            "topic_id": "topic2",
+            "topic_name": "Entertainment & Media",
+            "current_count": 980,
+            "predicted_count": 1040,
+            "growth_rate": 6.1,
+            "confidence": 0.72,
+            "sentiment_score": 0.54,
+            "keywords": ["movies", "streaming", "shows", "entertainment", "media"]
+        },
+        {
+            "topic_id": "topic3",
+            "topic_name": "Gaming & VR",
+            "current_count": 750,
+            "predicted_count": 920,
+            "growth_rate": 22.7,
+            "confidence": 0.79,
+            "sentiment_score": 0.48,
+            "keywords": ["gaming", "virtual reality", "games", "esports", "metaverse"]
+        },
+        {
+            "topic_id": "topic4",
+            "topic_name": "Climate & Environment",
+            "current_count": 620,
+            "predicted_count": 710,
+            "growth_rate": 14.5,
+            "confidence": 0.68,
+            "sentiment_score": -0.15,
+            "keywords": ["climate", "environment", "sustainability", "renewable", "green"]
+        },
+        {
+            "topic_id": "topic5",
+            "topic_name": "Health & Wellness",
+            "current_count": 540,
+            "predicted_count": 610,
+            "growth_rate": 13.0,
+            "confidence": 0.75,
+            "sentiment_score": 0.22,
+            "keywords": ["health", "wellness", "fitness", "mental health", "nutrition"]
+        }
+    ]
+    
+    # Generate daily prediction trends data
+    prediction_trends = {}
+    
+    # Generate date range for the next 7 days
+    start_date = current_time
+    dates = [(start_date + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(7)]
+    
+    # For each prediction, generate a trend line for each date
+    for prediction in predictions:
+        topic_id = prediction["topic_id"]
+        prediction_trends[topic_id] = {}
+        
+        # Base count from the prediction
+        base_count = prediction["current_count"]
+        growth_rate = prediction["growth_rate"] / 100  # Convert percentage to decimal
+        
+        # Generate count for each day with some randomness
+        for i, date in enumerate(dates):
+            # Apply daily growth rate with some random variation
+            daily_growth = growth_rate / 7  # Distribute growth over 7 days
+            random_factor = 1 + (random.random() * 0.2 - 0.1)  # Random factor between 0.9 and 1.1
+            
+            # Calculate predicted count for this day
+            count = int(base_count * (1 + daily_growth * i) * random_factor)
+            prediction_trends[topic_id][date] = count
+    
+    response = {
+        "predictions": predictions,
+        "prediction_trends": prediction_trends,
+        "time_range": {
+            "start_date": week_start.strftime("%Y-%m-%d"),
+            "end_date": week_end.strftime("%Y-%m-%d")
+        }
+    }
+    
+    logger.info("Returning prediction data")
+    return response
+
+@app.get("/api/db/analysis")
+async def get_analysis():
+    """
+    Get analysis data for social media topics
+    """
+    logger.info("Analysis endpoint called")
+    
+    # Current date for realistic timestamps
+    current_time = datetime.now()
+    
+    # Generate mock analysis data
+    analysis = {
+        "topics": [
+            {
+                "topic_id": "topic1",
+                "topic_name": "AI & Technology",
+                "post_count": 1250,
+                "engagement": 28500,
+                "sentiment_score": 0.32,
+                "keywords": ["artificial intelligence", "machine learning", "neural networks", "chatgpt", "generative AI"],
+                "platforms": {
+                    "reddit": 520,
+                    "tiktok": 430,
+                    "youtube": 300
+                }
+            },
+            {
+                "topic_id": "topic2",
+                "topic_name": "Entertainment & Media",
+                "post_count": 980,
+                "engagement": 19600,
+                "sentiment_score": 0.54,
+                "keywords": ["movies", "streaming", "shows", "entertainment", "media"],
+                "platforms": {
+                    "reddit": 320,
+                    "tiktok": 410,
+                    "youtube": 250
+                }
+            },
+            {
+                "topic_id": "topic3",
+                "topic_name": "Gaming & VR",
+                "post_count": 750,
+                "engagement": 22500,
+                "sentiment_score": 0.48,
+                "keywords": ["gaming", "virtual reality", "games", "esports", "metaverse"],
+                "platforms": {
+                    "reddit": 380,
+                    "tiktok": 220,
+                    "youtube": 150
+                }
+            }
+        ],
+        "time_range": {
+            "start_date": (current_time - timedelta(days=7)).strftime("%Y-%m-%d"),
+            "end_date": current_time.strftime("%Y-%m-%d")
+        },
+        "platforms": {
+            "reddit": {
+                "post_count": 4250,
+                "user_count": 3100,
+                "engagement": 89700
+            },
+            "tiktok": {
+                "post_count": 5800,
+                "user_count": 2800,
+                "engagement": 127500
+            },
+            "youtube": {
+                "post_count": 1200,
+                "user_count": 450,
+                "engagement": 65800
+            }
+        }
+    }
+    
+    logger.info("Returning analysis data")
+    return analysis 
