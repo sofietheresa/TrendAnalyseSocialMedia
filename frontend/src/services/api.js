@@ -453,34 +453,39 @@ export const fetchModelMetrics = async (modelName, version = null) => {
     // Always reset mock data status at start of request
     setMockDataStatus(false);
 
-    // Versuche zuerst DB-Endpunkt
-    try {
-      console.log(
-        `Abrufen von DB-Modellmetriken für ${modelName} ${version ? `(Version: ${version})` : ""}`,
-      );
-      const dbUrl = `/api/db/models/${modelName}/metrics${version ? `?version=${version}` : ""}`;
-      const dbResponse = await api.get(dbUrl, { timeout: 30000 });
-      console.log("DB-Modellmetriken-Antwort:", dbResponse.data);
+    // Bei Vercel-Deployment die DB-Endpunkte überspringen
+    if (ENABLE_DB_ENDPOINTS) {
+      // Versuche zuerst DB-Endpunkt
+      try {
+        console.log(
+          `Abrufen von DB-Modellmetriken für ${modelName} ${version ? `(Version: ${version})` : ""}`,
+        );
+        const dbUrl = `/api/db/models/${modelName}/metrics${version ? `?version=${version}` : ""}`;
+        const dbResponse = await api.get(dbUrl, { timeout: 30000 });
+        console.log("DB-Modellmetriken-Antwort:", dbResponse.data);
 
-      if (
-        !dbResponse.data ||
-        typeof dbResponse.data !== "object" ||
-        Object.keys(dbResponse.data).length === 0
-      ) {
-        throw new Error("Invalid or empty metrics data from DB");
+        if (
+          !dbResponse.data ||
+          typeof dbResponse.data !== "object" ||
+          Object.keys(dbResponse.data).length === 0
+        ) {
+          throw new Error("Invalid or empty metrics data from DB");
+        }
+
+        return dbResponse.data;
+      } catch (dbError) {
+        console.warn(
+          `DB-Endpunkt für Metriken fehlgeschlagen: ${dbError.message}`,
+        );
       }
-
-      return dbResponse.data;
-    } catch (dbError) {
-      console.warn(
-        `DB-Endpunkt für Metriken fehlgeschlagen: ${dbError.message}`,
-      );
+    } else {
+      console.log("DB endpoints disabled, skipping DB access attempt for metrics");
     }
 
     // Versuche ML-Ops API-Endpunkt
     const url = `/api/mlops/models/${modelName}/metrics${version ? `?version=${version}` : ""}`;
     console.log(`Abrufen von ML-Ops-Modellmetriken von: ${url}`);
-    const response = await api.get(url, { timeout: 30000 });
+    const response = await api.get(url, { timeout: 45000 }); // Erhöhtes Timeout für bessere Stabilität
     console.log("ML-Ops-Modellmetriken-Antwort:", response.data);
 
     if (
@@ -501,7 +506,7 @@ export const fetchModelMetrics = async (modelName, version = null) => {
         `Abrufen von Metriken über Fallback-Endpunkt für ${modelName}`,
       );
       const fallbackUrl = `/api/models/${modelName}/evaluation`;
-      const fallbackResponse = await api.get(fallbackUrl, { timeout: 30000 });
+      const fallbackResponse = await api.get(fallbackUrl, { timeout: 45000 }); // Erhöhtes Timeout
       console.log("Fallback-Metriken-Antwort:", fallbackResponse.data);
 
       if (
@@ -537,32 +542,37 @@ export const fetchModelDrift = async (modelName, version = null) => {
     // Always reset mock data status at start of request
     setMockDataStatus(false);
 
-    // Versuche zuerst DB-Endpunkt
-    try {
-      const dbUrl = `/api/db/models/${modelName}/drift${version ? `?version=${version}` : ""}`;
-      console.log(`Abrufen von DB-Modell-Drift-Daten von: ${dbUrl}`);
+    // Bei Vercel-Deployment die DB-Endpunkte überspringen
+    if (ENABLE_DB_ENDPOINTS) {
+      // Versuche zuerst DB-Endpunkt
+      try {
+        const dbUrl = `/api/db/models/${modelName}/drift${version ? `?version=${version}` : ""}`;
+        console.log(`Abrufen von DB-Modell-Drift-Daten von: ${dbUrl}`);
 
-      const dbResponse = await api.get(dbUrl, { timeout: 30000 });
-      console.log("DB-Modell-Drift-Antwort:", dbResponse.data);
+        const dbResponse = await api.get(dbUrl, { timeout: 30000 });
+        console.log("DB-Modell-Drift-Antwort:", dbResponse.data);
 
-      if (
-        !dbResponse.data ||
-        typeof dbResponse.data !== "object" ||
-        Object.keys(dbResponse.data).length === 0
-      ) {
-        throw new Error("Invalid or empty drift data from DB");
+        if (
+          !dbResponse.data ||
+          typeof dbResponse.data !== "object" ||
+          Object.keys(dbResponse.data).length === 0
+        ) {
+          throw new Error("Invalid or empty drift data from DB");
+        }
+
+        return dbResponse.data;
+      } catch (dbError) {
+        console.warn(`DB-Endpunkt für Drift fehlgeschlagen: ${dbError.message}`);
       }
-
-      return dbResponse.data;
-    } catch (dbError) {
-      console.warn(`DB-Endpunkt für Drift fehlgeschlagen: ${dbError.message}`);
+    } else {
+      console.log("DB endpoints disabled, skipping DB access attempt for model drift");
     }
 
-    // Versuche ML-Ops API-Endpunkt
+    // Versuche ML-Ops API-Endpunkt mit erhöhtem Timeout
     const url = `/api/mlops/models/${modelName}/drift${version ? `?version=${version}` : ""}`;
     console.log(`Abrufen von ML-Ops-Modell-Drift-Daten von: ${url}`);
 
-    const response = await api.get(url, { timeout: 30000 });
+    const response = await api.get(url, { timeout: 45000 }); // Erhöhtes Timeout für bessere Stabilität
     console.log("ML-Ops-Modell-Drift-Antwort:", response.data);
 
     if (
@@ -583,7 +593,7 @@ export const fetchModelDrift = async (modelName, version = null) => {
         `Abrufen von Drift-Daten über Fallback-Endpunkt für ${modelName}`,
       );
       const fallbackUrl = `/api/models/${modelName}/drift${version ? `?version=${version}` : ""}`;
-      const fallbackResponse = await api.get(fallbackUrl, { timeout: 30000 });
+      const fallbackResponse = await api.get(fallbackUrl, { timeout: 45000 }); // Erhöhtes Timeout
       console.log("Fallback-Drift-Antwort:", fallbackResponse.data);
 
       if (

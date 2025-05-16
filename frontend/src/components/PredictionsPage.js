@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchPredictions } from '../services/api';
+import { fetchPredictions, fetchModelVersions } from '../services/api';
 import { Line } from 'react-chartjs-2';
 import { formatDate, formatWeekday } from '../utils/dateUtils';
 import './PredictionsPage.css';
@@ -20,6 +20,10 @@ const PredictionsPage = () => {
     endDate: ''
   });
   const [predictionTrends, setPredictionTrends] = useState([]);
+  const [modelInfo, setModelInfo] = useState({
+    version: 'Loading...',
+    date: 'Please wait...'
+  });
 
   // Get sentiment emoji based on sentiment score
   const getSentimentEmoji = (sentiment) => {
@@ -31,6 +35,34 @@ const PredictionsPage = () => {
     if (sentiment > -0.5) return '🙁'; // Negative
     return '😠'; // Very negative
   };
+
+  // Fetch model version information
+  useEffect(() => {
+    const fetchModelInfo = async () => {
+      try {
+        // Fetch the latest model version information for the prediction model
+        const versions = await fetchModelVersions('topic_prediction');
+        if (versions && versions.length > 0) {
+          // Sort by created_at date (descending) to get the latest version
+          versions.sort((a, b) => {
+            return new Date(b.created_at || b.date) - new Date(a.created_at || a.date);
+          });
+          
+          const latestVersion = versions[0];
+          setModelInfo({
+            version: latestVersion.version || 'V1.0.0',
+            date: latestVersion.created_at || latestVersion.date || new Date().toLocaleString()
+          });
+          console.log('Fetched model version:', latestVersion);
+        }
+      } catch (error) {
+        console.error('Error fetching model version:', error);
+        // Keep the default values if there's an error
+      }
+    };
+    
+    fetchModelInfo();
+  }, []);
 
   // Fetch predictions data
   useEffect(() => {
@@ -236,7 +268,7 @@ const PredictionsPage = () => {
       
       {/* Model Version Badge */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-        <ModelVersionBadge version="V1.0.2" date="16.5.2025, 20:28:13" />
+        <ModelVersionBadge version={modelInfo.version} date={modelInfo.date} />
       </div>
       
       {/* Date Range Filter */}
