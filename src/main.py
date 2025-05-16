@@ -20,6 +20,9 @@ from starlette.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 # Import models and database
 from models import get_db, RedditData, TikTokData, YouTubeData, init_db, Base, engine
 
+# Environment variables and configuration
+QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
+
 # Modell-Download beim Start
 from src.model_loader import download_models
 
