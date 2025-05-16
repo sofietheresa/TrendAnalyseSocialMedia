@@ -1,0 +1,338 @@
+/* PredictionsPage.css */
+
+.predictions-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.predictions-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.predictions-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #232252;
+  margin-bottom: 10px;
+}
+
+.predictions-subheader {
+  font-size: 1.1rem;
+  color: #64748B;
+}
+
+.predictions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+.prediction-card {
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.prediction-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Color variants for cards */
+.prediction-color-0 { border-top: 5px solid #232252; } /* dark blue */
+.prediction-color-1 { border-top: 5px solid #2e6cdb; } /* medium blue */
+.prediction-color-2 { border-top: 5px solid #9364eb; } /* purple */
+.prediction-color-3 { border-top: 5px solid #e750ae; } /* pink */
+.prediction-color-4 { border-top: 5px solid #f8986f; } /* orange */
+
+.prediction-topic {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #232252;
+  margin: 0 0 10px 0;
+}
+
+.prediction-confidence {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prediction-meter {
+  width: 100%;
+  height: 8px;
+  background-color: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.prediction-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2e6cdb, #9364eb);
+  border-radius: 4px;
+}
+
+.prediction-percentage {
+  font-size: 0.9rem;
+  color: #64748B;
+  font-weight: 600;
+}
+
+.prediction-sentiment {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.sentiment-emoji {
+  font-size: 1.4rem;
+}
+
+.sentiment-label {
+  font-size: 0.9rem;
+  color: #64748B;
+}
+
+.prediction-keywords {
+  margin-top: 10px;
+}
+
+.keywords-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #232252;
+  margin-bottom: 8px;
+}
+
+.keywords-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.keyword-tag {
+  background-color: #f1f5f9;
+  color: #64748B;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.prediction-forecast {
+  margin-top: 15px;
+}
+
+.forecast-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #232252;
+  margin-bottom: 15px;
+}
+
+.forecast-bars {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 120px;
+}
+
+.forecast-bar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.forecast-date {
+  font-size: 0.75rem;
+  color: #64748B;
+  margin-bottom: 5px;
+}
+
+.forecast-bar-wrapper {
+  width: 100%;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.forecast-bar {
+  width: 80%;
+  background: linear-gradient(180deg, #9364eb, #2e6cdb);
+  border-radius: 3px 3px 0 0;
+  min-height: 5%;
+}
+
+.forecast-value {
+  font-size: 0.75rem;
+  color: #64748B;
+  margin-top: 5px;
+  font-weight: 600;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .predictions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .forecast-bars {
+    height: 100px;
+  }
+  
+  .forecast-date {
+    font-size: 0.7rem;
+  }
+  
+  .forecast-value {
+    font-size: 0.7rem;
+  }
+}
+
+/* Prediction trends chart */
+.prediction-trends-chart {
+  width: 100%;
+  max-width: 1000px;
+  margin: 40px auto;
+  height: 400px;
+}
+
+/* Selected range info */
+.selected-range-info {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #64748B;
+}
+
+/* No data message */
+.no-data-message {
+  text-align: center;
+  padding: 40px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 15px;
+  margin: 40px auto;
+  max-width: 600px;
+}
+
+.no-data-message p {
+  color: #64748B;
+  margin-bottom: 10px;
+}
+
+/* Loading spinner */
+.loading-spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-left-color: #2e6cdb;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error message */
+.error-message {
+  padding: 20px;
+  background-color: #fee2e2;
+  border-left: 4px solid #ef4444;
+  color: #b91c1c;
+  margin: 20px 0;
+  border-radius: 5px;
+}
+
+/* Date filter section */
+.filter-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.calendar-filter {
+  display: flex;
+  gap: 15px;
+  background-color: rgba(255, 255, 255, 0.85);
+  padding: 15px 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.calendar-filter label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.9rem;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.calendar-input {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  color: #232252;
+  font-family: 'Sora', Arial, sans-serif;
+}
+
+.calendar-filter-btn {
+  align-self: flex-end;
+  padding: 8px 20px;
+  background: linear-gradient(90deg, #2e6cdb, #9364eb);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.calendar-filter-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(46, 108, 219, 0.2);
+}
+
+@media (max-width: 600px) {
+  .calendar-filter {
+    flex-direction: column;
+    width: 90%;
+  }
+  
+  .calendar-filter-btn {
+    align-self: stretch;
+  }
+} 

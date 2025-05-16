@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, text
 import os
 from datetime import datetime, timedelta
 import urllib.parse
+import random
 
 app = Flask(__name__)
 # CORS für lokale Entwicklung erlauben
@@ -262,6 +263,128 @@ def get_recent_data():
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e), 'data': []}), 500
+
+@app.route('/api/db/predictions')
+def get_predictions():
+    """
+    Get topic predictions from ML models.
+    
+    Query Parameters:
+    - start_date: (optional) Start date for the prediction period (YYYY-MM-DD)
+    - end_date: (optional) End date for the prediction period (YYYY-MM-DD)
+    
+    Returns prediction data for future trends based on ML models.
+    """
+    try:
+        # Parse query parameters
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        
+        # Use default dates if not provided
+        if not start_date:
+            start_date = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+        if not end_date:
+            end_date = (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')
+            
+        # Convert to datetime objects
+        start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+        end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+        
+        # Generate prediction data (mock data for now)
+        predictions = generate_mock_predictions(start_dt, end_dt, num_topics=5)
+        
+        response = {
+            'predictions': predictions,
+            'time_range': {
+                'start_date': start_date,
+                'end_date': end_date
+            },
+            'prediction_trends': generate_mock_prediction_trends(predictions, start_dt, end_dt)
+        }
+        
+        return jsonify(response)
+    except Exception as e:
+        print(f"Error in get_predictions: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+def generate_mock_predictions(start_date, end_date, num_topics=5):
+    """Generate mock prediction data for topics."""
+    topics = [
+        {"id": 1, "name": "Artificial Intelligence", "keywords": ["AI", "machine learning", "neural networks", "deep learning", "GPT"]},
+        {"id": 2, "name": "Climate Change", "keywords": ["environment", "global warming", "renewable energy", "sustainability", "carbon"]},
+        {"id": 3, "name": "Digital Privacy", "keywords": ["data protection", "encryption", "surveillance", "security", "GDPR"]},
+        {"id": 4, "name": "Quantum Computing", "keywords": ["qubits", "quantum supremacy", "superposition", "entanglement", "quantum algorithms"]},
+        {"id": 5, "name": "Space Exploration", "keywords": ["Mars", "NASA", "SpaceX", "astronomy", "satellites"]},
+        {"id": 6, "name": "Cryptocurrencies", "keywords": ["Bitcoin", "blockchain", "Ethereum", "NFT", "DeFi"]},
+        {"id": 7, "name": "Remote Work", "keywords": ["WFH", "hybrid work", "virtual collaboration", "digital nomad", "productivity"]},
+        {"id": 8, "name": "Mental Health", "keywords": ["wellness", "therapy", "mindfulness", "psychology", "self-care"]}
+    ]
+    
+    # Randomly select topics for predictions
+    selected_topics = random.sample(topics, min(num_topics, len(topics)))
+    
+    # Generate date range for forecast data (7 days from start_date)
+    forecast_dates = [(start_date + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(7)]
+    
+    predictions = []
+    for topic in selected_topics:
+        # Generate random confidence between 60% and 95%
+        confidence = round(random.uniform(0.6, 0.95), 2)
+        
+        # Generate random sentiment score between -0.8 and 0.8
+        sentiment_score = round(random.uniform(-0.8, 0.8), 2)
+        
+        # Generate forecast data (daily post counts)
+        max_value = random.randint(80, 300)
+        forecast_data = {}
+        for date in forecast_dates:
+            # Generate a slightly upward trend with some randomness
+            day_index = forecast_dates.index(date)
+            trend_factor = 1 + (day_index * 0.1)  # Increases by 10% each day
+            randomness = random.uniform(0.8, 1.2)  # +/- 20% random variation
+            value = max_value * trend_factor * randomness
+            forecast_data[date] = round(value)
+        
+        predictions.append({
+            "topic_id": topic["id"],
+            "topic_name": topic["name"],
+            "confidence": confidence,
+            "sentiment_score": sentiment_score,
+            "keywords": topic["keywords"],
+            "forecast_data": forecast_data,
+            "forecast_max": max(forecast_data.values())
+        })
+    
+    # Sort predictions by confidence (highest first)
+    predictions.sort(key=lambda x: x["confidence"], reverse=True)
+    
+    return predictions
+
+def generate_mock_prediction_trends(predictions, start_date, end_date):
+    """Generate mock trend data for the predictions chart."""
+    # Create a date range from start_date to end_date
+    delta = (end_date - start_date).days + 1
+    dates = [(start_date + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(delta)]
+    
+    trends = {}
+    for prediction in predictions:
+        topic_id = prediction["topic_id"]
+        trends[topic_id] = {}
+        
+        # Base value - higher for topics with higher confidence
+        base_value = random.randint(50, 100) * prediction["confidence"]
+        
+        # Generate trend values for each date
+        for i, date in enumerate(dates):
+            # Create a slightly upward trend with random variations
+            trend_factor = 1 + (i * 0.05)  # Increases by 5% each day
+            randomness = random.uniform(0.9, 1.1)  # +/- 10% random variation
+            value = base_value * trend_factor * randomness
+            trends[topic_id][date] = round(value)
+    
+    return trends
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

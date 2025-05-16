@@ -7,6 +7,7 @@ import DataPage from './components/DataPage';
 import Documentation from './components/Documentation';
 import ModelEvaluation from './components/ModelEvaluation';
 import PipelinePage from './components/PipelinePage';
+import PredictionsPage from './components/PredictionsPage';
 import { fetchTopicModel } from './services/api';
 import { Line } from 'react-chartjs-2';
 import MockDataNotification from './components/MockDataNotification';
@@ -468,6 +469,13 @@ function App() {
             {/* Navigation Links */}
             <div className="nav-links-container">
               <Link 
+                to="/predictions" 
+                className={`nav-link ${activePage === 'predictions' ? 'active-nav-link' : ''}`} 
+                onClick={() => setActivePage('predictions')}
+              >
+                Predictions
+              </Link>
+              <Link 
                 to="/pipeline" 
                 className={`nav-link ${activePage === 'pipeline' ? 'active-nav-link' : ''}`} 
                 onClick={() => setActivePage('pipeline')}
@@ -508,6 +516,7 @@ function App() {
           {/* Page Routes */}
           <Routes>
             <Route path="/" element={<Homepage />} />
+            <Route path="/predictions" element={<PredictionsPage />} />
             <Route path="/stats" element={<StatsPage />} />
             <Route path="/pipeline" element={<PipelinePage />} />
             <Route path="/data" element={<DataPage />} />
