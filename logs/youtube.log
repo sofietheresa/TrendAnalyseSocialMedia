@@ -1129,3 +1129,18 @@ psycopg2.InterfaceError: connection already closed
 2025-05-15 23:48:38,651 [INFO] Successfully fetched trending videos from YouTube API
 2025-05-15 23:48:38,651 [INFO] Found 50 trending videos
 2025-05-15 23:48:41,287 [INFO] Successfully stored 50 YouTube videos in the database
+2025-05-15 23:56:25,045 [INFO] YouTube status updated in database
+2025-05-16 05:15:58,687 [INFO] Starting YouTube scraping for region DE...
+2025-05-16 05:15:58,988 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-16 05:15:58,988 [INFO] Found 50 trending videos
+2025-05-16 05:16:02,128 [INFO] Successfully stored 50 YouTube videos in the database
+2025-05-16 05:16:16,370 [INFO] YouTube status updated in database
+2025-05-16 08:20:14,603 [INFO] Starting YouTube scraping for region DE...
+2025-05-16 08:20:14,958 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-16 08:20:14,958 [INFO] Found 50 trending videos
+2025-05-16 08:20:18,224 [INFO] Successfully stored 50 YouTube videos in the database
+2025-05-16 08:35:41,465 [INFO] YouTube status updated in database
+2025-05-16 08:37:27,356 [INFO] Starting YouTube scraping for region DE...
+2025-05-16 08:37:27,641 [INFO] Successfully fetched trending videos from YouTube API
+2025-05-16 08:37:27,642 [INFO] Found 50 trending videos
+2025-05-16 08:37:30,951 [INFO] Successfully stored 50 YouTube videos in the database

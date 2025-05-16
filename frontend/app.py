@@ -253,6 +253,286 @@ def load_data(table: str) -> pd.DataFrame:
         df = pd.read_sql_query(f"SELECT * FROM {table}", conn)
     return df
 
+@app.route('/api/mlops/pipelines', methods=['GET'])
+def get_pipelines():
+    """Get all available ML pipelines or a specific pipeline by ID."""
+    try:
+        pipeline_id = request.args.get('id')
+        
+        # Generate mock pipeline data
+        pipelines = [
+            {
+                "id": "topic-modeling-pipeline",
+                "name": "Topic Modeling Pipeline",
+                "description": "Extract topics from social media posts using TF-IDF and NMF",
+                "status": "active",
+                "last_run": (datetime.now() - timedelta(hours=6)).isoformat(),
+                "success_rate": 92,
+                "steps": ["data_extraction", "preprocessing", "topic_modeling", "evaluation"]
+            },
+            {
+                "id": "sentiment-analysis-pipeline",
+                "name": "Sentiment Analysis Pipeline",
+                "description": "Analyze sentiment of social media posts using machine learning",
+                "status": "active",
+                "last_run": (datetime.now() - timedelta(hours=12)).isoformat(),
+                "success_rate": 88,
+                "steps": ["data_extraction", "preprocessing", "sentiment_classification", "evaluation"]
+            },
+            {
+                "id": "trend-prediction-pipeline",
+                "name": "Trend Prediction Pipeline",
+                "description": "Predict future trends based on historical social media data",
+                "status": "active",
+                "last_run": (datetime.now() - timedelta(days=1)).isoformat(),
+                "success_rate": 85,
+                "steps": ["data_extraction", "preprocessing", "feature_engineering", "model_training", "forecasting"]
+            }
+        ]
+        
+        # Return specific pipeline if ID is provided
+        if pipeline_id:
+            for pipeline in pipelines:
+                if pipeline["id"] == pipeline_id:
+                    return jsonify(pipeline)
+            return jsonify({"error": "Pipeline not found"}), 404
+        
+        # Return all pipelines
+        return jsonify(pipelines)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/mlops/pipelines/<pipeline_id>/executions', methods=['GET'])
+def get_pipeline_executions(pipeline_id):
+    """Get execution history for a specific pipeline."""
+    try:
+        # Generate mock execution data
+        executions = []
+        # Create 5 mock executions with different statuses
+        statuses = ["completed", "completed", "failed", "completed", "running"]
+        
+        for i in range(5):
+            status = statuses[i]
+            execution_time = datetime.now() - timedelta(days=i, hours=random.randint(0, 12))
+            
+            execution = {
+                "id": f"exec-{pipeline_id}-{i}",
+                "pipeline_id": pipeline_id,
+                "status": status,
+                "start_time": execution_time.isoformat(),
+                "end_time": (execution_time + timedelta(minutes=random.randint(15, 45))).isoformat() if status != "running" else None,
+                "logs": f"Execution logs for {pipeline_id} run {i}",
+                "metrics": {
+                    "accuracy": round(random.uniform(0.82, 0.94), 2) if status == "completed" else None,
+                    "precision": round(random.uniform(0.80, 0.92), 2) if status == "completed" else None,
+                    "recall": round(random.uniform(0.78, 0.90), 2) if status == "completed" else None,
+                    "f1_score": round(random.uniform(0.80, 0.92), 2) if status == "completed" else None
+                }
+            }
+            
+            # Add error details for failed executions
+            if status == "failed":
+                execution["error"] = "Data preprocessing step failed due to missing values"
+                
+            executions.append(execution)
+        
+        return jsonify(executions)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/mlops/pipelines/<pipeline_id>/execute', methods=['POST'])
+def execute_pipeline(pipeline_id):
+    """Trigger execution of a specific pipeline."""
+    try:
+        # Mock pipeline execution - in a real system this would trigger the actual pipeline
+        execution_id = f"exec-{pipeline_id}-{int(datetime.now().timestamp())}"
+        
+        response = {
+            "execution_id": execution_id,
+            "pipeline_id": pipeline_id,
+            "status": "started",
+            "start_time": datetime.now().isoformat(),
+            "message": f"Pipeline {pipeline_id} execution started successfully"
+        }
+        
+        return jsonify(response)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/mlops/models', methods=['GET'])
+def get_models():
+    """Get all available ML models."""
+    try:
+        # Generate mock model data
+        models = [
+            {
+                "id": "topic-model",
+                "name": "Topic Model",
+                "type": "NMF",
+                "description": "Non-negative Matrix Factorization for topic modeling",
+                "latest_version": "v1.2.3",
+                "created_at": (datetime.now() - timedelta(days=30)).isoformat()
+            },
+            {
+                "id": "sentiment-model",
+                "name": "Sentiment Analysis Model",
+                "type": "RandomForest",
+                "description": "Random Forest classifier for sentiment analysis",
+                "latest_version": "v2.0.1",
+                "created_at": (datetime.now() - timedelta(days=15)).isoformat()
+            },
+            {
+                "id": "trend-prediction-model",
+                "name": "Trend Prediction Model",
+                "type": "ARIMA",
+                "description": "Time series forecasting for trend prediction",
+                "latest_version": "v0.9.5",
+                "created_at": (datetime.now() - timedelta(days=5)).isoformat()
+            }
+        ]
+        
+        return jsonify(models)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/mlops/models/<model_name>/versions', methods=['GET'])
+def get_model_versions(model_name):
+    """Get all versions of a specific model."""
+    try:
+        # Generate mock version data based on model name
+        versions = []
+        model_info = {
+            "topic-model": {"base_version": "v1.0.0", "num_versions": 4},
+            "sentiment-model": {"base_version": "v2.0.0", "num_versions": 2}, 
+            "trend-prediction-model": {"base_version": "v0.9.0", "num_versions": 6}
+        }
+        
+        if model_name not in model_info:
+            return jsonify({"error": "Model not found"}), 404
+        
+        info = model_info[model_name]
+        
+        for i in range(info["num_versions"]):
+            version_date = datetime.now() - timedelta(days=i*10)
+            accuracy = 0.8 + (i * 0.02) if i < 3 else 0.8 + (3 * 0.02) - ((i-3) * 0.01)
+            
+            version = {
+                "version": f"{info['base_version'][:-1]}{int(info['base_version'][-1]) + i}",
+                "model_name": model_name,
+                "created_at": version_date.isoformat(),
+                "accuracy": round(accuracy, 2),
+                "is_production": i == 0,  # Most recent version is in production
+                "trained_on": f"{random.randint(5000, 15000)} samples",
+                "parameters": {
+                    "learning_rate": round(random.uniform(0.01, 0.1), 3),
+                    "batch_size": random.choice([32, 64, 128]),
+                    "epochs": random.randint(10, 50)
+                }
+            }
+            versions.append(version)
+        
+        return jsonify(versions)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/mlops/models/<model_name>/metrics', methods=['GET'])
+def get_model_metrics(model_name):
+    """Get performance metrics for a specific model version."""
+    try:
+        version = request.args.get('version')
+        
+        # Generate mock metrics data
+        if model_name == "topic-model":
+            metrics = {
+                "coherence_score": round(random.uniform(0.4, 0.7), 2),
+                "topic_diversity": round(random.uniform(0.6, 0.9), 2),
+                "perplexity": round(random.uniform(35, 60), 1),
+                "training_time": f"{random.randint(5, 15)} minutes",
+                "topics_extracted": random.randint(5, 15),
+                "avg_topic_size": random.randint(10, 30),
+                "version": version or "latest",
+                "evaluation_date": datetime.now().isoformat()
+            }
+        elif model_name == "sentiment-model":
+            metrics = {
+                "accuracy": round(random.uniform(0.82, 0.92), 2),
+                "precision": round(random.uniform(0.80, 0.90), 2),
+                "recall": round(random.uniform(0.78, 0.88), 2),
+                "f1_score": round(random.uniform(0.80, 0.90), 2),
+                "roc_auc": round(random.uniform(0.85, 0.95), 2),
+                "confusion_matrix": {
+                    "true_positive": random.randint(800, 1200),
+                    "false_positive": random.randint(100, 200),
+                    "true_negative": random.randint(800, 1200),
+                    "false_negative": random.randint(100, 200)
+                },
+                "version": version or "latest",
+                "evaluation_date": datetime.now().isoformat()
+            }
+        elif model_name == "trend-prediction-model":
+            metrics = {
+                "mse": round(random.uniform(10, 30), 2),
+                "rmse": round(random.uniform(3, 5.5), 2),
+                "mae": round(random.uniform(2.5, 4.5), 2),
+                "r2_score": round(random.uniform(0.6, 0.8), 2),
+                "forecast_horizon": f"{random.randint(3, 14)} days",
+                "version": version or "latest",
+                "evaluation_date": datetime.now().isoformat()
+            }
+        else:
+            return jsonify({"error": "Model not found"}), 404
+        
+        return jsonify(metrics)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/mlops/models/<model_name>/drift', methods=['GET'])
+def get_model_drift(model_name):
+    """Get model drift analysis for a specific model."""
+    try:
+        version = request.args.get('version')
+        
+        # Generate mock drift data
+        base_metrics = {
+            "feature_drift": {
+                "psi_scores": {
+                    "feature1": round(random.uniform(0.01, 0.2), 3),
+                    "feature2": round(random.uniform(0.01, 0.2), 3),
+                    "feature3": round(random.uniform(0.01, 0.2), 3),
+                    "feature4": round(random.uniform(0.01, 0.2), 3),
+                    "feature5": round(random.uniform(0.01, 0.2), 3)
+                },
+                "drift_detected": False
+            },
+            "performance_drift": {
+                "accuracy_change": round(random.uniform(-0.05, 0.02), 3),
+                "precision_change": round(random.uniform(-0.05, 0.02), 3),
+                "recall_change": round(random.uniform(-0.05, 0.02), 3),
+                "significant_drift": False
+            },
+            "data_quality": {
+                "missing_values": f"{round(random.uniform(0.1, 3), 1)}%",
+                "outliers": f"{round(random.uniform(0.5, 5), 1)}%"
+            },
+            "version": version or "latest",
+            "analysis_date": datetime.now().isoformat()
+        }
+        
+        # Make drift detected true in some cases
+        if random.random() > 0.7:
+            base_metrics["feature_drift"]["drift_detected"] = True
+            # Make one feature have significant drift
+            key = random.choice(list(base_metrics["feature_drift"]["psi_scores"].keys()))
+            base_metrics["feature_drift"]["psi_scores"][key] = round(random.uniform(0.2, 0.5), 3)
+        
+        if random.random() > 0.7:
+            base_metrics["performance_drift"]["significant_drift"] = True
+            base_metrics["performance_drift"]["accuracy_change"] = round(random.uniform(-0.15, -0.08), 3)
+        
+        return jsonify(base_metrics)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # --- Seitenaufbau ---
 st.set_page_config(page_title="Social Media Dashboard", layout="wide")
 st.sidebar.title("📁 Navigation")
