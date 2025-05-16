@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchPipelines, fetchPipelineExecutions, executePipeline } from '../services/api';
+import { formatDateTime } from '../utils/dateUtils';
 import './PipelinePage.css';
 
 /**
@@ -222,7 +223,7 @@ const PipelinePage = () => {
   // Helper function to format date
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleString('de-DE');
+    return formatDateTime(dateString);
   };
 
   return (

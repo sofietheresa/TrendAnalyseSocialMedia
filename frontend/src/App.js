@@ -235,7 +235,7 @@ const Homepage = () => {
         <div className="post-counts-grid">
           {dates.map(date => (
             <div key={date} className="post-count-item">
-              <div className="post-count-date">{new Date(date).toLocaleDateString()}</div>
+              <div className="post-count-date">{new Date(date).toLocaleDateString('de-DE')}</div>
               <div className="post-count-value">{topicCounts[topicId][date]}</div>
             </div>
           ))}

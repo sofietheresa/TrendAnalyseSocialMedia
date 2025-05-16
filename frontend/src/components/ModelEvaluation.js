@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchTopicModel, fetchModelVersions, fetchModelMetrics, fetchModelDrift } from '../services/api';
+import { formatDate, formatDateTime, formatNumber } from '../utils/dateUtils';
 import './ModelEvaluation.css';
 import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, RadialLinearScale } from 'chart.js';
 import { Radar, Line, Bar, Doughnut } from 'react-chartjs-2';
@@ -42,127 +43,135 @@ const ModelEvaluation = () => {
         setLoading(true);
         setError(null);
         
-        // Mock data for fallbacks
-        const mockVersions = {
-          "topic_model": [
-            {"id": "v1.0.2", "name": "Topic Model v1.0.2", "date": new Date().toISOString(), "status": "production"},
-            {"id": "v1.0.1", "name": "Topic Model v1.0.1", "date": new Date(Date.now() - 7*24*60*60*1000).toISOString(), "status": "archived"},
-            {"id": "v1.0.0", "name": "Topic Model v1.0.0", "date": new Date(Date.now() - 14*24*60*60*1000).toISOString(), "status": "archived"}
-          ],
-          "sentiment_analysis": [
-            {"id": "v2.0.1", "name": "Sentiment Analysis v2.0.1", "date": new Date().toISOString(), "status": "production"},
-            {"id": "v2.0.0", "name": "Sentiment Analysis v2.0.0", "date": new Date(Date.now() - 10*24*60*60*1000).toISOString(), "status": "archived"}
-          ],
-          "trend_prediction": [
-            {"id": "v1.5.0", "name": "Trend Prediction v1.5.0", "date": new Date().toISOString(), "status": "production"}
-          ]
-        };
-        
-        const mockMetrics = {
-          "topic_model": {
-            coherence_score: 0.78,
-            diversity_score: 0.65,
-            document_coverage: 0.92,
-            total_documents: 15764,
-            uniqueness_score: 0.81,
-            silhouette_score: 0.72,
-            topic_separation: 0.68,
-            avg_topic_similarity: 0.43,
-            execution_time: 183.4,
-            topic_quality: 0.75
-          },
-          "sentiment_analysis": {
-            accuracy: 0.89,
-            precision: 0.83,
-            recall: 0.86,
-            f1_score: 0.85,
-            total_documents: 12500,
-            execution_time: 162.7,
-            uniqueness_score: 0.79,
-            silhouette_score: 0.67,
-            topic_separation: 0.72
-          },
-          "trend_prediction": {
-            mean_absolute_error: 0.12,
-            mean_squared_error: 0.05,
-            r2_score: 0.87,
-            total_predictions: 8742,
-            execution_time: 97.3,
-            accuracy: 0.91,
-            precision: 0.88,
-            recall: 0.85,
-            f1_score: 0.86
-          }
-        };
-        
+        // Fetch model versions
+        let versions;
         try {
-          // Fetch model versions
-          const versions = await fetchModelVersions(selectedModel);
+          versions = await fetchModelVersions(selectedModel);
+          console.log('Fetched model versions:', versions);
           
-          if (versions && versions.error) {
-            console.log('Using mock versions');
-            setModelVersions(mockVersions[selectedModel] || []);
-          } else {
-            // Ensure versions is an array
-            const versionsArray = Array.isArray(versions) ? versions : (mockVersions[selectedModel] || []);
-            setModelVersions(versionsArray);
+          if (!versions || versions.error || !Array.isArray(versions) || versions.length === 0) {
+            throw new Error('Failed to fetch valid model versions');
           }
-        } catch (error) {
-          console.log('Error fetching model versions, using mocks:', error);
+          
+          setModelVersions(versions);
+        } catch (err) {
+          console.error('Error fetching model versions:', err);
+          // Fallback to mock versions if API fails
+          const mockVersions = {
+            "topic_model": [
+              {"id": "v1.0.2", "name": "Topic Model v1.0.2", "date": new Date().toISOString(), "status": "production"},
+              {"id": "v1.0.1", "name": "Topic Model v1.0.1", "date": new Date(Date.now() - 7*24*60*60*1000).toISOString(), "status": "archived"},
+              {"id": "v1.0.0", "name": "Topic Model v1.0.0", "date": new Date(Date.now() - 14*24*60*60*1000).toISOString(), "status": "archived"}
+            ],
+            "sentiment_analysis": [
+              {"id": "v2.0.1", "name": "Sentiment Analysis v2.0.1", "date": new Date().toISOString(), "status": "production"},
+              {"id": "v2.0.0", "name": "Sentiment Analysis v2.0.0", "date": new Date(Date.now() - 10*24*60*60*1000).toISOString(), "status": "archived"}
+            ],
+            "trend_prediction": [
+              {"id": "v1.5.0", "name": "Trend Prediction v1.5.0", "date": new Date().toISOString(), "status": "production"}
+            ]
+          };
+          
           setModelVersions(mockVersions[selectedModel] || []);
+          versions = mockVersions[selectedModel] || [];
         }
         
         // Set selected version to the production version or first available
-        const versionsToUse = mockVersions[selectedModel] || [];
-        const productionVersion = versionsToUse.find(v => v.status === 'production')?.id;
-        const versionToSelect = productionVersion || (versionsToUse.length > 0 ? versionsToUse[0].id : null);
+        const productionVersion = versions.find(v => v.status === 'production')?.id;
+        const versionToSelect = productionVersion || (versions.length > 0 ? versions[0].id : null);
         setSelectedVersion(versionToSelect);
         
+        // Fetch model metrics for the selected version
         try {
-          // Fetch model metrics
-          const metrics = await fetchModelMetrics(selectedModel, versionToSelect);
-          
-          if (metrics && metrics.error) {
-            console.log('Using mock metrics');
-            setMetrics(mockMetrics[selectedModel] || {});
-          } else {
-            setMetrics(metrics || mockMetrics[selectedModel] || {});
+          if (versionToSelect) {
+            const metricsData = await fetchModelMetrics(selectedModel, versionToSelect);
+            console.log('Fetched model metrics:', metricsData);
+            
+            if (!metricsData || metricsData.error) {
+              throw new Error('Failed to fetch valid metrics data');
+            }
+            
+            setMetrics(metricsData);
           }
-        } catch (error) {
-          console.log('Error fetching model metrics, using mocks:', error);
+        } catch (err) {
+          console.error('Error fetching model metrics:', err);
+          // Fallback to mock metrics if API fails
+          const mockMetrics = {
+            "topic_model": {
+              coherence_score: 0.78,
+              diversity_score: 0.65,
+              document_coverage: 0.92,
+              total_documents: 15764,
+              uniqueness_score: 0.81,
+              silhouette_score: 0.72,
+              topic_separation: 0.68,
+              avg_topic_similarity: 0.43,
+              execution_time: 183.4,
+              topic_quality: 0.75
+            },
+            "sentiment_analysis": {
+              accuracy: 0.89,
+              precision: 0.83,
+              recall: 0.86,
+              f1_score: 0.85,
+              total_documents: 12500,
+              execution_time: 162.7,
+              uniqueness_score: 0.79,
+              silhouette_score: 0.67,
+              topic_separation: 0.72
+            },
+            "trend_prediction": {
+              mean_absolute_error: 0.12,
+              mean_squared_error: 0.05,
+              r2_score: 0.87,
+              total_predictions: 8742,
+              execution_time: 97.3,
+              accuracy: 0.91,
+              precision: 0.88,
+              recall: 0.85,
+              f1_score: 0.86
+            }
+          };
+          
           setMetrics(mockMetrics[selectedModel] || {});
         }
         
-        // Fetch metrics history (mock for now as we don't have API endpoint for history)
-        // In a real app, we would create an API endpoint for this
-        const mockMetricsHistory = [
-          { version: 'v1.0.0', coherence: 0.72, diversity: 0.61, coverage: 0.87, uniqueness: 0.76, date: '2023-12-05' },
-          { version: 'v1.0.1', coherence: 0.75, diversity: 0.63, coverage: 0.90, uniqueness: 0.79, date: '2023-12-10' },
-          { version: 'v1.0.2', coherence: 0.78, diversity: 0.65, coverage: 0.92, uniqueness: 0.81, date: '2023-12-15' }
-        ];
+        // Fetch metrics history
+        try {
+          const historyData = await fetch(`/api/model/${selectedModel}/metrics/history`);
+          const historyJson = await historyData.json();
+          
+          if (historyJson && Array.isArray(historyJson) && historyJson.length > 0) {
+            setMetricsHistory(historyJson);
+          } else {
+            throw new Error('Invalid metrics history data');
+          }
+        } catch (err) {
+          console.error('Error fetching metrics history:', err);
+          // Fallback to mock history if API fails
+          const mockMetricsHistory = [
+            { version: 'v1.0.0', coherence: 0.72, diversity: 0.61, coverage: 0.87, uniqueness: 0.76, date: new Date(Date.now() - 14*24*60*60*1000).toISOString() },
+            { version: 'v1.0.1', coherence: 0.75, diversity: 0.63, coverage: 0.90, uniqueness: 0.79, date: new Date(Date.now() - 7*24*60*60*1000).toISOString() },
+            { version: 'v1.0.2', coherence: 0.78, diversity: 0.65, coverage: 0.92, uniqueness: 0.81, date: new Date().toISOString() }
+          ];
+          
+          setMetricsHistory(mockMetricsHistory);
+        }
         
-        setMetricsHistory(mockMetricsHistory);
-        
-        // Fetch drift metrics if it's a relevant model type
+        // Fetch drift metrics for relevant model types
         if (selectedModel === 'topic_model' || selectedModel === 'sentiment_analysis') {
           try {
             const driftData = await fetchModelDrift(selectedModel, versionToSelect);
-            if (driftData && !driftData.error) {
-              setConfusionMatrix(driftData?.confusionMatrix || null);
+            console.log('Fetched drift data:', driftData);
+            
+            if (driftData && !driftData.error && driftData.confusionMatrix) {
+              setConfusionMatrix(driftData.confusionMatrix);
             } else {
-              // Use mock confusion matrix
-              const mockConfusionMatrix = {
-                labels: ['Positive', 'Neutral', 'Negative'],
-                values: [
-                  [92, 5, 3],
-                  [8, 85, 7],
-                  [4, 9, 87]
-                ]
-              };
-              setConfusionMatrix(mockConfusionMatrix);
+              throw new Error('Invalid drift data');
             }
-          } catch (error) {
-            console.log('Error fetching drift data, using mocks:', error);
+          } catch (err) {
+            console.error('Error fetching drift data:', err);
+            // Fallback to mock confusion matrix if API fails
             const mockConfusionMatrix = {
               labels: ['Positive', 'Neutral', 'Negative'],
               values: [
@@ -176,9 +185,13 @@ const ModelEvaluation = () => {
         }
         
         // Set time range based on available data
+        const today = new Date();
+        const twoWeeksAgo = new Date(today);
+        twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+        
         setTimeRange({
-          start_date: '2023-12-01',
-          end_date: '2023-12-15'
+          start_date: twoWeeksAgo.toISOString().split('T')[0],
+          end_date: today.toISOString().split('T')[0]
         });
         
         setLoading(false);
@@ -309,6 +322,14 @@ const ModelEvaluation = () => {
         text: 'Model Performance Across Versions',
         font: {
           size: 18
+        }
+      },
+      tooltip: {
+        callbacks: {
+          title: (context) => {
+            const dataIndex = context[0].dataIndex;
+            return `${metricsHistory[dataIndex].version} (${formatDate(metricsHistory[dataIndex].date)})`;
+          }
         }
       }
     },
@@ -457,7 +478,7 @@ const ModelEvaluation = () => {
                 onClick={() => setSelectedVersion(version.id)}
               >
                 <div className="version-name">{version.name}</div>
-                <div className="version-date">{new Date(version.date).toLocaleDateString('de-DE')}</div>
+                <div className="version-date">{formatDateTime(version.date)}</div>
                 {version.status === 'production' && (
                   <div className="version-status">Production</div>
                 )}
@@ -541,7 +562,7 @@ const ModelEvaluation = () => {
                 </div>
                 {metrics.total_documents ? (
                   <div className="metric-item">
-                    <div className="metric-value">{(metrics.total_documents || 0).toLocaleString()}</div>
+                    <div className="metric-value">{formatNumber(metrics.total_documents || 0)}</div>
                     <div className="metric-label">Total Documents</div>
                     <div className="metric-description">
                       Number of documents processed in the analysis.
@@ -606,15 +627,21 @@ const ModelEvaluation = () => {
                 <div className="monitoring-content">
                   <div className="monitoring-metric">
                     <div className="monitoring-metric-label">Prediction Drift</div>
-                    <div className="monitoring-metric-value">2.3%</div>
+                    <div className="monitoring-metric-value">
+                      {metrics.prediction_drift ? `${(metrics.prediction_drift * 100).toFixed(1)}%` : '2.3%'}
+                    </div>
                   </div>
                   <div className="monitoring-metric">
                     <div className="monitoring-metric-label">Feature Drift</div>
-                    <div className="monitoring-metric-value">1.7%</div>
+                    <div className="monitoring-metric-value">
+                      {metrics.feature_drift ? `${(metrics.feature_drift * 100).toFixed(1)}%` : '1.7%'}
+                    </div>
                   </div>
                   <div className="monitoring-metric">
                     <div className="monitoring-metric-label">Data Quality</div>
-                    <div className="monitoring-metric-value">98.5%</div>
+                    <div className="monitoring-metric-value">
+                      {metrics.data_quality ? `${(metrics.data_quality * 100).toFixed(1)}%` : '98.5%'}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -627,15 +654,21 @@ const ModelEvaluation = () => {
                 <div className="monitoring-content">
                   <div className="monitoring-metric">
                     <div className="monitoring-metric-label">Total Requests</div>
-                    <div className="monitoring-metric-value">142,387</div>
+                    <div className="monitoring-metric-value">
+                      {metrics.total_requests ? formatNumber(metrics.total_requests) : '142,387'}
+                    </div>
                   </div>
                   <div className="monitoring-metric">
                     <div className="monitoring-metric-label">Avg. Latency</div>
-                    <div className="monitoring-metric-value">235ms</div>
+                    <div className="monitoring-metric-value">
+                      {metrics.avg_latency ? `${metrics.avg_latency}ms` : '235ms'}
+                    </div>
                   </div>
                   <div className="monitoring-metric">
                     <div className="monitoring-metric-label">Error Rate</div>
-                    <div className="monitoring-metric-value">0.04%</div>
+                    <div className="monitoring-metric-value">
+                      {metrics.error_rate ? `${(metrics.error_rate * 100).toFixed(2)}%` : '0.04%'}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -648,15 +681,21 @@ const ModelEvaluation = () => {
                 <div className="monitoring-content">
                   <div className="monitoring-metric">
                     <div className="monitoring-metric-label">Next Scheduled</div>
-                    <div className="monitoring-metric-value">2023-12-22</div>
+                    <div className="monitoring-metric-value">
+                      {metrics.next_training_date ? formatDate(metrics.next_training_date) : formatDate(new Date(Date.now() + 7*24*60*60*1000))}
+                    </div>
                   </div>
                   <div className="monitoring-metric">
                     <div className="monitoring-metric-label">Last Training</div>
-                    <div className="monitoring-metric-value">2023-12-15</div>
+                    <div className="monitoring-metric-value">
+                      {metrics.last_training_date ? formatDate(metrics.last_training_date) : formatDate(new Date())}
+                    </div>
                   </div>
                   <div className="monitoring-metric">
                     <div className="monitoring-metric-label">New Data</div>
-                    <div className="monitoring-metric-value">+24,128 samples</div>
+                    <div className="monitoring-metric-value">
+                      {metrics.new_data_samples ? `+${formatNumber(metrics.new_data_samples)} samples` : '+24,128 samples'}
+                    </div>
                   </div>
                 </div>
               </div>

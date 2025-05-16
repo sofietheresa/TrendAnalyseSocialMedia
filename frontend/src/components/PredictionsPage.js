@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchPredictions } from '../services/api';
 import { Line } from 'react-chartjs-2';
+import { formatDate, formatWeekday } from '../utils/dateUtils';
 import './PredictionsPage.css';
 
 const PredictionsPage = () => {
@@ -102,7 +103,7 @@ const PredictionsPage = () => {
     
     // Prepare chart data
     const trendsData = {
-      labels: sortedDates.map(date => new Date(date).toLocaleDateString('de-DE')),
+      labels: sortedDates.map(date => formatDate(date)),
       datasets: topicPredictions.filter(prediction => prediction.topic_id && trendsByDate[prediction.topic_id]).map((prediction, index) => {
         // Generate colors based on index
         const colors = [
@@ -314,7 +315,7 @@ const PredictionsPage = () => {
                     <div className="forecast-bars">
                       {Object.entries(prediction.forecast_data).map(([date, value], idx) => (
                         <div key={idx} className="forecast-bar-container">
-                          <div className="forecast-date">{new Date(date).toLocaleDateString('de-DE', {weekday: 'short'})}</div>
+                          <div className="forecast-date">{formatWeekday(date)}</div>
                           <div className="forecast-bar-wrapper">
                             <div 
                               className="forecast-bar" 
@@ -357,7 +358,7 @@ const PredictionsPage = () => {
                   fontSize: '0.9rem',
                   color: '#64748B'
                 }}>
-                  Prediction period: {new Date(dateFilter.startDate).toLocaleDateString('de-DE')} - {new Date(dateFilter.endDate).toLocaleDateString('de-DE')}
+                  Prediction period: {formatDate(dateFilter.startDate)} - {formatDate(dateFilter.endDate)}
                 </div>
               )}
             </div>

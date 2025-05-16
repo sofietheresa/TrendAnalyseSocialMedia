@@ -53,7 +53,7 @@ const Documentation = () => {
                     <tbody>
                         {data.map((item, index) => (
                             <tr key={index}>
-                                <td>{new Date(item.date).toLocaleDateString()}</td>
+                                <td>{new Date(item.date).toLocaleDateString('de-DE')}</td>
                                 <td>{item.topic}</td>
                                 <td>{item.frequency}</td>
                                 <td>{item.sentiment}</td>
@@ -71,7 +71,7 @@ const Documentation = () => {
                 <div className="logs-container">
                     {logs.map((log, index) => (
                         <div key={index} className={`log-entry log-${log.level.toLowerCase()}`}>
-                            <span className="log-timestamp">{new Date(log.timestamp).toLocaleString()}</span>
+                            <span className="log-timestamp">{new Date(log.timestamp).toLocaleString('de-DE')}</span>
                             <span className="log-level">{log.level}</span>
                             <span className="log-message">{log.message}</span>
                         </div>
