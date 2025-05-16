@@ -21,12 +21,12 @@ const api = axios.create({
 
 // IMPORTANT: Set this to false when real FastAPI endpoints are available
 // This is a temporary configuration until the backend API is fully implemented
-export const useMockApi = true; // Using mock API server
+export const useMockApi = false; // Using real API server
 
 console.log('Using mock API:', useMockApi);
 
 // Create a global state for tracking mock data usage
-export let usingMockData = true; // Using mock data
+export let usingMockData = false; // Using real data
 
 // Function to check and set mock data usage state
 export const setMockDataStatus = (isMockData) => {

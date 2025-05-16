@@ -10,7 +10,7 @@ const https = require('https');
 const fs = require('fs');
 
 // Flag to control development mode - set to true to always use mock data
-const ALWAYS_USE_MOCK_DATA = true; // Set this to false when real API endpoints are available
+const ALWAYS_USE_MOCK_DATA = false; // Set this to false when real API endpoints are available
 
 // Check if the API server is available with improved reliability
 const testApiConnection = (url, timeoutMs = 5000) => {
