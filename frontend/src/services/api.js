@@ -1,9 +1,9 @@
 import axios from "axios";
 
-// API URL configuration - using a unified API that includes both main and drift API functionality
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000"; // FastAPI server
-// Explizit prüfen, ob DB-Endpunkte verwendet werden sollen
-const ENABLE_DB_ENDPOINTS = process.env.REACT_APP_ENABLE_DB_ENDPOINTS !== "false";
+// API URL configuration - directly setting Railway API URL to ensure consistent data source
+const API_URL = "https://trendanalysesocialmedia-production.up.railway.app"; // Railway API server
+// Always enable DB endpoints to ensure real data
+const ENABLE_DB_ENDPOINTS = true;
 
 console.log("API_URL set to:", API_URL);
 console.log("Using DB endpoints:", ENABLE_DB_ENDPOINTS ? "Yes" : "No");
@@ -16,15 +16,15 @@ const api = axios.create({
     "Cache-Control": "no-cache", // Prevents caching of responses
   },
   // Longer timeout for potentially slow connections
-  timeout: 45000,
-  // Disable CORS credentials since we're using proxy
+  timeout: 60000, // Increased timeout to handle Railway API delays
+  // Disable CORS credentials since we're using direct API
   withCredentials: false,
 });
 
 // IMPORTANT: Always set to false to ensure we use real data
 export const useMockApi = false;
 
-console.log("Using real API");
+console.log("Using real API from Railway");
 
 // Create a global state for tracking mock data usage - Always false
 export let usingMockData = false;
@@ -47,9 +47,9 @@ export const getMockDataStatus = () => false;
 
 // Improved retry/connection logic
 const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000; // 1 second between retries
+const RETRY_DELAY = 2000; // 2 seconds between retries for Railway API
 
-// Helper function for API calls with better retry logic
+// Helper function for API calls with better retry logic - No fallback to mock
 const apiCall = async (
   endpoint,
   method = "get",
@@ -79,7 +79,7 @@ const apiCall = async (
       return apiCall(endpoint, method, data, options, retries - 1);
     }
 
-    // Always throw errors - never return empty data
+    // Always throw errors - never return empty data or fallback to mock
     throw new Error(
       `API Error: Failed to fetch data from ${endpoint}. ${error.message || "Please try again later."}`,
     );
@@ -295,7 +295,7 @@ export const fetchTopics = async (startDate, endDate) => {
   }
 };
 
-// Improved function to fetch topic model data with BERT from PostgreSQL database
+// Improved function to fetch topic model data with BERT via Railway API
 export const fetchTopicModel = async (
   startDate = null,
   endDate = null,
@@ -306,149 +306,45 @@ export const fetchTopicModel = async (
     // Always reset mock data status at start of request
     setMockDataStatus(false);
 
-    console.log("Fetching topic model data with params:", {
+    console.log("Fetching topic model data from Railway API with params:", {
       start_date: startDate,
       end_date: endDate,
       platforms,
       num_topics: numTopics,
     });
 
-    // Vercel-Deployment sollte DB-Endpunkte überspringen
-    if (ENABLE_DB_ENDPOINTS) {
-      // Try direct DB endpoint first with explicit timeout
-      try {
-        console.log("Trying direct DB endpoint at /api/db/topic-model");
-        const response = await api.get("/api/db/topic-model", {
-          params: {
-            start_date: startDate,
-            end_date: endDate,
-            platforms: platforms.join(","),
-            num_topics: numTopics,
-          },
-          timeout: 60000, // 60 second timeout
-        });
+    // Der Standard-Endpunkt für das Topic-Modell funktioniert laut Tests
+    console.log("Accessing Railway topic-model endpoint");
+    const response = await api.get("/api/topic-model", {
+      params: {
+        start_date: startDate,
+        end_date: endDate,
+        platforms: platforms.join(","),
+        num_topics: numTopics,
+      },
+      timeout: 60000, // 60 second timeout
+    });
 
-        console.log("DB Topic model response:", response.data);
+    console.log("Railway API Topic model response:", response.data);
 
-        // Check if topics is actually an array to avoid rendering issues
-        if (response.data && !Array.isArray(response.data.topics)) {
-          console.warn(
-            "Invalid topics format in DB response:",
-            response.data.topics,
-          );
-          response.data.topics = [];
-        }
-
-        return response.data;
-      } catch (dbError) {
-        console.warn(
-          `DB endpoint failed: ${dbError.message}. Trying alternative endpoints...`,
-        );
-      }
-    } else {
-      console.log("DB endpoints disabled, skipping DB access attempt");
-    }
-
-    // Try POST to /api/topic-model
-    try {
-      console.log("Trying POST method to /api/topic-model");
-      const postResponse = await api.post(
-        "/api/topic-model",
-        {
-          start_date: startDate,
-          end_date: endDate,
-          platforms: platforms,
-          num_topics: numTopics,
-        },
-        {
-          timeout: 60000, // 60 second timeout
-        },
-      );
-
-      console.log("Topic model POST response:", postResponse.data);
-
-      // Check if topics is actually an array to avoid rendering issues
-      if (postResponse.data && !Array.isArray(postResponse.data.topics)) {
-        console.warn(
-          "Invalid topics format in POST response:",
-          postResponse.data.topics,
-        );
-        postResponse.data.topics = [];
-      }
-
-      return postResponse.data;
-    } catch (postError) {
+    // Check if topics is actually an array to avoid rendering issues
+    if (response.data && !Array.isArray(response.data.topics)) {
       console.warn(
-        `POST request failed: ${postError.message}. Trying GET method...`,
+        "Invalid topics format in Railway API response:",
+        response.data.topics,
       );
-
-      // If POST fails, try GET method
-      console.log("Trying GET method to /api/topic-model");
-      const getResponse = await api.get("/api/topic-model", {
-        params: {
-          start_date: startDate,
-          end_date: endDate,
-          platforms: platforms.join(","),
-          num_topics: numTopics,
-        },
-        timeout: 60000, // 60 second timeout
-      });
-
-      console.log("Topic model GET response:", getResponse.data);
-
-      // Check if topics is actually an array to avoid rendering issues
-      if (getResponse.data && !Array.isArray(getResponse.data.topics)) {
-        console.warn(
-          "Invalid topics format in GET response:",
-          getResponse.data.topics,
-        );
-        getResponse.data.topics = [];
-      }
-
-      return getResponse.data;
+      throw new Error("Invalid topic format returned from Railway API");
     }
+
+    return response.data;
   } catch (error) {
-    console.error("All topic model API endpoints failed:", error);
-
-    // Try fallback endpoint if both main endpoints fail
-    try {
-      console.log("Trying fallback endpoint for topic model data...");
-      const fallbackResponse = await api.get("/api/db/topics", {
-        params: {
-          start_date: startDate,
-          end_date: endDate,
-        },
-        timeout: 60000, // 60 second timeout
-      });
-
-      console.log("Fallback topic model response:", fallbackResponse.data);
-
-      // Check for valid data structure
-      if (
-        fallbackResponse.data &&
-        !Array.isArray(fallbackResponse.data.topics)
-      ) {
-        console.warn(
-          "Invalid topics format in fallback response:",
-          fallbackResponse.data.topics,
-        );
-        fallbackResponse.data.topics = [];
-      }
-
-      return fallbackResponse.data;
-    } catch (fallbackError) {
-      console.error("Error fetching from fallback endpoint:", fallbackError);
-
-      // Return an appropriate error response
-      throw new Error(
-        "Failed to fetch topic model data from all available endpoints. Please try again later.",
-      );
-    }
+    console.error("Error fetching topic model data from Railway API:", error);
+    throw error;
   }
 };
 
 /**
- * Verbesserte Funktion zum Abrufen von Modellmetriken direkt aus der DB
+ * Funktion zum Abrufen von Modellmetriken von der Railway API
  *
  * @param {string} modelName - Modellname
  * @param {string} version - Optionale Modellversion
@@ -459,85 +355,34 @@ export const fetchModelMetrics = async (modelName, version = null) => {
     // Always reset mock data status at start of request
     setMockDataStatus(false);
 
-    // Bei Vercel-Deployment die DB-Endpunkte überspringen
-    if (ENABLE_DB_ENDPOINTS) {
-      // Versuche zuerst DB-Endpunkt
-      try {
-        console.log(
-          `Abrufen von DB-Modellmetriken für ${modelName} ${version ? `(Version: ${version})` : ""}`,
-        );
-        const dbUrl = `/api/db/models/${modelName}/metrics${version ? `?version=${version}` : ""}`;
-        const dbResponse = await api.get(dbUrl, { timeout: 30000 });
-        console.log("DB-Modellmetriken-Antwort:", dbResponse.data);
-
-        if (
-          !dbResponse.data ||
-          typeof dbResponse.data !== "object" ||
-          Object.keys(dbResponse.data).length === 0
-        ) {
-          throw new Error("Invalid or empty metrics data from DB");
-        }
-
-        return dbResponse.data;
-      } catch (dbError) {
-        console.warn(
-          `DB-Endpunkt für Metriken fehlgeschlagen: ${dbError.message}`,
-        );
-      }
-    } else {
-      console.log("DB endpoints disabled, skipping DB access attempt for metrics");
-    }
-
-    // Versuche ML-Ops API-Endpunkt
-    const url = `/api/mlops/models/${modelName}/metrics${version ? `?version=${version}` : ""}`;
-    console.log(`Abrufen von ML-Ops-Modellmetriken von: ${url}`);
-    const response = await api.get(url, { timeout: 45000 }); // Erhöhtes Timeout für bessere Stabilität
-    console.log("ML-Ops-Modellmetriken-Antwort:", response.data);
+    console.log(
+      `Abrufen von Modellmetriken für ${modelName} ${version ? `(Version: ${version})` : ""} von Railway API`
+    );
+    
+    // Der MLOps-Endpunkt für Metriken sollte verwendet werden
+    const mlopsUrl = `/api/mlops/models/${modelName}/metrics${version ? `?version=${version}` : ""}`;
+    console.log(`Rufe Railway API-Endpoint auf: ${mlopsUrl}`);
+    
+    const dbResponse = await api.get(mlopsUrl, { timeout: 60000 });
+    console.log("Railway API Modellmetriken-Antwort:", dbResponse.data);
 
     if (
-      !response.data ||
-      typeof response.data !== "object" ||
-      Object.keys(response.data).length === 0
+      !dbResponse.data ||
+      typeof dbResponse.data !== "object" ||
+      Object.keys(dbResponse.data).length === 0
     ) {
-      throw new Error("Invalid or empty metrics data from ML-Ops API");
+      throw new Error("Invalid or empty metrics data from Railway API");
     }
 
-    return response.data;
+    return dbResponse.data;
   } catch (error) {
-    console.error("Fehler beim Abrufen von Modellmetriken:", error);
-
-    // Versuche alternativen Endpunkt als letzten Ausweg
-    try {
-      console.log(
-        `Abrufen von Metriken über Fallback-Endpunkt für ${modelName}`,
-      );
-      const fallbackUrl = `/api/models/${modelName}/evaluation`;
-      const fallbackResponse = await api.get(fallbackUrl, { timeout: 45000 }); // Erhöhtes Timeout
-      console.log("Fallback-Metriken-Antwort:", fallbackResponse.data);
-
-      if (
-        !fallbackResponse.data ||
-        typeof fallbackResponse.data !== "object" ||
-        Object.keys(fallbackResponse.data).length === 0
-      ) {
-        throw new Error("Invalid or empty metrics data from fallback endpoint");
-      }
-
-      return fallbackResponse.data;
-    } catch (fallbackError) {
-      console.error(
-        "Fallback-Endpunkt für Metriken fehlgeschlagen:",
-        fallbackError,
-      );
-      throw new Error(
-        `Failed to retrieve model metrics from any endpoint: ${error.message}`,
-      );
-    }
+    console.error("Fehler beim Abrufen von Modellmetriken von Railway API:", error);
+    throw error;
   }
 };
 
 /**
- * Verbesserte Funktion zum Abrufen von Modell-Drift-Daten direkt aus der DB
+ * Funktion zum Abrufen von Modell-Drift-Daten von der Railway API
  *
  * @param {string} modelName - Modellname
  * @param {string} version - Optionale Modellversion
@@ -548,78 +393,25 @@ export const fetchModelDrift = async (modelName, version = null) => {
     // Always reset mock data status at start of request
     setMockDataStatus(false);
 
-    // Bei Vercel-Deployment die DB-Endpunkte überspringen
-    if (ENABLE_DB_ENDPOINTS) {
-      // Versuche zuerst DB-Endpunkt
-      try {
-        const dbUrl = `/api/db/models/${modelName}/drift${version ? `?version=${version}` : ""}`;
-        console.log(`Abrufen von DB-Modell-Drift-Daten von: ${dbUrl}`);
+    // Der MLOps-Endpunkt für Drift-Daten sollte verwendet werden
+    const mlopsUrl = `/api/mlops/models/${modelName}/drift${version ? `?version=${version}` : ""}`;
+    console.log(`Abrufen von Modell-Drift-Daten von Railway API: ${mlopsUrl}`);
 
-        const dbResponse = await api.get(dbUrl, { timeout: 30000 });
-        console.log("DB-Modell-Drift-Antwort:", dbResponse.data);
-
-        if (
-          !dbResponse.data ||
-          typeof dbResponse.data !== "object" ||
-          Object.keys(dbResponse.data).length === 0
-        ) {
-          throw new Error("Invalid or empty drift data from DB");
-        }
-
-        return dbResponse.data;
-      } catch (dbError) {
-        console.warn(`DB-Endpunkt für Drift fehlgeschlagen: ${dbError.message}`);
-      }
-    } else {
-      console.log("DB endpoints disabled, skipping DB access attempt for model drift");
-    }
-
-    // Versuche ML-Ops API-Endpunkt mit erhöhtem Timeout
-    const url = `/api/mlops/models/${modelName}/drift${version ? `?version=${version}` : ""}`;
-    console.log(`Abrufen von ML-Ops-Modell-Drift-Daten von: ${url}`);
-
-    const response = await api.get(url, { timeout: 45000 }); // Erhöhtes Timeout für bessere Stabilität
-    console.log("ML-Ops-Modell-Drift-Antwort:", response.data);
+    const dbResponse = await api.get(mlopsUrl, { timeout: 60000 });
+    console.log("Railway API Modell-Drift-Antwort:", dbResponse.data);
 
     if (
-      !response.data ||
-      typeof response.data !== "object" ||
-      Object.keys(response.data).length === 0
+      !dbResponse.data ||
+      typeof dbResponse.data !== "object" ||
+      Object.keys(dbResponse.data).length === 0
     ) {
-      throw new Error("Invalid or empty drift data from ML-Ops API");
+      throw new Error("Invalid or empty drift data from Railway API");
     }
 
-    return response.data;
+    return dbResponse.data;
   } catch (error) {
-    console.error("Fehler beim Abrufen von Modell-Drift-Daten:", error);
-
-    // Versuche alternativen Endpunkt als letzten Ausweg
-    try {
-      console.log(
-        `Abrufen von Drift-Daten über Fallback-Endpunkt für ${modelName}`,
-      );
-      const fallbackUrl = `/api/models/${modelName}/drift${version ? `?version=${version}` : ""}`;
-      const fallbackResponse = await api.get(fallbackUrl, { timeout: 45000 }); // Erhöhtes Timeout
-      console.log("Fallback-Drift-Antwort:", fallbackResponse.data);
-
-      if (
-        !fallbackResponse.data ||
-        typeof fallbackResponse.data !== "object" ||
-        Object.keys(fallbackResponse.data).length === 0
-      ) {
-        throw new Error("Invalid or empty drift data from fallback endpoint");
-      }
-
-      return fallbackResponse.data;
-    } catch (fallbackError) {
-      console.error(
-        "Fallback-Endpunkt für Drift-Daten fehlgeschlagen:",
-        fallbackError,
-      );
-      throw new Error(
-        `Failed to retrieve model drift data from any endpoint: ${error.message}`,
-      );
-    }
+    console.error("Fehler beim Abrufen von Modell-Drift-Daten von Railway API:", error);
+    throw error;
   }
 };
 
@@ -733,78 +525,24 @@ export const fetchPredictions = async (startDate = null, endDate = null) => {
     
     console.log("Fetching predictions with params:", { startDate, endDate });
     
-    // Vercel-Deployment sollte DB-Endpunkte überspringen
-    if (ENABLE_DB_ENDPOINTS) {
-      // Versuche zuerst, Vorhersagen direkt aus der PostgreSQL-DB zu holen
-      try {
-        const response = await api.get("/api/db/predictions", {
-          params: {
-            start_date: startDate,
-            end_date: endDate,
-          },
-          timeout: 60000, // 60 second timeout
-        });
+    // Railway API prediction endpoint hat funktioniert
+    const response = await api.get("/api/db/predictions", {
+      params: {
+        start_date: startDate,
+        end_date: endDate,
+      },
+      timeout: 60000, // 60 second timeout
+    });
 
-        console.log("Received predictions from DB:", response.data);
-        return response.data;
-      } catch (error) {
-        console.error("Error fetching predictions from DB:", error);
-      }
-    } else {
-      console.log("DB endpoints disabled, skipping DB access attempt");
+    console.log("Received predictions from Railway API:", response.data);
+    
+    if (!response.data || (typeof response.data === 'object' && Object.keys(response.data).length === 0)) {
+      throw new Error("No prediction data returned from Railway API");
     }
-
-    // Versuche alternative Endpunkte, falls der Hauptendpunkt fehlschlägt oder DB-Endpunkte deaktiviert sind
-    const possibleEndpoints = [
-      "/api/predictions",
-      "/api/predictions/all",
-      "/api/topic-predictions",  // Try this endpoint based on naming patterns
-      "/api/topic-model/predictions", // Another possible endpoint
-      "/api/forecast" // Another possible endpoint
-    ];
-
-    // Try all possible endpoints
-    for (const endpoint of possibleEndpoints) {
-      try {
-        console.log(`Trying endpoint for predictions: ${endpoint}`);
-        const response = await api.get(endpoint, {
-          params: {
-            start_date: startDate,
-            end_date: endDate,
-          },
-          timeout: 60000, // 60 second timeout
-        });
-
-        if (response.data && (Array.isArray(response.data) || 
-                             Array.isArray(response.data.predictions) || 
-                             typeof response.data === 'object')) {
-          console.log(`Successfully got data from ${endpoint}:`, response.data);
-          
-          // If we got an array directly, wrap it in the expected format
-          if (Array.isArray(response.data)) {
-            return { 
-              predictions: response.data,
-              time_range: { 
-                start_date: startDate || new Date().toISOString().split('T')[0],
-                end_date: endDate || new Date().toISOString().split('T')[0] 
-              } 
-            };
-          }
-          
-          return response.data;
-        }
-      } catch (error) {
-        console.error(`Error fetching from ${endpoint}:`, error);
-        // Continue to the next endpoint if this one fails
-      }
-    }
-
-    // If all endpoints fail, throw error
-    throw new Error(
-      "Failed to fetch prediction data from all available endpoints. Please verify your backend is running correctly."
-    );
+    
+    return response.data;
   } catch (error) {
-    console.error("All prediction endpoints failed:", error);
+    console.error("Error fetching predictions from Railway API:", error);
     throw error;
   }
 };
@@ -899,7 +637,7 @@ export const executePipeline = async (pipelineId) => {
 };
 
 /**
- * Verbesserte Funktion zum Abrufen von Modellversionen direkt aus der DB
+ * Funktion zum Abrufen von Modellversionen von der Railway API
  *
  * @param {string} modelName - Modellname
  * @returns {Promise<Array>} - Modellversionen
@@ -909,135 +647,56 @@ export const fetchModelVersions = async (modelName) => {
     // Always reset mock data status at start of request
     setMockDataStatus(false);
 
-    // Versuche zuerst DB-Endpunkt
-    try {
-      console.log(`Abrufen von DB-Modellversionen für: ${modelName}`);
-      const dbResponse = await api.get(`/api/db/models/${modelName}/versions`, {
-        timeout: 30000,
-      });
-      console.log("DB-Modellversionen-Antwort:", dbResponse.data);
+    console.log(`Abrufen von Modellversionen für ${modelName} von Railway API`);
+    
+    // Der MLOps-Endpunkt funktioniert laut Test, nicht der DB-Endpunkt
+    const endpoint = `/api/mlops/models/${modelName}/versions`;
+    console.log(`Verwende Railway API-Endpunkt: ${endpoint}`);
+    
+    const response = await api.get(endpoint, { timeout: 60000 });
+    console.log("Railway API Modellversionen-Antwort:", response.data);
 
-      // Stelle sicher, dass wir immer ein Array zurückgeben
-      if (Array.isArray(dbResponse.data) && dbResponse.data.length > 0) {
-        return dbResponse.data;
-      }
-      console.warn("Keine gültigen Versionen von DB-Endpunkt erhalten");
-    } catch (dbError) {
-      console.warn(
-        `DB-Endpunkt für Versionen fehlgeschlagen: ${dbError.message}`,
-      );
+    // Stelle sicher, dass wir immer ein Array zurückgeben
+    if (!Array.isArray(response.data)) {
+      console.error("Railway API returned non-array data for model versions:", response.data);
+      throw new Error(`No valid model versions available for ${modelName} from Railway API`);
     }
 
-    // Versuche ML-Ops API-Endpunkt
-    console.log(`Abrufen von ML-Ops-Modellversionen für: ${modelName}`);
-    const response = await api.get(`/api/mlops/models/${modelName}/versions`, {
-      timeout: 30000,
-    });
-    console.log("ML-Ops-Modellversionen-Antwort:", response.data);
-
-    if (!Array.isArray(response.data) || response.data.length === 0) {
-      throw new Error(`No model versions available for ${modelName}`);
+    if (response.data.length === 0) {
+      console.warn(`No model versions found for ${modelName} in Railway API`);
     }
 
     return response.data;
   } catch (error) {
-    console.error("Fehler beim Abrufen von Modellversionen:", error);
-
-    // Versuche alternativen Endpunkt als letzten Ausweg
-    try {
-      console.log(
-        `Abrufen von Versionen über Fallback-Endpunkt für ${modelName}`,
-      );
-      const fallbackResponse = await api.get(
-        `/api/models/${modelName}/versions`,
-        { timeout: 30000 },
-      );
-      console.log("Fallback-Versionen-Antwort:", fallbackResponse.data);
-
-      if (
-        !Array.isArray(fallbackResponse.data) ||
-        fallbackResponse.data.length === 0
-      ) {
-        throw new Error(`No model versions available from fallback endpoint`);
-      }
-
-      return fallbackResponse.data;
-    } catch (fallbackError) {
-      console.error(
-        "Fallback-Endpunkt für Versionen fehlgeschlagen:",
-        fallbackError,
-      );
-      throw new Error(
-        `Failed to retrieve model versions from any endpoint: ${error.message}`,
-      );
-    }
+    console.error("Fehler beim Abrufen von Modellversionen von Railway API:", error);
+    throw error;
   }
 };
 
-// New function to fetch posts related to a specific topic
+// Function to fetch posts related to a specific topic from Railway API
 export const fetchPostsByTopic = async (topicId) => {
   try {
-    console.log(`Fetching posts for topic ID: ${topicId}`);
+    console.log(`Fetching posts for topic ID: ${topicId} from Railway API`);
 
     // Always reset mock data status at start of request
     setMockDataStatus(false);
 
-    // Try PostgreSQL direct endpoint first
-    try {
-      console.log("Trying direct PostgreSQL endpoint");
-      const response = await api.get(`/api/db/posts/by-topic/${topicId}`);
-      console.log(
-        `Direct DB posts response for topic ${topicId}:`,
-        response.data,
-      );
-      if (response.data && response.data.length > 0) {
-        return response.data;
-      }
-      console.log("No posts found in direct PostgreSQL response");
-    } catch (directDbError) {
-      console.warn("Direct PostgreSQL endpoint failed:", directDbError);
+    // Direkter Zugriff auf Railway API Endpoint
+    const endpoint = `/api/db/posts/by-topic/${topicId}`;
+    console.log(`Accessing Railway API endpoint: ${endpoint}`);
+    
+    const response = await api.get(endpoint, { timeout: 60000 });
+    console.log(`Railway API posts response for topic ${topicId}:`, response.data);
+    
+    if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
+      console.warn(`No posts found for topic ${topicId} in Railway API`);
+      return []; // Return empty array instead of throwing error to handle no-data case gracefully
     }
-
-    // Try alternative DB endpoint
-    try {
-      console.log("Trying DB topics endpoint");
-      const response = await api.get(`/api/db/topics/${topicId}/posts`);
-      console.log(`DB posts for topic ${topicId} response:`, response.data);
-      if (response.data && response.data.length > 0) {
-        return response.data;
-      }
-      console.log("No posts found in DB endpoint");
-    } catch (error) {
-      console.error(`Error fetching DB posts for topic ${topicId}:`, error);
-    }
-
-    // Try basic API endpoint as last resort
-    try {
-      console.log("Trying basic API endpoint for topic posts");
-      const altResponse = await api.get(`/api/topics/${topicId}/posts`);
-      console.log("Basic API endpoint response:", altResponse.data);
-
-      if (
-        !altResponse.data ||
-        !Array.isArray(altResponse.data) ||
-        altResponse.data.length === 0
-      ) {
-        throw new Error("No posts found for this topic in the database");
-      }
-
-      return altResponse.data;
-    } catch (altError) {
-      console.error("Error fetching from basic API endpoint:", altError);
-      throw new Error(
-        `Failed to fetch posts for topic ${topicId}. No posts found in the database.`,
-      );
-    }
+    
+    return response.data;
   } catch (error) {
-    console.error(
-      `All attempts to fetch posts for topic ${topicId} failed:`,
-      error,
-    );
-    throw error;
+    console.error(`Error fetching posts for topic ${topicId} from Railway API:`, error);
+    throw error; // Immer Fehler werfen statt Fallback auf Mock-Daten
   }
 };
 

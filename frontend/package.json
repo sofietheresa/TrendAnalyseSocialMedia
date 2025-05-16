@@ -33,6 +33,9 @@
     "start:with-mock": "concurrently \"react-scripts start\" \"cd src/mock-api && node server.js\"",
     "start:auto": "node start-with-fallback.js",
     "start:with-db": "node start-db-direct.js",
+    "start:railway": "set \"REACT_APP_API_URL=https://trendanalysesocialmedia-production.up.railway.app\" && set \"REACT_APP_ENABLE_DB_ENDPOINTS=true\" && react-scripts start",
+    "test:railway-api": "node src/testRealAPI.js",
+    "test:railway-api-endpoints": "node src/testRailwayAPI.js",
     "build": "npm install && set \"DISABLE_ESLINT_PLUGIN=true\" && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
