@@ -1,22 +1,24 @@
+/**
+ * React Development Proxy Configuration
+ * 
+ * This file configures proxy settings for local development to handle API requests.
+ * It forwards API requests to the backend server to avoid CORS issues.
+ */
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
-  // Configuration for API URLs
+  // Configuration for API URL
   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-  const mockApiUrl = process.env.REACT_APP_MOCK_API_URL || 'http://localhost:3001';
   
   console.log('Proxy configured with API URL:', apiUrl);
-  console.log('Mock API URL:', mockApiUrl);
   
-  // Proxy API requests to the backend API or our mock API server
+  // Proxy API requests to the backend server
   app.use(
     '/api',
     createProxyMiddleware({
       target: apiUrl,
       changeOrigin: true,
-      // Enable this to log API requests
-      logLevel: 'debug',
-      // Disable fallback to mock server
+      logLevel: 'debug', // Set to 'debug' to log requests, 'silent' for production
       onError: (err, req, res) => {
         console.error('API proxy error:', err);
         res.statusCode = 500;

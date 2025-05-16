@@ -1,3 +1,0 @@
-@echo off
-echo Starting mock API server...
-node server.js 

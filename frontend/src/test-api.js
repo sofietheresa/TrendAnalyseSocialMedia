@@ -1,16 +1,23 @@
 /**
- * Test script to check API connectivity
- * This can be run with Node.js to test the API outside of the React app
+ * API Connectivity Test Script
+ * 
+ * This script can be run with Node.js to test API connectivity independently of the React app.
+ * It checks connection to key endpoints and reports their status.
+ * 
+ * Usage: node test-api.js
  */
 
 const axios = require('axios');
 
-// API URL
+// API URL - production endpoint
 const API_URL = 'https://trendanalysesocialmedia-production.up.railway.app';
 
 console.log('Testing API connectivity to:', API_URL);
 
-// Test endpoints
+/**
+ * List of endpoints to test
+ * Basic health and core functionality endpoints
+ */
 const endpoints = [
   '/',
   '/health',
@@ -18,6 +25,12 @@ const endpoints = [
   '/api/daily-stats'
 ];
 
+/**
+ * Tests a specific endpoint and returns its status
+ * 
+ * @param {string} endpoint - API endpoint path to test
+ * @returns {Promise<boolean>} - True if successful, false if failed
+ */
 async function testEndpoint(endpoint) {
   console.log(`\nTesting ${API_URL}${endpoint}...`);
   try {
@@ -40,6 +53,9 @@ async function testEndpoint(endpoint) {
   }
 }
 
+/**
+ * Main function to run all endpoint tests sequentially
+ */
 async function runTests() {
   console.log('=== API CONNECTIVITY TEST ===');
   const results = [];

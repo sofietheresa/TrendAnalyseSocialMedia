@@ -10,10 +10,12 @@ import PipelinePage from './components/PipelinePage';
 import PredictionsPage from './components/PredictionsPage';
 import { fetchTopicModel, fetchPredictions, fetchRecentData, fetchPostsByTopic } from './services/api';
 import { Line } from 'react-chartjs-2';
-import MockDataNotification from './components/MockDataNotification';
 import AccessGate from './components/AccessGate';
 
-// Message bubble icon component
+/**
+ * SVG Message Bubble Icon Component
+ * Visual indicator for messaging functionality
+ */
 const MessageIcon = () => (
   <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path 
@@ -33,7 +35,10 @@ const MessageIcon = () => (
   </svg>
 );
 
-// Homepage component
+/**
+ * Homepage Component
+ * Main landing page with topic visualization and analytics dashboard
+ */
 const Homepage = () => {
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +58,11 @@ const Homepage = () => {
   const [topicPosts, setTopicPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
 
-  // Get sentiment emoji based on sentiment score
+  /**
+   * Converts sentiment score to appropriate emoji representation
+   * @param {number} sentiment - Sentiment score in range [-1, 1]
+   * @returns {string} Emoji representing the sentiment level
+   */
   const getSentimentEmoji = (sentiment) => {
     if (!sentiment && sentiment !== 0) return '';
     
@@ -64,7 +73,12 @@ const Homepage = () => {
     return '😠'; // Very negative
   };
 
-  // Handle topic click to show related posts
+  /**
+   * Handles topic click event to show related posts
+   * @param {string} topicId - ID of the selected topic
+   * @param {string} topicName - Name of the selected topic
+   * @returns {Promise<void>}
+   */
   const handleTopicClick = async (topicId, topicName) => {
     try {
       setLoadingPosts(true);
@@ -132,7 +146,9 @@ const Homepage = () => {
     setTopicPosts([]);
   };
 
-  // Fetch topics data
+  /**
+   * Fetches topic data from the API when component mounts or date filters change
+   */
   useEffect(() => {
     const fetchTopicData = async () => {
       try {
@@ -198,29 +214,17 @@ const Homepage = () => {
             if (response.topic_sentiments) {
               setTopicSentiments(response.topic_sentiments);
             } else {
-              // Extract sentiment data from topics if available
-              const sentiments = {};
-              response.topics.forEach(topic => {
-                if (topic.id && topic.sentiment_score !== undefined) {
-                  sentiments[topic.id] = topic.sentiment_score;
-                }
-              });
-              
-              if (Object.keys(sentiments).length > 0) {
-                setTopicSentiments(sentiments);
-              } else {
-                setTopicSentiments({});
-                console.warn("No sentiment data found in the response");
-              }
+              setTopicSentiments({});
             }
           } else {
-            console.warn("Invalid topics format:", response.topics);
             setTopics([]);
             setTopicCounts({});
+            setTopicTrends([]);
             setTopicSentiments({});
-            setError("The data received from the server has an invalid format. Please contact an administrator.");
+            setError("Invalid response format from API: topics is not an array");
           }
           
+          // Set time range from the response
           setTimeRange(response.time_range || {
             start_date: null,
             end_date: null
@@ -231,8 +235,8 @@ const Homepage = () => {
         setError(`Failed to fetch topic data: ${err.message}`);
         setTopics([]);
         setTopicCounts({});
-        setTopicSentiments({});
         setTopicTrends([]);
+        setTopicSentiments({});
       } finally {
         setLoading(false);
       }
@@ -241,31 +245,29 @@ const Homepage = () => {
     fetchTopicData();
   }, [dateFilter.startDate, dateFilter.endDate]);
 
-  // Process topic trends data for the chart
+  /**
+   * Processes topic data to generate trend visualization charts
+   * @param {Array} topTopics - Array of topic objects
+   * @param {Object} countsByDate - Map of topic counts over time
+   */
   const processTopicTrends = (topTopics, countsByDate) => {
-    if (!topTopics || !countsByDate || Object.keys(countsByDate).length === 0) {
+    if (!topTopics || !countsByDate) {
       setTopicTrends([]);
       return;
     }
     
     console.log("Processing trends for topics:", topTopics);
-    console.log("With counts by date:", countsByDate);
-    
-    // Get top 5 topics
-    const filteredTopics = topTopics
-      .filter(topic => topic.name && topic.name.trim() !== '')
-      .slice(0, 5);
-    
-    // Use filtered topics if available, otherwise use original
-    const topicsToUse = filteredTopics.length > 0 ? filteredTopics : topTopics.slice(0, 5);
     
     // Get all unique dates across all topics
     const allDates = new Set();
     
     // For each topic, collect all available dates
-    topicsToUse.forEach(topic => {
-      if (topic.id !== undefined && countsByDate[topic.id]) {
-        Object.keys(countsByDate[topic.id]).forEach(date => allDates.add(date));
+    topTopics.forEach(topic => {
+      const topicId = topic.id?.toString();
+      if (topicId && countsByDate[topicId]) {
+        Object.keys(countsByDate[topicId]).forEach(date => allDates.add(date));
+      } else {
+        console.warn("Topic missing ID or no counts available:", topic);
       }
     });
     
@@ -279,39 +281,42 @@ const Homepage = () => {
     }
     
     // Prepare chart data
-    const trendsData = {
-      labels: sortedDates.map(date => new Date(date).toLocaleDateString('de-DE')),
-      datasets: topicsToUse.map((topic, index) => {
-        // Generate colors based on index
-        const colors = [
-          '#232252', // dark blue
-          '#2e6cdb', // medium blue
-          '#9364eb', // purple
-          '#e750ae', // pink
-          '#f8986f'  // orange
-        ];
-        
-        return {
-          label: topic.name || `Topic ${index + 1}`,
-          data: sortedDates.map(date => {
-            // Ensure topic.id is actually defined and countsByDate contains it
-            const count = (topic.id !== undefined && 
-                          countsByDate[topic.id] && 
-                          countsByDate[topic.id][date]) 
-              ? countsByDate[topic.id][date] 
-              : 0;
-            return count;
-          }),
-          borderColor: colors[index % colors.length],
-          backgroundColor: `${colors[index % colors.length]}22`, // Add transparency
-          tension: 0.3,
-          fill: index === 0 // Only fill the first dataset
-        };
-      })
-    };
+    const datasets = [];
     
-    console.log("Generated trends data:", trendsData);
-    setTopicTrends(trendsData);
+    // Only use the top 5 topics for the chart to avoid cluttering
+    const topicsToShow = topTopics.slice(0, 5);
+    
+    // Generate colors for the topics
+    const colors = [
+      '#232252', // dark blue
+      '#2e6cdb', // medium blue
+      '#9364eb', // purple
+      '#e750ae', // pink
+      '#f8986f'  // orange
+    ];
+    
+    // Create datasets for each topic
+    topicsToShow.forEach((topic, index) => {
+      const topicId = topic.id?.toString();
+      if (!topicId || !countsByDate[topicId]) return;
+      
+      datasets.push({
+        label: topic.name || `Topic ${index + 1}`,
+        data: sortedDates.map(date => countsByDate[topicId][date] || 0),
+        borderColor: colors[index % colors.length],
+        backgroundColor: `${colors[index % colors.length]}22`, // Add transparency
+        tension: 0.3,
+        fill: index === 0 // Only fill the first dataset for visual appeal
+      });
+    });
+    
+    // Set final chart data
+    setTopicTrends({
+      labels: sortedDates,
+      datasets
+    });
+    
+    console.log("Generated trend chart data with dates:", sortedDates.length);
   };
 
   // Handle date filter form submission
@@ -726,9 +731,6 @@ function App() {
           <footer className="app-footer">
             <p>© 2025 TrendAnalyseSocialMedia</p>
           </footer>
-          
-          {/* Add the mock data notification that will only show when mock data is used */}
-          <MockDataNotification />
         </div>
       </AccessGate>
     </Router>

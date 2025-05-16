@@ -1,6 +1,8 @@
 /**
- * Script to start the frontend with API fallback support
- * This sets up environment variables and starts the server
+ * Start Script for Frontend Application
+ * 
+ * This script starts the frontend application and manages API availability checks.
+ * It ensures proper environment configuration and provides fallback options for development.
  */
 
 const { spawn } = require('child_process');
@@ -9,10 +11,15 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 
-// Flag to control development mode - ALWAYS set to false to ensure real data is used
+// Flag is always set to false to ensure we only use real data
 const ALWAYS_USE_MOCK_DATA = false;
 
-// Check if the API server is available with improved reliability
+/**
+ * Tests if an API endpoint is available
+ * @param {string} url - The URL to test
+ * @param {number} timeoutMs - Timeout in milliseconds
+ * @returns {Promise<boolean>} - True if API is available, false otherwise
+ */
 const testApiConnection = (url, timeoutMs = 5000) => {
   return new Promise((resolve) => {
     // Determine http module based on protocol
@@ -43,11 +50,13 @@ const testApiConnection = (url, timeoutMs = 5000) => {
   });
 };
 
-// Set up environment variables
+/**
+ * Sets up environment variables for the application
+ * @returns {Promise<Object>} - Environment configuration object
+ */
 const setupEnvironment = async () => {
   // Get API URL from environment or use default
   const apiUrl = process.env.REACT_APP_API_URL || 'https://trendanalysesocialmedia-production.up.railway.app';
-  const mockApiUrl = 'http://localhost:3001';
   
   console.log(`⚙️ Testing API server availability at: ${apiUrl}`);
   
@@ -93,34 +102,24 @@ const setupEnvironment = async () => {
   const env = {
     ...process.env,
     REACT_APP_API_URL: apiUrl,
-    REACT_APP_MOCK_API_URL: mockApiUrl,
     REACT_APP_USE_MOCK_API: String(useMockApi) // always 'false'
   };
   
   return { env, apiAvailable, useMockApi };
 };
 
-// Start the application
+/**
+ * Starts the application with proper configuration
+ */
 const startApp = async () => {
   try {
-    const { env, apiAvailable, useMockApi } = await setupEnvironment();
+    const { env, apiAvailable } = await setupEnvironment();
     
     console.log('\n----- Starting Social Media Trend Analysis Application -----');
     console.log(`API Server: ${env.REACT_APP_API_URL}`);
-    console.log(`Mock API: ${env.REACT_APP_MOCK_API_URL}`);
-    console.log(`Using Mock API: ${env.REACT_APP_USE_MOCK_API}`);
+    console.log(`API Available: ${apiAvailable}`);
+    console.log(`Using Real Data: true`);
     console.log('------------------------------------------------------\n');
-    
-    // Always start the mock API server in development
-    console.log('⚙️ Starting mock API server for development...');
-      
-    const mockServer = spawn('node', [path.join(__dirname, 'src', 'mock-api', 'start-mock-api.js')], {
-      env,
-      stdio: 'inherit'
-    });
-    
-    // Wait a moment for the mock server to start
-    await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Start the React development server
     const reactApp = spawn('npm', ['run', 'start'], { 
@@ -137,23 +136,12 @@ const startApp = async () => {
         reactApp.kill();
       }
       
-      if (mockServer) {
-        mockServer.kill();
-      }
-      
       process.exit();
     };
     
     // Listen for termination signals
     process.on('SIGINT', cleanup);
     process.on('SIGTERM', cleanup);
-    
-    // Handle child process exit
-    if (mockServer) {
-      mockServer.on('exit', (code) => {
-        console.log(`📊 Mock API server exited with code ${code}`);
-      });
-    }
     
     reactApp.on('exit', (code) => {
       console.log(`🌐 React app exited with code ${code}`);
