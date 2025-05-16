@@ -7,7 +7,7 @@ import urllib.parse
 import logging
 import sys
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import pandas as pd
 import json
 from pathlib import Path
@@ -355,14 +355,14 @@ async def get_topic_model(request: TopicModelRequest):
         # Die verschiedenen möglichen Tabellennamen ausprobieren
         table_combinations = [
             {
-                'reddit': 'reddit_posts',
-                'tiktok': 'tiktok_posts',
-                'youtube': 'youtube_videos'
-            },
-            {
                 'reddit': 'reddit_data',
                 'tiktok': 'tiktok_data',
                 'youtube': 'youtube_data'
+            },
+            {
+                'reddit': 'reddit_posts',
+                'tiktok': 'tiktok_posts',
+                'youtube': 'youtube_videos'
             }
         ]
         
@@ -734,4 +734,183 @@ async def get_recent_data(
         error_msg = f"Error retrieving recent {platform} data: {str(e)}"
         logger.error(error_msg)
         logger.exception("Detailed error:")
-        raise HTTPException(status_code=500, detail=error_msg) 
+        raise HTTPException(status_code=500, detail=error_msg)
+
+# Add DriftMetrics model for MLOPS endpoints
+class DriftMetrics(BaseModel):
+    timestamp: str
+    dataset_drift: bool
+    share_of_drifted_columns: float
+    drifted_columns: List[str]
+
+# Define the PipelineExecution model for MLOPS endpoints
+class PipelineExecution(BaseModel):
+    id: str
+    pipelineId: str
+    startTime: str
+    endTime: Optional[str] = None
+    status: str
+    trigger: str
+
+# MLOPS endpoints to match the integrated API
+@app.get("/api/mlops/models/{model_name}/drift", response_model=DriftMetrics)
+async def get_model_drift(
+    model_name: str,
+    version: Optional[str] = Query(None, description="Model version")
+):
+    """
+    Get data drift metrics for a specific model version
+    """
+    logger.info(f"Request for drift metrics of model: {model_name}, version: {version}")
+    
+    # Set default version if not provided
+    if not version:
+        version = "v1.0.2"  # Default to latest version
+        logger.info(f"No version specified, using default: {version}")
+    
+    # Define model registry path
+    model_registry_path = Path("models/registry").resolve()
+    model_registry_path.mkdir(parents=True, exist_ok=True)
+    
+    # Check for actual drift metrics in model registry
+    drift_path = model_registry_path / model_name / version / "drift_metrics.json"
+    logger.info(f"Checking for drift metrics at: {drift_path}")
+    
+    try:
+        if drift_path.exists():
+            logger.info(f"Found drift metrics at {drift_path}")
+            with open(drift_path, "r") as f:
+                drift_metrics = json.load(f)
+                result = DriftMetrics(**drift_metrics)
+                logger.info(f"Returning drift metrics: {result}")
+                return result
+        else:
+            logger.warning(f"No drift metrics found at {drift_path}, using mock data")
+    except Exception as e:
+        logger.error(f"Error reading drift metrics: {e}")
+    
+    # Return mock drift metrics if no actual metrics found
+    result = DriftMetrics(
+        timestamp=datetime.now().isoformat(),
+        dataset_drift=True,
+        share_of_drifted_columns=0.25,
+        drifted_columns=["text_length", "sentiment_score", "engagement_rate"]
+    )
+    logger.info(f"Returning mock drift metrics: {result}")
+    return result
+
+@app.get("/api/mlops/pipelines")
+async def get_pipelines():
+    """
+    Get all ML pipelines status
+    """
+    logger.info("Request for all pipelines")
+    
+    # Return mock pipeline data
+    pipelines = {
+        "trend_analysis": {
+            "name": "Trend Analysis Pipeline",
+            "description": "Analyzes trends across social media platforms",
+            "steps": [
+                {"id": "data_ingestion", "name": "Data Ingestion", "description": "Collects data from social media APIs", "status": "completed", "runtime": "00:05:23"},
+                {"id": "preprocessing", "name": "Preprocessing", "description": "Cleans and prepares data for analysis", "status": "completed", "runtime": "00:08:47"},
+                {"id": "topic_modeling", "name": "Topic Modeling", "description": "Identifies key topics in the content", "status": "completed", "runtime": "00:15:32"},
+                {"id": "sentiment_analysis", "name": "Sentiment Analysis", "description": "Determines sentiment for each post", "status": "completed", "runtime": "00:09:18"},
+                {"id": "trend_detection", "name": "Trend Detection", "description": "Identifies emerging trends in topics", "status": "completed", "runtime": "00:06:42"},
+                {"id": "model_evaluation", "name": "Model Evaluation", "description": "Evaluates the performance of prediction models", "status": "completed", "runtime": "00:03:55"},
+                {"id": "visualization", "name": "Visualization", "description": "Prepares data for dashboard visualization", "status": "completed", "runtime": "00:02:11"}
+            ],
+            "lastRun": "2023-12-15T14:30:22",
+            "nextScheduledRun": "2023-12-16T14:30:00",
+            "averageRuntime": "00:51:48",
+            "status": "completed"
+        }
+    }
+    
+    return pipelines
+
+@app.get("/api/mlops/pipelines/{pipeline_id}")
+async def get_pipeline(pipeline_id: str):
+    """
+    Get details for a specific pipeline
+    """
+    logger.info(f"Request for pipeline: {pipeline_id}")
+    
+    pipelines = {
+        "trend_analysis": {
+            "name": "Trend Analysis Pipeline",
+            "description": "Analyzes trends across social media platforms",
+            "steps": [
+                {"id": "data_ingestion", "name": "Data Ingestion", "description": "Collects data from social media APIs", "status": "completed", "runtime": "00:05:23"},
+                {"id": "preprocessing", "name": "Preprocessing", "description": "Cleans and prepares data for analysis", "status": "completed", "runtime": "00:08:47"},
+                {"id": "topic_modeling", "name": "Topic Modeling", "description": "Identifies key topics in the content", "status": "completed", "runtime": "00:15:32"},
+                {"id": "sentiment_analysis", "name": "Sentiment Analysis", "description": "Determines sentiment for each post", "status": "completed", "runtime": "00:09:18"},
+                {"id": "trend_detection", "name": "Trend Detection", "description": "Identifies emerging trends in topics", "status": "completed", "runtime": "00:06:42"},
+                {"id": "model_evaluation", "name": "Model Evaluation", "description": "Evaluates the performance of prediction models", "status": "completed", "runtime": "00:03:55"},
+                {"id": "visualization", "name": "Visualization", "description": "Prepares data for dashboard visualization", "status": "completed", "runtime": "00:02:11"}
+            ],
+            "lastRun": "2023-12-15T14:30:22",
+            "nextScheduledRun": "2023-12-16T14:30:00",
+            "averageRuntime": "00:51:48",
+            "status": "completed"
+        }
+    }
+    
+    if pipeline_id not in pipelines:
+        raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_id} not found")
+    
+    return pipelines[pipeline_id]
+
+@app.get("/api/mlops/pipelines/{pipeline_id}/executions")
+async def get_pipeline_executions(pipeline_id: str):
+    """
+    Get executions for a specific pipeline
+    """
+    logger.info(f"Request for executions of pipeline: {pipeline_id}")
+    
+    # Mock executions - in production this would be retrieved from a database
+    all_executions = [
+        {"id": "exec-001", "pipelineId": "trend_analysis", "startTime": "2023-12-15T14:30:22", "endTime": "2023-12-15T15:22:10", "status": "completed", "trigger": "scheduled"},
+        {"id": "exec-002", "pipelineId": "trend_analysis", "startTime": "2023-12-14T14:30:15", "endTime": "2023-12-14T15:24:02", "status": "completed", "trigger": "scheduled"},
+        {"id": "exec-003", "pipelineId": "realtime_monitoring", "startTime": "2023-12-15T16:45:10", "endTime": None, "status": "running", "trigger": "manual"},
+        {"id": "exec-004", "pipelineId": "model_training", "startTime": "2023-12-14T09:15:33", "endTime": "2023-12-14T11:16:57", "status": "failed", "trigger": "manual"},
+        {"id": "exec-005", "pipelineId": "trend_analysis", "startTime": "2023-12-13T14:30:18", "endTime": "2023-12-13T15:25:33", "status": "completed", "trigger": "scheduled"},
+    ]
+    
+    executions = [execution for execution in all_executions if execution["pipelineId"] == pipeline_id]
+    
+    return executions
+
+@app.post("/api/mlops/pipelines/{pipeline_id}/execute")
+async def execute_pipeline(pipeline_id: str):
+    """
+    Execute a specific pipeline
+    """
+    logger.info(f"Request to execute pipeline: {pipeline_id}")
+    
+    # Map pipeline ID to model name
+    pipeline_to_model = {
+        "trend_analysis": "topic_model",
+        "realtime_monitoring": "anomaly_detector",
+        "model_training": "sentiment_classifier"
+    }
+    
+    if pipeline_id not in pipeline_to_model:
+        logger.error(f"Pipeline {pipeline_id} not found")
+        raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_id} not found")
+    
+    # Generate execution ID
+    execution_id = f"exec-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    
+    # In a real implementation, this would start the pipeline in a background task
+    
+    response = {
+        "execution_id": execution_id,
+        "pipeline_id": pipeline_id,
+        "status": "started",
+        "startTime": datetime.now().isoformat(),
+        "message": f"Pipeline {pipeline_id} execution started with ID {execution_id}"
+    }
+    
+    logger.info(f"Pipeline execution response: {response}")
+    return response 
