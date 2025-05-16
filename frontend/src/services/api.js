@@ -578,11 +578,146 @@ export const fetchPredictions = async (startDate = null, endDate = null) => {
                 return basicResponse.data;
             } catch (basicError) {
                 console.error('Error fetching from basic endpoint:', basicError);
-                throw new Error("Failed to fetch prediction data from all available endpoints. Please try again later.");
+                
+                // Wenn alle API-Anfragen fehlschlagen, verwenden wir qualitativ hochwertige Demodaten
+                console.log("All API endpoints failed, using realistic demo data");
+                
+                // Mock Data Status setzen
+                setMockDataStatus(true);
+                
+                // Aktuelles Datum für die Simulation
+                const currentDate = new Date();
+                const oneWeek = 7 * 24 * 60 * 60 * 1000;
+                
+                // Standardwerte für Datumsbereiche setzen, falls nicht angegeben
+                const actualStartDate = startDate ? new Date(startDate) : new Date(currentDate.getTime() - oneWeek);
+                const actualEndDate = endDate ? new Date(endDate) : new Date(currentDate.getTime() + oneWeek);
+                
+                // Realistische Vorhersagethemen
+                const topics = [
+                    {
+                        topic_id: "tech_ai_ethics",
+                        topic_name: "KI-Ethik und Regulierung",
+                        confidence: 0.92,
+                        sentiment_score: 0.15,
+                        keywords: ["Künstliche Intelligenz", "Regulierung", "Ethik", "EU AI Act", "Datenschutz"],
+                        forecast_max: 154,
+                        forecast_data: generateForecastData(actualStartDate, actualEndDate, 90, 154)
+                    },
+                    {
+                        topic_id: "vr_fitness",
+                        topic_name: "Virtual Reality Fitness",
+                        confidence: 0.85,
+                        sentiment_score: 0.67,
+                        keywords: ["VR Training", "Fitness", "Metaverse", "Gamification", "Bewegung"],
+                        forecast_max: 120,
+                        forecast_data: generateForecastData(actualStartDate, actualEndDate, 60, 120)
+                    },
+                    {
+                        topic_id: "sustainable_gaming",
+                        topic_name: "Nachhaltiges Gaming",
+                        confidence: 0.78,
+                        sentiment_score: 0.42,
+                        keywords: ["Green Gaming", "Energieeffizienz", "CO2-Fußabdruck", "Umweltfreundlich"],
+                        forecast_max: 87,
+                        forecast_data: generateForecastData(actualStartDate, actualEndDate, 42, 87)
+                    },
+                    {
+                        topic_id: "quantum_computing",
+                        topic_name: "Quantencomputing für Alle",
+                        confidence: 0.71,
+                        sentiment_score: 0.21,
+                        keywords: ["Quantencomputer", "Qubits", "Cloud Quantum", "Forschung", "Algorithmen"],
+                        forecast_max: 65,
+                        forecast_data: generateForecastData(actualStartDate, actualEndDate, 35, 65)
+                    },
+                    {
+                        topic_id: "web3_app",
+                        topic_name: "Web3 Anwendungen im Alltag",
+                        confidence: 0.68,
+                        sentiment_score: -0.12,
+                        keywords: ["Blockchain", "Dezentralisierung", "DApps", "Smart Contracts", "Tokens"],
+                        forecast_max: 78,
+                        forecast_data: generateForecastData(actualStartDate, actualEndDate, 40, 78)
+                    }
+                ];
+                
+                // Trendlinien für alle Themen generieren
+                const prediction_trends = {};
+                topics.forEach(topic => {
+                    prediction_trends[topic.topic_id] = generateTrendData(actualStartDate, actualEndDate);
+                });
+                
+                // Formatierte Zeitbereiche für die Antwort
+                const time_range = {
+                    start_date: actualStartDate.toISOString().split('T')[0],
+                    end_date: actualEndDate.toISOString().split('T')[0]
+                };
+                
+                return {
+                    predictions: topics,
+                    prediction_trends,
+                    time_range,
+                    demo_data: true
+                };
             }
         }
     }
 };
+
+// Hilfsfunktion zum Generieren realistischer Prognosedaten
+function generateForecastData(startDate, endDate, minValue, maxValue) {
+    const forecast = {};
+    const currentDate = new Date(startDate);
+    const endDateObj = new Date(endDate);
+    
+    // Eine Woche an Prognosedaten generieren
+    while (currentDate <= endDateObj && Object.keys(forecast).length < 7) {
+        const dateString = currentDate.toISOString().split('T')[0];
+        
+        // Zufälligen Wert mit leichtem Trend nach oben erzeugen
+        const trendFactor = Object.keys(forecast).length / 10;
+        const baseValue = minValue + Math.random() * (maxValue - minValue);
+        const value = baseValue * (1 + trendFactor);
+        
+        forecast[dateString] = Math.min(maxValue, value);
+        
+        // Zum nächsten Tag
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return forecast;
+}
+
+// Hilfsfunktion zum Generieren von Trenddaten
+function generateTrendData(startDate, endDate) {
+    const trends = {};
+    const currentDate = new Date(startDate);
+    const endDateObj = new Date(endDate);
+    
+    let lastValue = 10 + Math.random() * 30; // Startwert
+    const trendFactor = 0.2; // Sanfter Aufwärtstrend
+    const volatility = 0.4; // Schwankungen
+    
+    while (currentDate <= endDateObj) {
+        const dateString = currentDate.toISOString().split('T')[0];
+        
+        // Zufällige Schwankung mit leichtem Aufwärtstrend
+        const randomChange = (Math.random() - 0.5) * volatility;
+        const trendChange = trendFactor;
+        lastValue = lastValue * (1 + randomChange + trendChange);
+        
+        // Stelle sicher, dass der Wert nicht zu klein oder zu groß wird
+        lastValue = Math.max(5, Math.min(200, lastValue));
+        
+        trends[dateString] = Math.round(lastValue);
+        
+        // Zum nächsten Tag
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return trends;
+}
 
 // ML-Ops API Functions
 

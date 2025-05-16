@@ -3,6 +3,7 @@ import { fetchPredictions } from '../services/api';
 import { Line } from 'react-chartjs-2';
 import { formatDate, formatWeekday } from '../utils/dateUtils';
 import './PredictionsPage.css';
+import { getMockDataStatus } from '../services/api';
 
 const PredictionsPage = () => {
   const [predictions, setPredictions] = useState([]);
@@ -18,6 +19,7 @@ const PredictionsPage = () => {
     endDate: ''
   });
   const [predictionTrends, setPredictionTrends] = useState([]);
+  const [usingDemoData, setUsingDemoData] = useState(false);
 
   // Get sentiment emoji based on sentiment score
   const getSentimentEmoji = (sentiment) => {
@@ -45,6 +47,9 @@ const PredictionsPage = () => {
         
         console.log("Received prediction data:", response);
         
+        // Überprüfen, ob wir Demo-Daten verwenden
+        setUsingDemoData(getMockDataStatus() || response.demo_data === true);
+        
         if (response.error) {
           setError(response.error);
           console.error("Error from predictions API:", response.error);
@@ -69,6 +74,7 @@ const PredictionsPage = () => {
       } catch (err) {
         console.error("Error fetching prediction data:", err);
         setError(err.message || "Fehler beim Laden der Daten");
+        setUsingDemoData(true); // Setze auf Demo-Daten bei Fehler
       } finally {
         setLoading(false);
       }
@@ -222,6 +228,7 @@ const PredictionsPage = () => {
         <span style={{ fontWeight: 900, letterSpacing: '0.03em' }}>TOPIC PREDICTIONS</span>
         <br />
         <span style={{ fontWeight: 400, fontSize: '0.8em' }}>Machine Learning Forecasts</span>
+        {usingDemoData && <span className="demo-data-badge">Demo-Daten</span>}
       </h1>
       
       {/* Date Range Filter */}
@@ -271,22 +278,25 @@ const PredictionsPage = () => {
         <div className="predictions-container">
           <div className="predictions-header">
             <h2>Predicted Trending Topics</h2>
-            <p className="predictions-subheader">ML-powered forecast of upcoming trends</p>
+            <p className="predictions-subheader">
+              ML-powered forecast of upcoming trends
+              {usingDemoData && <span className="demo-data-notice">Demo-Daten werden angezeigt</span>}
+            </p>
           </div>
 
           {/* Prediction Cards */}
           <div className="predictions-grid">
             {predictions.map((prediction, index) => (
               <div key={index} className={`prediction-card prediction-color-${index % 5}`}>
-                <h3 className="prediction-topic">{prediction.topic_name}</h3>
+                <h3 className="prediction-topic">{prediction.topic_name || `Topic ${index + 1}`}</h3>
                 <div className="prediction-confidence">
                   <div className="prediction-meter">
                     <div 
                       className="prediction-fill"
-                      style={{width: `${Math.min(100, Math.max(0, prediction.confidence * 100))}%`}}
+                      style={{width: `${Math.min(100, Math.max(0, (prediction.confidence || 0.5) * 100))}%`}}
                     ></div>
                   </div>
-                  <span className="prediction-percentage">{Math.round(prediction.confidence * 100)}% confidence</span>
+                  <span className="prediction-percentage">{Math.round((prediction.confidence || 0.5) * 100)}% confidence</span>
                 </div>
                 
                 {prediction.sentiment_score !== undefined && (
@@ -322,7 +332,7 @@ const PredictionsPage = () => {
                           <div className="forecast-bar-wrapper">
                             <div 
                               className="forecast-bar" 
-                              style={{height: `${Math.min(100, Math.max(5, value / prediction.forecast_max * 100))}%`}}
+                              style={{height: `${Math.min(100, Math.max(5, value / (prediction.forecast_max || 100) * 100))}%`}}
                             ></div>
                           </div>
                           <div className="forecast-value">{Math.round(value)}</div>

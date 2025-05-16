@@ -6,8 +6,9 @@
 
 .documentation-title {
     margin-bottom: 2rem;
-    color: #333;
+    color: #232252;
     text-align: center;
+    font-weight: bold;
 }
 
 .documentation-tabs {
@@ -17,7 +18,9 @@
 .data-card,
 .logs-card {
     margin-top: 1rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 8px;
 }
 
 /* Data Table Styles */
@@ -28,6 +31,7 @@
 .table th {
     background-color: #f8f9fa;
     font-weight: 600;
+    color: #232252;
 }
 
 /* Logs Styles */
@@ -40,6 +44,8 @@
     padding: 0.5rem;
     border-bottom: 1px solid #eee;
     font-family: monospace;
+    display: flex;
+    align-items: center;
 }
 
 .log-entry:last-child {
@@ -49,6 +55,8 @@
 .log-timestamp {
     color: #666;
     margin-right: 1rem;
+    font-size: 0.85rem;
+    min-width: 180px;
 }
 
 .log-level {
@@ -56,29 +64,40 @@
     margin-right: 1rem;
     padding: 0.2rem 0.5rem;
     border-radius: 3px;
+    font-size: 0.8rem;
+    min-width: 70px;
+    text-align: center;
 }
 
 .log-info {
     background-color: #e3f2fd;
+    color: #0d47a1;
 }
 
 .log-warning {
     background-color: #fff3e0;
+    color: #e65100;
 }
 
 .log-error {
     background-color: #ffebee;
+    color: #c62828;
 }
 
 .log-debug {
     background-color: #f5f5f5;
+    color: #212121;
+}
+
+.log-message {
+    flex: 1;
 }
 
 /* Presentation Styles */
 .presentation-wrapper {
     background-color: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     padding: 20px;
     margin-top: 1rem;
 }
@@ -88,12 +107,12 @@
     padding: 15px;
     background-color: #f9f9f9;
     border-radius: 8px;
-    border-left: 4px solid #9364eb;
+    border-left: 4px solid #3f51b5;
 }
 
 .presentation-info h4 {
     margin-bottom: 10px;
-    color: #333;
+    color: #232252;
 }
 
 .presentation-info p {
@@ -107,6 +126,93 @@
     padding: 2rem;
     font-size: 1.2rem;
     color: #666;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+/* Documentation Content Styles */
+.doc-content {
+    padding: 1rem;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    line-height: 1.6;
+}
+
+.doc-content h3 {
+    color: #232252;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.doc-content h4 {
+    color: #3f51b5;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+}
+
+.doc-content p {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.doc-content ul, .doc-content ol {
+    margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
+}
+
+.doc-content li {
+    margin-bottom: 0.5rem;
+}
+
+.doc-content pre {
+    background-color: #f5f5f5;
+    padding: 1rem;
+    border-radius: 6px;
+    font-family: monospace;
+    overflow-x: auto;
+    margin: 1rem 0;
+    color: #333;
+    font-size: 0.9rem;
+    border-left: 3px solid #3f51b5;
+}
+
+.doc-content code {
+    background-color: #f5f5f5;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    color: #e91e63;
+    font-size: 0.9em;
+}
+
+.doc-nav {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    position: sticky;
+    top: 20px;
+}
+
+.doc-nav .nav-link {
+    color: #495057;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.doc-nav .nav-link.active {
+    background-color: #3f51b5;
+    color: white;
+    font-weight: 500;
+}
+
+.doc-nav .nav-link:hover:not(.active) {
+    background-color: #e9ecef;
 }
 
 /* Responsive Design */
@@ -121,5 +227,16 @@
 
     .log-entry {
         font-size: 0.9rem;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .log-timestamp, .log-level {
+        margin-bottom: 0.5rem;
+    }
+    
+    .doc-nav {
+        margin-bottom: 1rem;
+        position: static;
     }
 } 

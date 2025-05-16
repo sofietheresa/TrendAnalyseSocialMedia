@@ -11,18 +11,24 @@ Eine moderne Webanwendung zur Analyse von Social Media Trends auf TikTok, YouTub
 - 📱 **Responsives Frontend** für Desktop und Mobile
 - 🗄️ **PostgreSQL Datenbank** für strukturierte Datenspeicherung
 - ☁️ **Railway Deployment** für einfache Cloud-Bereitstellung
+- 🤖 **ML-Pipeline** zur automatisierten Analyse von Trends
+- 📖 **Dokumentationsbereich** mit Präsentationsviewer
 
 ## 📦 Projektstruktur
 
 ```
 ├── src/                  # Backend-Code
+│   ├── api/              # API-Endpunkte & Dienste
 │   ├── scheduler/        # Scheduler-Komponenten
 │   │   ├── jobs/         # Individuelle Scraper
 │   │   │   ├── reddit_scraper.py
 │   │   │   ├── tiktok_scraper.py
 │   │   │   └── youtube_scraper.py
 │   │   └── main_scraper.py  # Hauptscheduler
-│   ├── main.py           # FastAPI Hauptanwendung (Enthält alle API-Endpunkte)
+│   ├── pipelines/        # ML-Pipeline Komponenten
+│   │   ├── steps/        # Pipeline-Schritte
+│   │   └── mlops_pipeline.py
+│   ├── main.py           # FastAPI Hauptanwendung
 │   ├── db_connection.py  # Datenbankverbindung
 │   └── models.py         # Datenmodelle
 ├── app/                  # Railway-Deployment
@@ -35,6 +41,10 @@ Eine moderne Webanwendung zur Analyse von Social Media Trends auf TikTok, YouTub
 │   │   ├── services/     # API-Dienste
 │   │   └── App.js        # Hauptkomponente
 │   └── package.json      # NPM-Konfiguration
+├── notebooks/            # Jupyter Notebooks für Analyse & Entwicklung
+├── notebooks_explained/  # Detaillierte Notebooks mit Erklärungen
+├── docs/                 # Dokumentation & Präsentationen
+│   └── presentation_images/  # Bilder für Präsentationsviewer
 ├── requirements.txt      # Python-Abhängigkeiten
 ├── Procfile              # Railway-Konfiguration
 └── railway.toml          # Railway-Deployment-Konfiguration
@@ -120,7 +130,7 @@ cd frontend && npm start
 
 ## 📊 Frontend-Komponenten
 
-Die Anwendung besteht aus zwei Hauptseiten:
+Die Anwendung besteht aus mehreren Hauptseiten:
 
 1. **Dashboard** - Zeigt Statistiken und Trends an
    - Tägliche Post-Anzahl pro Plattform
@@ -131,6 +141,27 @@ Die Anwendung besteht aus zwei Hauptseiten:
    - Filterung nach Plattform (Reddit, TikTok, YouTube)
    - Einstellbare Anzahl an angezeigten Einträgen
    - Sortierung nach Datum (neueste zuerst)
+
+3. **Pipeline-Verwaltung** - Verwaltung der ML-Pipeline
+   - Status der Pipelines
+   - Ausführung und Überwachung
+   - Ergebnisanzeige
+
+4. **Dokumentation** - Projektdokumentation und Präsentationen
+   - Interaktiver Präsentationsviewer
+   - Analysedaten
+   - System-Logs
+
+## 🧠 ML-Pipeline
+
+Die Anwendung enthält eine automatisierte ML-Pipeline mit folgenden Schritten:
+
+1. **Datensammlung** - Automatisches Scraping aus verschiedenen Quellen
+2. **Vorverarbeitung** - Textbereinigung und Feature-Extraktion
+3. **Datenexploration** - Statistische Analyse der gesammelten Daten
+4. **Vorhersagen** - Trendanalysen und Mustererkennungen
+
+Die Pipeline ist modular aufgebaut und kann durch weitere Komponenten erweitert werden.
 
 ## 🔄 Deployment
 
@@ -151,7 +182,18 @@ Für die Entwicklung stehen Makefile-Befehle zur Verfügung:
 # Typische Entwicklungsbefehle
 make install            # Abhängigkeiten installieren
 make clean              # Temporäre Dateien aufräumen
+make test               # Tests ausführen
+make lint               # Code-Qualitätsprüfung
 ```
+
+## 📝 Dokumentation
+
+Die ausführliche Dokumentation ist im Frontend unter `/documentation` verfügbar. Sie enthält:
+
+- Detaillierte Erklärungen zu allen Komponenten
+- Interaktiven Präsentationsviewer
+- API-Dokumentation
+- System-Logs und Status
 
 ## 📄 Lizenz
 

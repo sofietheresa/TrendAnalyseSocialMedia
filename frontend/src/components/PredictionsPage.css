@@ -335,4 +335,29 @@
   .calendar-filter-btn {
     align-self: stretch;
   }
+}
+
+.demo-data-badge {
+  display: inline-block;
+  background-color: #ff7700;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.6em;
+  margin-left: 10px;
+  vertical-align: middle;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.demo-data-notice {
+  background-color: rgba(255, 119, 0, 0.1);
+  border-left: 3px solid #ff7700;
+  padding: 4px 10px;
+  color: #555;
+  font-size: 0.9em;
+  margin-left: 12px;
+  display: inline-block;
+  border-radius: 0 4px 4px 0;
 } 

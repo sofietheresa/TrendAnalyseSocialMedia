@@ -10,29 +10,36 @@ const PresentationViewer = ({ presentationUrl }) => {
   const touchEndX = useRef(null);
   const slideRef = useRef(null);
 
-  // Simulated function to fetch slides
-  // In production, you'd convert your PowerPoint to images or use a service like Google Slides embed
+  // Fetch slides from the presentation_images directory
   useEffect(() => {
     const fetchSlides = async () => {
       try {
         setLoading(true);
-        // For demo purposes, we'll use placeholder images
-        // In production, you'd fetch actual slide images from your API
-        const demoSlides = [
-          '/presentation/slide1.jpg',
-          '/presentation/slide2.jpg',
-          '/presentation/slide3.jpg',
-          '/presentation/slide4.jpg',
-          '/presentation/slide5.jpg',
-        ];
+        
+        // In a real implementation, this would be an API call to fetch the images
+        // For now, we'll use a simulated response
         
         // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // In production, this would be replaced with an actual API call:
+        // const response = await fetch('/api/presentations/images');
+        // const data = await response.json();
+        // setSlides(data.images);
+        
+        // For demo purposes, we'll use placeholder paths
+        const demoSlides = [
+          '/docs/presentation_images/slide1.jpg',
+          '/docs/presentation_images/slide2.jpg',
+          '/docs/presentation_images/slide3.jpg',
+          '/docs/presentation_images/slide4.jpg',
+          '/docs/presentation_images/slide5.jpg',
+        ];
         
         setSlides(demoSlides);
       } catch (err) {
-        console.error("Error loading presentation:", err);
-        setError("Failed to load presentation. Please try again later.");
+        console.error("Fehler beim Laden der Präsentation:", err);
+        setError("Die Präsentation konnte nicht geladen werden. Bitte versuchen Sie es später erneut.");
       } finally {
         setLoading(false);
       }
@@ -115,7 +122,7 @@ const PresentationViewer = ({ presentationUrl }) => {
     return (
       <div className="presentation-loading">
         <div className="presentation-spinner"></div>
-        <p>Loading presentation...</p>
+        <p>Präsentation wird geladen...</p>
       </div>
     );
   }
@@ -124,6 +131,7 @@ const PresentationViewer = ({ presentationUrl }) => {
     return (
       <div className="presentation-error">
         <p>{error}</p>
+        <p>Hinweis: Um Präsentationen anzuzeigen, legen Sie Ihre Präsentationsbilder im Verzeichnis <code>docs/presentation_images/</code> ab.</p>
       </div>
     );
   }
@@ -140,7 +148,7 @@ const PresentationViewer = ({ presentationUrl }) => {
           <>
             <img 
               src={slides[currentSlide]} 
-              alt={`Slide ${currentSlide + 1}`} 
+              alt={`Folie ${currentSlide + 1}`} 
               className="slide-image"
             />
             <div className="slide-controls">
@@ -165,7 +173,8 @@ const PresentationViewer = ({ presentationUrl }) => {
           </>
         ) : (
           <div className="no-slides-message">
-            No slides available
+            <p>Keine Folien verfügbar</p>
+            <p>Legen Sie Ihre Präsentationsbilder im Verzeichnis <code>docs/presentation_images/</code> ab.</p>
           </div>
         )}
       </div>
@@ -177,7 +186,7 @@ const PresentationViewer = ({ presentationUrl }) => {
             className={`slide-thumbnail ${index === currentSlide ? 'active' : ''}`}
             onClick={() => setCurrentSlide(index)}
           >
-            <img src={slide} alt={`Thumbnail ${index + 1}`} />
+            <img src={slide} alt={`Miniaturansicht ${index + 1}`} />
           </div>
         ))}
       </div>
