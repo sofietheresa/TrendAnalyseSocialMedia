@@ -755,39 +755,54 @@ export const fetchPredictions = async (startDate = null, endDate = null) => {
     }
 
     // Versuche alternative Endpunkte, falls der Hauptendpunkt fehlschlägt oder DB-Endpunkte deaktiviert sind
-    try {
-      console.log("Trying standard API endpoint for predictions...");
-      const altResponse = await api.get("/api/predictions", {
-        params: {
-          start_date: startDate,
-          end_date: endDate,
-        },
-        timeout: 60000, // 60 second timeout
-      });
+    const possibleEndpoints = [
+      "/api/predictions",
+      "/api/predictions/all",
+      "/api/topic-predictions",  // Try this endpoint based on naming patterns
+      "/api/topic-model/predictions", // Another possible endpoint
+      "/api/forecast" // Another possible endpoint
+    ];
 
-      console.log("Standard API predictions response:", altResponse.data);
-      return altResponse.data;
-    } catch (altError) {
-      console.error("Error fetching from standard endpoint:", altError);
-
-      // Last attempt at a more basic endpoint
+    // Try all possible endpoints
+    for (const endpoint of possibleEndpoints) {
       try {
-        console.log("Trying basic predictions endpoint...");
-        const basicResponse = await api.get("/api/predictions/all", {
+        console.log(`Trying endpoint for predictions: ${endpoint}`);
+        const response = await api.get(endpoint, {
+          params: {
+            start_date: startDate,
+            end_date: endDate,
+          },
           timeout: 60000, // 60 second timeout
         });
 
-        console.log("Basic predictions response:", basicResponse.data);
-        return basicResponse.data;
-      } catch (basicError) {
-        console.error("Error fetching from basic endpoint:", basicError);
-
-        // Instead of returning empty data, throw an error to be handled by the component
-        throw new Error(
-          "Failed to fetch prediction data from all available endpoints. Please verify your database connection and try again later.",
-        );
+        if (response.data && (Array.isArray(response.data) || 
+                             Array.isArray(response.data.predictions) || 
+                             typeof response.data === 'object')) {
+          console.log(`Successfully got data from ${endpoint}:`, response.data);
+          
+          // If we got an array directly, wrap it in the expected format
+          if (Array.isArray(response.data)) {
+            return { 
+              predictions: response.data,
+              time_range: { 
+                start_date: startDate || new Date().toISOString().split('T')[0],
+                end_date: endDate || new Date().toISOString().split('T')[0] 
+              } 
+            };
+          }
+          
+          return response.data;
+        }
+      } catch (error) {
+        console.error(`Error fetching from ${endpoint}:`, error);
+        // Continue to the next endpoint if this one fails
       }
     }
+
+    // If all endpoints fail, throw error
+    throw new Error(
+      "Failed to fetch prediction data from all available endpoints. Please verify your backend is running correctly."
+    );
   } catch (error) {
     console.error("All prediction endpoints failed:", error);
     throw error;
