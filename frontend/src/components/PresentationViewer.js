@@ -16,18 +16,16 @@ const PresentationViewer = ({ presentationUrl }) => {
       try {
         setLoading(true);
         
-        // For production use, we'll use the actual images from the docs/presentation_images directory
-        // The backend should serve these images from the specified directory
+        // Use the presentationUrl from props to build the slide paths
+        // This should point to the public/api/presentations/images directory
         
-        // In a real environment we would fetch the list of images from an API endpoint
-        // For now we'll use our known image paths
-        const presentationImages = [
-          '/docs/presentation_images/slide1.jpg',
-          '/docs/presentation_images/slide2.jpg',
-          '/docs/presentation_images/slide3.jpg',
-          '/docs/presentation_images/slide4.jpg',
-          '/docs/presentation_images/slide5.jpg',
-        ];
+        // Create paths for the slides based on actual files found in public directory
+        const slideNames = [];
+        for (let i = 1; i <= 18; i++) { // We know there are 18 slides from the directory listing
+          slideNames.push(`Slide${i}.PNG`);
+        }
+        
+        const presentationImages = slideNames.map(name => `${presentationUrl}/${name}`);
         
         console.log("Loading presentation slides from:", presentationImages);
         setSlides(presentationImages);
