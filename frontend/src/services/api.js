@@ -46,16 +46,11 @@ const RETRY_DELAY = 1000; // 1 second between retries
 
 // Helper function for API calls with better retry logic
 const apiCall = async (endpoint, method = 'get', data = null, options = {}, retries = MAX_RETRIES) => {
-    // If we're configured to use mock data, skip real API call attempts
-    if (useMockApi) {
-        setMockDataStatus(true);
-        throw new Error('Using mock data by configuration');
-    }
-
+    // Force real data - don't use mock data even if configured
+    // Reset mock data status
+    setMockDataStatus(false);
+    
     try {
-        // Reset mock data status
-        setMockDataStatus(false);
-        
         const config = { 
             ...options,
             method,
@@ -74,9 +69,6 @@ const apiCall = async (endpoint, method = 'get', data = null, options = {}, retr
             await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
             return apiCall(endpoint, method, data, options, retries - 1);
         }
-        
-        // Only use mock data if all retries failed
-        setMockDataStatus(true);
         
         // Enhance error message with details
         const enhancedError = new Error(
@@ -128,26 +120,10 @@ export const fetchRecentData = async (platform = 'reddit', limit = 10) => {
     console.log(`Fetching recent ${platform} data (limit: ${limit})...`);
     
     try {
-        // Check if we should use mock data by configuration
-        if (useMockApi) {
-            console.log(`Using mock data for ${platform} by configuration`);
-            setMockDataStatus(true);
-            
-            // Import and return mock data directly
-            const { getMockData } = await import('../mock-api/data');
-            const mockData = getMockData(platform, limit);
-            
-            return {
-                data: mockData,
-                isMockData: true,
-                message: `Using mock data for ${platform} (configured to use mock data)`
-            };
-        }
-        
         // Always reset mock data status at start of request
         setMockDataStatus(false);
         
-        // Try direct API call first with proper retry mechanism
+        // Try direct API call with proper retry mechanism
         for (let retry = 0; retry < MAX_RETRIES; retry++) {
             try {
                 console.log(`API attempt ${retry + 1}/${MAX_RETRIES} for ${platform} data`);
@@ -198,44 +174,21 @@ export const fetchRecentData = async (platform = 'reddit', limit = 10) => {
                 
             } catch (error) {
                 if (retry < MAX_RETRIES - 1) {
-                    // Wait before retry with increasing delay
-                    const delay = RETRY_DELAY * (retry + 1);
-                    console.log(`Waiting ${delay}ms before retrying ${platform} data...`);
-                    await new Promise(resolve => setTimeout(resolve, delay));
+                    console.log(`Retrying after ${RETRY_DELAY}ms, ${MAX_RETRIES - retry - 1} attempts left...`);
+                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
                 } else {
-                    // Last retry failed, propagate the error
+                    console.error(`All ${MAX_RETRIES} attempts failed:`, error);
                     throw error;
                 }
             }
         }
         
-        // This should never be reached due to the throw in the final retry
-        throw new Error('Failed to fetch data after all retries');
+        // This should never be reached due to the loop and error handling above
+        throw new Error(`Failed to fetch ${platform} data after ${MAX_RETRIES} attempts`);
         
     } catch (error) {
-        console.error(`Error fetching ${platform} data after all retries:`, error);
-        
-        // Set mock data status to true since we're using mock data
-        setMockDataStatus(true);
-        
-        // Last resort: use mock data
-        try {
-            const { getMockData } = await import('../mock-api/data');
-            const mockData = getMockData(platform, limit);
-            console.warn(`Using MOCK DATA for ${platform} as fallback due to API failure`);
-            
-            return { 
-                data: mockData, 
-                isMockData: true,
-                message: `Using mock data for ${platform} (API unavailable after ${MAX_RETRIES} retries)`
-            };
-        } catch (mockError) {
-            console.error(`Failed to load mock data for ${platform}:`, mockError);
-            return { 
-                data: [],
-                error: `Failed to load ${platform} data: ${error.message || 'Unknown error'}`
-            };
-        }
+        console.error(`Error fetching ${platform} data:`, error);
+        throw new Error(`Failed to fetch ${platform} data: ${error.message}`);
     }
 };
 
@@ -375,18 +328,8 @@ export const fetchTopicModel = async (startDate = null, endDate = null, platform
         } catch (altError) {
             console.error('Error fetching from alternative endpoint:', altError);
             
-            // Last resort - only if all API calls fail
-            setMockDataStatus(true);
-            return {
-                topics: [],
-                topic_counts_by_date: {},
-                metrics: {},
-                time_range: {
-                    start_date: startDate || new Date(Date.now() - 3*24*60*60*1000).toISOString().split('T')[0],
-                    end_date: endDate || new Date().toISOString().split('T')[0]
-                },
-                error: "Keine Themendaten verfügbar. Bitte versuchen Sie es später erneut."
-            };
+            // Return an appropriate error response
+            throw new Error("Failed to fetch topic model data from all available endpoints. Please try again later.");
         }
     }
 };
@@ -544,15 +487,8 @@ export const fetchPredictions = async (startDate = null, endDate = null) => {
         } catch (altError) {
             console.error('Error fetching from alternative endpoint:', altError);
             
-            // Als letzten Ausweg leere Daten zurückgeben statt eines Fehlers
-            return { 
-                predictions: [],
-                time_range: {
-                    start_date: startDate || new Date(Date.now() - 3*24*60*60*1000).toISOString().split('T')[0],
-                    end_date: endDate || new Date(Date.now() + 14*24*60*60*1000).toISOString().split('T')[0]
-                },
-                error: "Keine Vorhersagedaten verfügbar. Bitte versuchen Sie es später erneut."
-            };
+            // Throw an error instead of returning mock data
+            throw new Error("Failed to fetch prediction data from all available endpoints. Please try again later.");
         }
     }
 };
@@ -624,15 +560,7 @@ export const executePipeline = async (pipelineId) => {
     return response.data;
   } catch (error) {
     console.error('Error executing pipeline:', error);
-    // Return error object with empty data
-    return { 
-      error: `Failed to execute pipeline: ${error.message}`,
-      execution_id: "", 
-      pipeline_id: pipelineId,
-      status: "failed",
-      startTime: "",
-      message: ""
-    };
+    throw new Error(`Failed to execute pipeline: ${error.message}`);
   }
 };
 

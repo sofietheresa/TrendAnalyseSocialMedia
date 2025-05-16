@@ -56,24 +56,7 @@ const ModelEvaluation = () => {
           setModelVersions(versions);
         } catch (err) {
           console.error('Error fetching model versions:', err);
-          // Fallback to mock versions if API fails
-          const mockVersions = {
-            "topic_model": [
-              {"id": "v1.0.2", "name": "Topic Model v1.0.2", "date": new Date().toISOString(), "status": "production"},
-              {"id": "v1.0.1", "name": "Topic Model v1.0.1", "date": new Date(Date.now() - 7*24*60*60*1000).toISOString(), "status": "archived"},
-              {"id": "v1.0.0", "name": "Topic Model v1.0.0", "date": new Date(Date.now() - 14*24*60*60*1000).toISOString(), "status": "archived"}
-            ],
-            "sentiment_analysis": [
-              {"id": "v2.0.1", "name": "Sentiment Analysis v2.0.1", "date": new Date().toISOString(), "status": "production"},
-              {"id": "v2.0.0", "name": "Sentiment Analysis v2.0.0", "date": new Date(Date.now() - 10*24*60*60*1000).toISOString(), "status": "archived"}
-            ],
-            "trend_prediction": [
-              {"id": "v1.5.0", "name": "Trend Prediction v1.5.0", "date": new Date().toISOString(), "status": "production"}
-            ]
-          };
-          
-          setModelVersions(mockVersions[selectedModel] || []);
-          versions = mockVersions[selectedModel] || [];
+          throw new Error('Could not fetch model versions');
         }
         
         // Set selected version to the production version or first available
@@ -92,48 +75,12 @@ const ModelEvaluation = () => {
             }
             
             setMetrics(metricsData);
+          } else {
+            throw new Error('No valid model version available');
           }
         } catch (err) {
           console.error('Error fetching model metrics:', err);
-          // Fallback to mock metrics if API fails
-          const mockMetrics = {
-            "topic_model": {
-              coherence_score: 0.78,
-              diversity_score: 0.65,
-              document_coverage: 0.92,
-              total_documents: 15764,
-              uniqueness_score: 0.81,
-              silhouette_score: 0.72,
-              topic_separation: 0.68,
-              avg_topic_similarity: 0.43,
-              execution_time: 183.4,
-              topic_quality: 0.75
-            },
-            "sentiment_analysis": {
-              accuracy: 0.89,
-              precision: 0.83,
-              recall: 0.86,
-              f1_score: 0.85,
-              total_documents: 12500,
-              execution_time: 162.7,
-              uniqueness_score: 0.79,
-              silhouette_score: 0.67,
-              topic_separation: 0.72
-            },
-            "trend_prediction": {
-              mean_absolute_error: 0.12,
-              mean_squared_error: 0.05,
-              r2_score: 0.87,
-              total_predictions: 8742,
-              execution_time: 97.3,
-              accuracy: 0.91,
-              precision: 0.88,
-              recall: 0.85,
-              f1_score: 0.86
-            }
-          };
-          
-          setMetrics(mockMetrics[selectedModel] || {});
+          throw new Error('Could not fetch model metrics');
         }
         
         // Fetch metrics history
@@ -148,14 +95,7 @@ const ModelEvaluation = () => {
           }
         } catch (err) {
           console.error('Error fetching metrics history:', err);
-          // Fallback to mock history if API fails
-          const mockMetricsHistory = [
-            { version: 'v1.0.0', coherence: 0.72, diversity: 0.61, coverage: 0.87, uniqueness: 0.76, date: new Date(Date.now() - 14*24*60*60*1000).toISOString() },
-            { version: 'v1.0.1', coherence: 0.75, diversity: 0.63, coverage: 0.90, uniqueness: 0.79, date: new Date(Date.now() - 7*24*60*60*1000).toISOString() },
-            { version: 'v1.0.2', coherence: 0.78, diversity: 0.65, coverage: 0.92, uniqueness: 0.81, date: new Date().toISOString() }
-          ];
-          
-          setMetricsHistory(mockMetricsHistory);
+          throw new Error('Could not fetch metrics history');
         }
         
         // Fetch drift metrics for relevant model types
@@ -171,16 +111,7 @@ const ModelEvaluation = () => {
             }
           } catch (err) {
             console.error('Error fetching drift data:', err);
-            // Fallback to mock confusion matrix if API fails
-            const mockConfusionMatrix = {
-              labels: ['Positive', 'Neutral', 'Negative'],
-              values: [
-                [92, 5, 3],
-                [8, 85, 7],
-                [4, 9, 87]
-              ]
-            };
-            setConfusionMatrix(mockConfusionMatrix);
+            throw new Error('Could not fetch model drift data');
           }
         }
         

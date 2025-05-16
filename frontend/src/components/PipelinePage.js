@@ -31,120 +31,41 @@ const PipelinePage = () => {
         setLoading(true);
         setError(null);
         
-        // Mock data to use as fallback if API fails
-        const mockPipelines = {
-          "trend_analysis": {
-            "name": "Trend Analysis Pipeline",
-            "description": "Analyzes social media data to identify trending topics",
-            "steps": [
-              {"id": "data_collection", "name": "Data Collection", "description": "Collects data from social media APIs", "status": "completed", "runtime": "00:18:22"},
-              {"id": "preprocessing", "name": "Preprocessing", "description": "Cleans and prepares data for analysis", "status": "completed", "runtime": "00:12:25"},
-              {"id": "topic_modeling", "name": "Topic Modeling", "description": "Identifies emerging topics in the data", "status": "completed", "runtime": "00:32:44"},
-              {"id": "sentiment_analysis", "name": "Sentiment Analysis", "description": "Determines sentiment for each post", "status": "completed", "runtime": "00:09:18"},
-              {"id": "trend_detection", "name": "Trend Detection", "description": "Identifies emerging trends in topics", "status": "completed", "runtime": "00:06:42"}
-            ],
-            "lastRun": "2023-12-15T14:30:22",
-            "nextScheduledRun": new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
-            "averageRuntime": "00:51:48",
-            "status": "completed"
-          },
-          "realtime_monitoring": {
-            "name": "Realtime Monitoring Pipeline",
-            "description": "Monitors social media in real-time for emerging trends",
-            "steps": [
-              {"id": "stream_ingestion", "name": "Stream Ingestion", "description": "Collects streaming data from social APIs", "status": "completed", "runtime": "00:01:02"},
-              {"id": "realtime_preprocessing", "name": "Realtime Preprocessing", "description": "Preprocesses streaming data", "status": "completed", "runtime": "00:00:48"},
-              {"id": "anomaly_detection", "name": "Anomaly Detection", "description": "Detects unusual patterns in real-time", "status": "running", "runtime": "00:02:15"},
-              {"id": "alert_generation", "name": "Alert Generation", "description": "Generates alerts for detected anomalies", "status": "pending", "runtime": "00:00:00"}
-            ],
-            "lastRun": "2023-12-15T16:45:10",
-            "nextScheduledRun": new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
-            "averageRuntime": "00:10:22",
-            "status": "running"
-          },
-          "model_training": {
-            "name": "Model Training Pipeline",
-            "description": "Trains and deploys ML models for trend prediction",
-            "steps": [
-              {"id": "data_collection", "name": "Data Collection", "description": "Collects historical data for training", "status": "completed", "runtime": "00:12:45"},
-              {"id": "feature_engineering", "name": "Feature Engineering", "description": "Creates features for model training", "status": "completed", "runtime": "00:18:20"},
-              {"id": "model_training", "name": "Model Training", "description": "Trains prediction models", "status": "completed", "runtime": "01:24:56"},
-              {"id": "model_validation", "name": "Model Validation", "description": "Validates models against test data", "status": "failed", "runtime": "00:05:23"}
-            ],
-            "lastRun": "2023-12-14T09:15:33",
-            "nextScheduledRun": new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
-            "averageRuntime": "02:01:24",
-            "status": "failed"
-          }
-        };
+        // Fetch all available pipelines
+        const allPipelines = await fetchPipelines();
+        console.log('All available pipelines:', allPipelines);
         
-        const mockExecutions = [
-          {"id": "exec-001", "pipelineId": "trend_analysis", "startTime": "2023-12-15T14:30:22", "endTime": "2023-12-15T15:22:10", "status": "completed", "trigger": "scheduled"},
-          {"id": "exec-002", "pipelineId": "trend_analysis", "startTime": "2023-12-14T14:30:15", "endTime": "2023-12-14T15:24:02", "status": "completed", "trigger": "scheduled"},
-          {"id": "exec-003", "pipelineId": "realtime_monitoring", "startTime": "2023-12-15T16:45:10", "endTime": null, "status": "running", "trigger": "manual"},
-          {"id": "exec-004", "pipelineId": "model_training", "startTime": "2023-12-14T09:15:33", "endTime": "2023-12-14T11:16:57", "status": "failed", "trigger": "manual"},
-          {"id": "exec-005", "pipelineId": "trend_analysis", "startTime": "2023-12-13T14:30:18", "endTime": "2023-12-13T15:25:33", "status": "completed", "trigger": "scheduled"}
-        ];
-        
-        try {
-          // First try to fetch all pipelines to see what's available
-          const allPipelines = await fetchPipelines();
-          console.log('All available pipelines:', allPipelines);
-          
-          // Fetch pipeline data from API
-          const pipelineData = await fetchPipelines(selectedPipeline);
-          
-          console.log('Received pipeline data:', pipelineData);
-          
-          if (pipelineData && pipelineData.error) {
-            // If there's an error with specific pipeline, use mock data
-            console.log(`Using mock data for ${selectedPipeline}`);
-            setPipelineData(mockPipelines[selectedPipeline]);
-          } else if (!pipelineData || typeof pipelineData !== 'object') {
-            // If we got invalid data for the specific pipeline, use mock data
-            console.log(`Using mock data for ${selectedPipeline}`);
-            setPipelineData(mockPipelines[selectedPipeline]);
-          } else {
-            // We have valid pipeline data, use it
-            setPipelineData(pipelineData);
-          }
-        } catch (error) {
-          console.log('Error fetching pipeline data, using mocks:', error);
-          setPipelineData(mockPipelines[selectedPipeline]);
+        if (!allPipelines || Object.keys(allPipelines).length === 0) {
+          throw new Error('No pipelines available');
         }
         
-        try {
-          // Fetch executions for the selected pipeline
-          const executionsData = await fetchPipelineExecutions(selectedPipeline);
-          
-          console.log('Received executions data:', executionsData);
-          
-          // Filter mock executions for the selected pipeline
-          const mockFilteredExecutions = mockExecutions.filter(exec => exec.pipelineId === selectedPipeline);
-          
-          if (executionsData && executionsData.error) {
-            // Use mock data if API returns error
-            setExecutions(mockFilteredExecutions);
-          } else {
-            // Ensure executionsData is an array before using filter
-            const executionsArray = Array.isArray(executionsData) ? executionsData : mockFilteredExecutions;
-            setExecutions(executionsArray);
-          }
-        } catch (error) {
-          console.log('Error fetching executions, using mocks:', error);
-          setExecutions(mockExecutions.filter(exec => exec.pipelineId === selectedPipeline));
+        // Fetch pipeline data from API
+        const pipelineData = await fetchPipelines(selectedPipeline);
+        console.log('Received pipeline data:', pipelineData);
+        
+        if (!pipelineData || pipelineData.error || typeof pipelineData !== 'object') {
+          throw new Error(`Failed to fetch pipeline data for ${selectedPipeline}`);
         }
         
-        // Calculate stats based on the pipeline data set above
-        const selectedPipelineData = mockPipelines[selectedPipeline]; // Default to mock
-        const executionsArray = mockExecutions.filter(exec => exec.pipelineId === selectedPipeline);
+        setPipelineData(pipelineData);
         
+        // Fetch executions for the selected pipeline
+        const executionsData = await fetchPipelineExecutions(selectedPipeline);
+        console.log('Received executions data:', executionsData);
+        
+        if (!Array.isArray(executionsData)) {
+          throw new Error(`Failed to fetch pipeline executions for ${selectedPipeline}`);
+        }
+        
+        setExecutions(executionsData);
+        
+        // Calculate stats based on the pipeline data
         const stats = {
-          success: executionsArray.filter(exec => exec.status === "completed").length,
-          failed: executionsArray.filter(exec => exec.status === "failed").length,
-          running: executionsArray.filter(exec => exec.status === "running").length,
-          total: executionsArray.length,
-          avgRuntime: selectedPipelineData.averageRuntime || "00:00:00"
+          success: executionsData.filter(exec => exec.status === "completed").length,
+          failed: executionsData.filter(exec => exec.status === "failed").length,
+          running: executionsData.filter(exec => exec.status === "running").length,
+          total: executionsData.length,
+          avgRuntime: pipelineData.averageRuntime || "00:00:00"
         };
         
         setPipelineStats(stats);
@@ -181,13 +102,34 @@ const PipelinePage = () => {
         // Refresh pipeline data after a short delay
         setTimeout(() => {
           const fetchPipelineData = async () => {
-            const pipelineData = await fetchPipelines(selectedPipeline);
-            const executionsData = await fetchPipelineExecutions(selectedPipeline);
-            
-            if (!pipelineData.error && !executionsData.error) {
-              setPipelineData(pipelineData);
-              // Ensure executionsData is an array
-              setExecutions(Array.isArray(executionsData) ? executionsData : []);
+            try {
+              const pipelineData = await fetchPipelines(selectedPipeline);
+              const executionsData = await fetchPipelineExecutions(selectedPipeline);
+              
+              if (pipelineData && typeof pipelineData === 'object') {
+                setPipelineData(pipelineData);
+              }
+              
+              if (Array.isArray(executionsData)) {
+                setExecutions(executionsData);
+                
+                // Update stats
+                const stats = {
+                  success: executionsData.filter(exec => exec.status === "completed").length,
+                  failed: executionsData.filter(exec => exec.status === "failed").length,
+                  running: executionsData.filter(exec => exec.status === "running").length,
+                  total: executionsData.length,
+                  avgRuntime: pipelineData?.averageRuntime || "00:00:00"
+                };
+                
+                setPipelineStats(stats);
+              }
+            } catch (error) {
+              console.error("Error refreshing pipeline data:", error);
+              setExecutionMessage({
+                type: 'warning',
+                text: 'Pipeline execution started, but could not refresh pipeline data'
+              });
             }
           };
           
