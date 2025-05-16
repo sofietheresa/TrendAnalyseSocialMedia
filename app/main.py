@@ -829,6 +829,36 @@ async def get_pipelines():
             "nextScheduledRun": tomorrow.isoformat(),
             "averageRuntime": "00:51:48",
             "status": "completed"
+        },
+        "realtime_monitoring": {
+            "name": "Realtime Monitoring Pipeline",
+            "description": "Monitors social media trends in real-time",
+            "steps": [
+                {"id": "stream_ingestion", "name": "Stream Ingestion", "description": "Collects real-time data from social APIs", "status": "completed", "runtime": "00:02:25"},
+                {"id": "realtime_preprocessing", "name": "Realtime Preprocessing", "description": "Processes streaming data in real-time", "status": "completed", "runtime": "00:01:35"},
+                {"id": "topic_detection", "name": "Topic Detection", "description": "Detects emerging topics in real-time", "status": "running", "runtime": "00:15:42"},
+                {"id": "anomaly_detection", "name": "Anomaly Detection", "description": "Identifies unusual patterns in social content", "status": "pending", "runtime": "00:00:00"},
+                {"id": "alert_generation", "name": "Alert Generation", "description": "Generates alerts for detected anomalies", "status": "pending", "runtime": "00:00:00"}
+            ],
+            "lastRun": current_time.isoformat(),
+            "nextScheduledRun": "continuous",
+            "averageRuntime": "00:25:30",
+            "status": "running"
+        },
+        "model_training": {
+            "name": "Model Training Pipeline",
+            "description": "Trains and evaluates prediction models",
+            "steps": [
+                {"id": "data_collection", "name": "Data Collection", "description": "Collects training data from database", "status": "completed", "runtime": "00:10:15"},
+                {"id": "feature_engineering", "name": "Feature Engineering", "description": "Prepares features for model training", "status": "completed", "runtime": "00:12:30"},
+                {"id": "model_training", "name": "Model Training", "description": "Trains prediction models", "status": "completed", "runtime": "01:24:56"},
+                {"id": "model_evaluation", "name": "Model Evaluation", "description": "Evaluates model performance", "status": "failed", "runtime": "00:05:23"},
+                {"id": "model_deployment", "name": "Model Deployment", "description": "Deploys models to production", "status": "pending", "runtime": "00:00:00"}
+            ],
+            "lastRun": (yesterday - timedelta(days=1)).isoformat(),
+            "nextScheduledRun": (tomorrow + timedelta(days=6)).isoformat(),
+            "averageRuntime": "01:52:24",
+            "status": "failed"
         }
     }
     
@@ -863,6 +893,36 @@ async def get_pipeline(pipeline_id: str):
             "nextScheduledRun": tomorrow.isoformat(),
             "averageRuntime": "00:51:48",
             "status": "completed"
+        },
+        "realtime_monitoring": {
+            "name": "Realtime Monitoring Pipeline",
+            "description": "Monitors social media trends in real-time",
+            "steps": [
+                {"id": "stream_ingestion", "name": "Stream Ingestion", "description": "Collects real-time data from social APIs", "status": "completed", "runtime": "00:02:25"},
+                {"id": "realtime_preprocessing", "name": "Realtime Preprocessing", "description": "Processes streaming data in real-time", "status": "completed", "runtime": "00:01:35"},
+                {"id": "topic_detection", "name": "Topic Detection", "description": "Detects emerging topics in real-time", "status": "running", "runtime": "00:15:42"},
+                {"id": "anomaly_detection", "name": "Anomaly Detection", "description": "Identifies unusual patterns in social content", "status": "pending", "runtime": "00:00:00"},
+                {"id": "alert_generation", "name": "Alert Generation", "description": "Generates alerts for detected anomalies", "status": "pending", "runtime": "00:00:00"}
+            ],
+            "lastRun": current_time.isoformat(),
+            "nextScheduledRun": "continuous",
+            "averageRuntime": "00:25:30",
+            "status": "running"
+        },
+        "model_training": {
+            "name": "Model Training Pipeline",
+            "description": "Trains and evaluates prediction models",
+            "steps": [
+                {"id": "data_collection", "name": "Data Collection", "description": "Collects training data from database", "status": "completed", "runtime": "00:10:15"},
+                {"id": "feature_engineering", "name": "Feature Engineering", "description": "Prepares features for model training", "status": "completed", "runtime": "00:12:30"},
+                {"id": "model_training", "name": "Model Training", "description": "Trains prediction models", "status": "completed", "runtime": "01:24:56"},
+                {"id": "model_evaluation", "name": "Model Evaluation", "description": "Evaluates model performance", "status": "failed", "runtime": "00:05:23"},
+                {"id": "model_deployment", "name": "Model Deployment", "description": "Deploys models to production", "status": "pending", "runtime": "00:00:00"}
+            ],
+            "lastRun": (yesterday - timedelta(days=1)).isoformat(),
+            "nextScheduledRun": (tomorrow + timedelta(days=6)).isoformat(),
+            "averageRuntime": "01:52:24",
+            "status": "failed"
         }
     }
     
