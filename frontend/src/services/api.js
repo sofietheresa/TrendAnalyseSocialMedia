@@ -6,7 +6,7 @@ const API_URL = process.env.REACT_APP_API_URL ||
 
 // Special endpoint for model drift - using dedicated API
 const DRIFT_API_URL = process.env.REACT_APP_DRIFT_API_URL || 
-                     'http://localhost:8080';
+                     'http://localhost:8081';
 
 console.log('API_URL set to:', API_URL);
 console.log('DRIFT_API_URL set to:', DRIFT_API_URL);
@@ -21,6 +21,17 @@ const api = axios.create({
     // Longer timeout for potentially slow connections
     timeout: 45000,
     // Disable CORS credentials since we're using proxy
+    withCredentials: false
+});
+
+// Create a dedicated API client for the drift API endpoints
+const driftApi = axios.create({
+    baseURL: DRIFT_API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+    },
+    timeout: 45000,
     withCredentials: false
 });
 
@@ -599,10 +610,26 @@ export const fetchPipelines = async (pipelineId = null) => {
       ? `/api/mlops/pipelines/${pipelineId}`
       : '/api/mlops/pipelines';
     
-    console.log(`Fetching pipelines from: ${url}`);
-    const response = await api.get(url);
-    console.log('Pipeline response:', response.data);
-    return response.data;
+    console.log(`Fetching pipelines from: ${DRIFT_API_URL}${url}`);
+    
+    // Try with multiple retries
+    for (let retry = 0; retry < MAX_RETRIES; retry++) {
+      try {
+        const response = await driftApi.get(url);
+        console.log('Pipeline response:', response.data);
+        return response.data;
+      } catch (error) {
+        // Only retry on network errors or 5xx errors
+        if (retry < MAX_RETRIES - 1 && (!error.response || error.response.status >= 500)) {
+          console.log(`Retry ${retry + 1}/${MAX_RETRIES} for pipeline data...`);
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (retry + 1)));
+        } else {
+          throw error;
+        }
+      }
+    }
+    
+    throw new Error('Failed to fetch pipeline data after all retries');
   } catch (error) {
     console.error('Error fetching pipeline data:', error);
     return { error: `Failed to fetch pipeline data: ${error.message}` };
@@ -617,11 +644,28 @@ export const fetchPipelines = async (pipelineId = null) => {
  */
 export const fetchPipelineExecutions = async (pipelineId) => {
   try {
-    console.log(`Fetching pipeline executions for: ${pipelineId}`);
-    const response = await api.get(`/api/mlops/pipelines/${pipelineId}/executions`);
-    console.log('Pipeline executions response:', response.data);
-    // Ensure we always return an array
-    return Array.isArray(response.data) ? response.data : [];
+    const url = `/api/mlops/pipelines/${pipelineId}/executions`;
+    console.log(`Fetching pipeline executions from: ${DRIFT_API_URL}${url}`);
+    
+    // Try with multiple retries
+    for (let retry = 0; retry < MAX_RETRIES; retry++) {
+      try {
+        const response = await driftApi.get(url);
+        console.log('Pipeline executions response:', response.data);
+        // Ensure we always return an array
+        return Array.isArray(response.data) ? response.data : [];
+      } catch (error) {
+        // Only retry on network errors or 5xx errors
+        if (retry < MAX_RETRIES - 1 && (!error.response || error.response.status >= 500)) {
+          console.log(`Retry ${retry + 1}/${MAX_RETRIES} for pipeline executions...`);
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (retry + 1)));
+        } else {
+          throw error;
+        }
+      }
+    }
+    
+    throw new Error('Failed to fetch pipeline executions after all retries');
   } catch (error) {
     console.error('Error fetching pipeline executions:', error);
     return { error: `Failed to fetch pipeline executions: ${error.message}` };
@@ -637,9 +681,28 @@ export const fetchPipelineExecutions = async (pipelineId) => {
 export const executePipeline = async (pipelineId) => {
   try {
     console.log(`Executing pipeline: ${pipelineId}`);
-    const response = await api.post(`/api/mlops/pipelines/${pipelineId}/execute`);
-    console.log('Pipeline execution response:', response.data);
-    return response.data;
+    
+    const url = `/api/mlops/pipelines/${pipelineId}/execute`;
+    console.log(`Executing pipeline at: ${DRIFT_API_URL}${url}`);
+    
+    // Try with multiple retries
+    for (let retry = 0; retry < MAX_RETRIES; retry++) {
+      try {
+        const response = await driftApi.post(url);
+        console.log('Pipeline execution response:', response.data);
+        return response.data;
+      } catch (error) {
+        // Only retry on network errors or 5xx errors
+        if (retry < MAX_RETRIES - 1 && (!error.response || error.response.status >= 500)) {
+          console.log(`Retry ${retry + 1}/${MAX_RETRIES} for pipeline execution...`);
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (retry + 1)));
+        } else {
+          throw error;
+        }
+      }
+    }
+    
+    throw new Error('Failed to execute pipeline after all retries');
   } catch (error) {
     console.error('Error executing pipeline:', error);
     return { error: 'Failed to execute pipeline. Please try again later.' };
@@ -694,17 +757,6 @@ export const fetchModelMetrics = async (modelName, version = null) => {
  */
 export const fetchModelDrift = async (modelName, version = null) => {
   try {
-    // Create a dedicated API client for drift endpoint
-    const driftApi = axios.create({
-      baseURL: DRIFT_API_URL,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache',
-      },
-      timeout: 45000,
-      withCredentials: false
-    });
-    
     const url = `/api/mlops/models/${modelName}/drift${version ? `?version=${version}` : ''}`;
     console.log(`Fetching model drift from: ${DRIFT_API_URL}${url}`);
     

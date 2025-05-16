@@ -156,3 +156,47 @@ make clean              # Temporäre Dateien aufräumen
 ## 📄 Lizenz
 
 Dieses Projekt ist lizenziert unter der MIT-Lizenz.
+
+## Running the Application
+
+### Backend Services
+
+The application consists of two backend services:
+
+1. **Main Backend**: Handles most API requests
+2. **Drift API**: A dedicated API for model drift metrics and ML pipeline operations
+
+To run both services:
+
+```bash
+# Start the main backend
+python src/main.py
+
+# Start the drift API (in a separate terminal)
+python drift_api.py
+```
+
+### Frontend
+
+The frontend requires the following environment variables:
+
+- `REACT_APP_API_URL`: URL of the main backend API (default: http://localhost:8000)
+- `REACT_APP_DRIFT_API_URL`: URL of the drift API (default: http://localhost:8081)
+
+To run the frontend:
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+## Deployment
+
+Both backend services need to be deployed separately. Use the included `deploy.ps1` script to deploy to Railway:
+
+```bash
+./deploy.ps1
+```
+
+After deployment, update your frontend environment variables with the deployed URLs.
