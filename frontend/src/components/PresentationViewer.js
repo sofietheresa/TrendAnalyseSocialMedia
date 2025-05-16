@@ -16,19 +16,12 @@ const PresentationViewer = ({ presentationUrl }) => {
       try {
         setLoading(true);
         
-        // In a real implementation, this would be an API call to fetch the images
-        // For now, we'll use a simulated response
+        // For production use, we'll use the actual images from the docs/presentation_images directory
+        // The backend should serve these images from the specified directory
         
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // In production, this would be replaced with an actual API call:
-        // const response = await fetch('/api/presentations/images');
-        // const data = await response.json();
-        // setSlides(data.images);
-        
-        // For demo purposes, we'll use placeholder paths
-        const demoSlides = [
+        // In a real environment we would fetch the list of images from an API endpoint
+        // For now we'll use our known image paths
+        const presentationImages = [
           '/docs/presentation_images/slide1.jpg',
           '/docs/presentation_images/slide2.jpg',
           '/docs/presentation_images/slide3.jpg',
@@ -36,7 +29,8 @@ const PresentationViewer = ({ presentationUrl }) => {
           '/docs/presentation_images/slide5.jpg',
         ];
         
-        setSlides(demoSlides);
+        console.log("Loading presentation slides from:", presentationImages);
+        setSlides(presentationImages);
       } catch (err) {
         console.error("Fehler beim Laden der Präsentation:", err);
         setError("Die Präsentation konnte nicht geladen werden. Bitte versuchen Sie es später erneut.");

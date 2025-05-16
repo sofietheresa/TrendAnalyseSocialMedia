@@ -120,6 +120,15 @@ const Documentation = () => {
             <div className="presentation-info">
                 <h4>Social Media Trend Analyse</h4>
                 <p>Diese Präsentation bietet einen Überblick über unser Social Media Trend Analyse-Projekt, einschließlich der Methodik, wichtiger Erkenntnisse und zukünftiger Entwicklungen.</p>
+                <p>Um die vollständige Funktionalität der Präsentationsansicht zu nutzen, können Sie:</p>
+                <ul>
+                    <li>Mit den Pfeiltasten navigieren</li>
+                    <li>Die Miniaturansichten unten anklicken</li>
+                    <li>Auf dem Touchscreen wischen, um zwischen Folien zu wechseln</li>
+                </ul>
+                <p>
+                    <strong>GitHub Repository:</strong> <a href="https://github.com/sofietheresa/TrendAnalyseSocialMedia" target="_blank" rel="noopener noreferrer">https://github.com/sofietheresa/TrendAnalyseSocialMedia</a>
+                </p>
             </div>
         </div>
     );
@@ -148,6 +157,10 @@ const Documentation = () => {
                 TrendAnalyseSocialMedia ist eine umfassende Webanwendung zur Analyse von Trends in sozialen Medien. 
                 Das System sammelt automatisch Daten von den größten Social-Media-Plattformen (Reddit, TikTok und YouTube), 
                 verarbeitet diese mit einer ML-Pipeline und präsentiert die Ergebnisse in einem interaktiven Dashboard.
+            </p>
+            
+            <p>
+                <strong>GitHub Repository:</strong> <a href="https://github.com/sofietheresa/TrendAnalyseSocialMedia" target="_blank" rel="noopener noreferrer">https://github.com/sofietheresa/TrendAnalyseSocialMedia</a>
             </p>
 
             <h4>Hauptfunktionen</h4>
@@ -186,8 +199,9 @@ const Documentation = () => {
             <ol>
                 <li>
                     <strong>Repository klonen</strong>
-                    <pre>git clone https://github.com/yourusername/TrendAnalyseSocialMedia.git
+                    <pre>git clone https://github.com/sofietheresa/TrendAnalyseSocialMedia.git
 cd TrendAnalyseSocialMedia</pre>
+                    <p><a href="https://github.com/sofietheresa/TrendAnalyseSocialMedia" target="_blank" rel="noopener noreferrer">GitHub Projekt öffnen</a></p>
                 </li>
                 <li>
                     <strong>Python-Umgebung einrichten</strong>
