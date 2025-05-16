@@ -77,7 +77,7 @@ const PredictionsPage = () => {
         }
       } catch (err) {
         console.error("Error fetching prediction data:", err);
-        setError(`Failed to fetch prediction data: ${err.message}`);
+        setError(`Failed to fetch real prediction data: ${err.message}`);
         setPredictions([]);
       } finally {
         setLoading(false);

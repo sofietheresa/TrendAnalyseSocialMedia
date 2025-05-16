@@ -9,8 +9,8 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 
-// Flag to control development mode - set to true to always use mock data
-const ALWAYS_USE_MOCK_DATA = false; // Set this to false when real API endpoints are available
+// Flag to control development mode - ALWAYS set to false to ensure real data is used
+const ALWAYS_USE_MOCK_DATA = false;
 
 // Check if the API server is available with improved reliability
 const testApiConnection = (url, timeoutMs = 5000) => {
@@ -51,54 +51,50 @@ const setupEnvironment = async () => {
   
   console.log(`⚙️ Testing API server availability at: ${apiUrl}`);
   
-  // Skip API check if we're always using mock data
+  // We still check API availability for logging purposes
   let apiAvailable = false;
   
-  if (!ALWAYS_USE_MOCK_DATA) {
-    // Try multiple health endpoints with multiple attempts
-    const healthEndpoints = ['/health', '/api/health', '/railway-health', '/api/scraper-status'];
-    const maxRetries = 5;
-    const timeout = 8000;
+  // Try multiple health endpoints with multiple attempts
+  const healthEndpoints = ['/health', '/api/health', '/railway-health', '/api/scraper-status'];
+  const maxRetries = 5;
+  const timeout = 8000;
+  
+  for (const endpoint of healthEndpoints) {
+    if (apiAvailable) break;
     
-    for (const endpoint of healthEndpoints) {
-      if (apiAvailable) break;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      console.log(`Attempting to connect to ${apiUrl}${endpoint} (attempt ${attempt + 1}/${maxRetries})...`);
       
-      for (let attempt = 0; attempt < maxRetries; attempt++) {
-        console.log(`Attempting to connect to ${apiUrl}${endpoint} (attempt ${attempt + 1}/${maxRetries})...`);
-        
-        try {
-          // Try with a longer timeout
-          const isAvailable = await testApiConnection(`${apiUrl}${endpoint}`, timeout);
-          if (isAvailable) {
-            apiAvailable = true;
-            console.log(`✅ API server is available at ${apiUrl}${endpoint}`);
-            break;
-          }
-          
-          // Wait before retry with increasing delay
-          if (attempt < maxRetries - 1) {
-            const delay = 1000 * (attempt + 1); // Increasing delay
-            console.log(`Waiting ${delay}ms before retry...`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-          }
-        } catch (error) {
-          console.error(`Error checking API availability: ${error.message}`);
+      try {
+        // Try with a longer timeout
+        const isAvailable = await testApiConnection(`${apiUrl}${endpoint}`, timeout);
+        if (isAvailable) {
+          apiAvailable = true;
+          console.log(`✅ API server is available at ${apiUrl}${endpoint}`);
+          break;
         }
+        
+        // Wait before retry with increasing delay
+        if (attempt < maxRetries - 1) {
+          const delay = 1000 * (attempt + 1); // Increasing delay
+          console.log(`Waiting ${delay}ms before retry...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      } catch (error) {
+        console.error(`Error checking API availability: ${error.message}`);
       }
     }
-  } else {
-    console.log('⚠️ DEVELOPMENT MODE: Always using mock data by configuration');
   }
   
-  // Set use mock API based on config and API availability
-  const useMockApi = ALWAYS_USE_MOCK_DATA || !apiAvailable;
+  // Always set useMockApi to false regardless of API availability
+  const useMockApi = false;
   
   // Set environment variables for child processes
   const env = {
     ...process.env,
     REACT_APP_API_URL: apiUrl,
     REACT_APP_MOCK_API_URL: mockApiUrl,
-    REACT_APP_USE_MOCK_API: String(useMockApi) // 'true' or 'false'
+    REACT_APP_USE_MOCK_API: String(useMockApi) // always 'false'
   };
   
   return { env, apiAvailable, useMockApi };

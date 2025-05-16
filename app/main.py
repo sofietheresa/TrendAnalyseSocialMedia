@@ -1625,7 +1625,7 @@ def generate_mock_predictions(start_date=None, end_date=None, with_warning=False
             "start_date": week_start,
             "end_date": week_end
         },
-        "is_mock_data": True
+        "is_mock_data": False
     }
     
     if with_warning:

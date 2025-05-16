@@ -1,119 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Tab, Tabs, Card, Table, Alert, Row, Col, Nav } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Container, Tab, Tabs, Table, Row, Col, Nav } from 'react-bootstrap';
 import PresentationViewer from './PresentationViewer';
 import './Documentation.css';
 
 const Documentation = () => {
     const [activeTab, setActiveTab] = useState('overview');
     const [activeSubTab, setActiveSubTab] = useState('introduction');
-    const [data, setData] = useState([]);
-    const [logs, setLogs] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Fetch data based on active tab
-                if (activeTab === 'data') {
-                    const response = await fetch('/api/analysis/data');
-                    const result = await response.json();
-                    setData(result);
-                } else if (activeTab === 'logs') {
-                    const response = await fetch('/api/logs');
-                    const result = await response.json();
-                    setLogs(result);
-                }
-                setLoading(false);
-            } catch (err) {
-                setError('Die Daten konnten nicht geladen werden. Es werden Beispieldaten verwendet.');
-                // Use mock data for demo purposes
-                if (activeTab === 'data') {
-                    setData(getMockAnalysisData());
-                } else if (activeTab === 'logs') {
-                    setLogs(getMockLogs());
-                }
-                setLoading(false);
-            }
-        };
-
-        // Only fetch if in data or logs tab
-        if (activeTab === 'data' || activeTab === 'logs') {
-            fetchData();
-        } else {
-            setLoading(false);
-        }
-    }, [activeTab]);
-
-    const getMockAnalysisData = () => {
-        return [
-            { date: '2025-05-01', topic: 'KI-basierte Bildgenerierung', frequency: 145, sentiment: 'Positiv' },
-            { date: '2025-05-01', topic: 'Virtual Reality Fitness', frequency: 98, sentiment: 'Neutral' },
-            { date: '2025-05-01', topic: 'Nachhaltiges Gaming', frequency: 76, sentiment: 'Positiv' },
-            { date: '2025-05-02', topic: 'Quantencomputer', frequency: 112, sentiment: 'Positiv' },
-            { date: '2025-05-02', topic: 'KI-Ethik', frequency: 87, sentiment: 'Negativ' },
-            { date: '2025-05-03', topic: 'Web3 Anwendungen', frequency: 65, sentiment: 'Neutral' }
-        ];
-    };
-
-    const getMockLogs = () => {
-        return [
-            { timestamp: '2025-05-03T08:45:12', level: 'INFO', message: 'Reddit scraper started' },
-            { timestamp: '2025-05-03T08:46:27', level: 'INFO', message: 'Found 234 unique posts from Reddit' },
-            { timestamp: '2025-05-03T08:47:01', level: 'INFO', message: 'TikTok scraper started' },
-            { timestamp: '2025-05-03T08:48:15', level: 'WARNING', message: 'Rate limit approaching for TikTok API' },
-            { timestamp: '2025-05-03T08:49:32', level: 'INFO', message: 'Found 98 trending videos from TikTok' },
-            { timestamp: '2025-05-03T08:50:12', level: 'INFO', message: 'YouTube scraper started' },
-            { timestamp: '2025-05-03T08:51:45', level: 'INFO', message: 'Found 56 trending videos from YouTube' },
-            { timestamp: '2025-05-03T08:52:17', level: 'INFO', message: 'Data preprocessing started' },
-            { timestamp: '2025-05-03T08:55:01', level: 'INFO', message: 'Data preprocessing completed' },
-            { timestamp: '2025-05-03T08:55:12', level: 'ERROR', message: 'Failed to connect to sentiment analysis service' }
-        ];
-    };
-
-    const renderData = () => (
-        <Card className="data-card">
-            <Card.Body>
-                <Table striped bordered hover responsive>
-                    <thead>
-                        <tr>
-                            <th>Datum</th>
-                            <th>Thema</th>
-                            <th>Häufigkeit</th>
-                            <th>Stimmung</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.map((item, index) => (
-                            <tr key={index}>
-                                <td>{new Date(item.date).toLocaleDateString('de-DE')}</td>
-                                <td>{item.topic}</td>
-                                <td>{item.frequency}</td>
-                                <td>{item.sentiment}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </Table>
-            </Card.Body>
-        </Card>
-    );
-
-    const renderLogs = () => (
-        <Card className="logs-card">
-            <Card.Body>
-                <div className="logs-container">
-                    {logs.map((log, index) => (
-                        <div key={index} className={`log-entry log-${log.level.toLowerCase()}`}>
-                            <span className="log-timestamp">{new Date(log.timestamp).toLocaleString('de-DE')}</span>
-                            <span className="log-level">{log.level}</span>
-                            <span className="log-message">{log.message}</span>
-                        </div>
-                    ))}
-                </div>
-            </Card.Body>
-        </Card>
-    );
-
+    
     const renderPresentation = () => (
         <div className="presentation-wrapper">
             <PresentationViewer presentationUrl="/api/presentations/images" />
@@ -440,9 +333,6 @@ fetch('/api/analysis/data?platform=youtube&start_date=2025-05-01&end_date=2025-0
         </div>
     );
 
-    if (loading && activeTab !== 'overview' && activeTab !== 'presentation') return <div className="loading">Lade Daten...</div>;
-    if (error && (activeTab === 'data' || activeTab === 'logs')) return <Alert variant="warning">{error}</Alert>;
-
     return (
         <Container className="documentation-container">
             <h2 className="documentation-title">Projektdokumentation</h2>
@@ -479,12 +369,6 @@ fetch('/api/analysis/data?platform=youtube&start_date=2025-05-01&end_date=2025-0
                 </Tab>
                 <Tab eventKey="presentation" title="Präsentation">
                     {renderPresentation()}
-                </Tab>
-                <Tab eventKey="data" title="Analyse-Daten">
-                    {renderData()}
-                </Tab>
-                <Tab eventKey="logs" title="System-Logs">
-                    {renderLogs()}
                 </Tab>
             </Tabs>
         </Container>
