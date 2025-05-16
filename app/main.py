@@ -538,20 +538,36 @@ async def get_topic_model(request: TopicModelRequest):
             all_nouns = []
             
             for text in text_list:
-                # Text bereinigen
-                clean = clean_text(text)
-                # Wörter tokenisieren
-                words = clean.split()
-                # POS-Tagging durchführen
-                tagged_words = pos_tag(words)
-                # Nur Nomen extrahieren (NN, NNS, NNP, NNPS)
-                nouns = [word.lower() for word, tag in tagged_words 
-                         if tag.startswith('NN') 
-                         and word.lower() not in stopwords 
-                         and word.lower() not in generic_nouns
-                         and len(word) > 2]
-                
-                all_nouns.extend(nouns)
+                try:
+                    # Text bereinigen
+                    clean = clean_text(text)
+                    # Wörter tokenisieren
+                    words = clean.split()
+                    # POS-Tagging durchführen
+                    tagged_words = pos_tag(words)
+                    # Nur Nomen extrahieren (NN, NNS, NNP, NNPS)
+                    nouns = [word.lower() for word, tag in tagged_words 
+                             if tag.startswith('NN') 
+                             and word.lower() not in stopwords 
+                             and word.lower() not in generic_nouns
+                             and len(word) > 2]
+                    
+                    all_nouns.extend(nouns)
+                except Exception as e:
+                    logger.warning(f"Fehler beim POS-Tagging: {e}")
+                    # Im Fehlerfall versuchen wir, Wörter basierend auf Länge und Häufigkeit zu filtern
+                    # Dies ist ein Fallback und nicht so präzise wie POS-Tagging
+                    try:
+                        clean = clean_text(text)
+                        words = clean.split()
+                        # Längere Wörter mit höherer Wahrscheinlichkeit Nomen
+                        fallback_nouns = [word.lower() for word in words 
+                                         if len(word) > 4 
+                                         and word.lower() not in stopwords 
+                                         and word.lower() not in generic_nouns]
+                        all_nouns.extend(fallback_nouns)
+                    except Exception as fallback_error:
+                        logger.error(f"Auch Fallback-Methode fehlgeschlagen: {fallback_error}")
             
             return all_nouns
         
@@ -1304,4 +1320,47 @@ async def get_analysis():
     }
     
     logger.info("Returning analysis data")
-    return analysis 
+    return analysis
+
+@app.get("/api/diagnostic/nltk-status")
+async def nltk_status():
+    """Zeigt den Status der NLTK-Installation und verfügbare Ressourcen an"""
+    try:
+        import nltk
+        result = {
+            "status": "installed",
+            "version": nltk.__version__,
+            "resources": {
+                "punkt": False,
+                "averaged_perceptron_tagger": False
+            }
+        }
+        
+        # Überprüfe installierte Ressourcen
+        try:
+            nltk.data.find('tokenizers/punkt')
+            result["resources"]["punkt"] = True
+        except LookupError:
+            pass
+            
+        try:
+            nltk.data.find('taggers/averaged_perceptron_tagger')
+            result["resources"]["averaged_perceptron_tagger"] = True
+        except LookupError:
+            pass
+        
+        # Zusätzlich zeigen wir an, ob die POS-Tag-Funktion funktioniert
+        try:
+            from nltk.tag import pos_tag
+            test_result = pos_tag(['test', 'word'])
+            result["pos_tag_test"] = str(test_result)
+            result["pos_tag_working"] = True
+        except Exception as e:
+            result["pos_tag_working"] = False
+            result["pos_tag_error"] = str(e)
+            
+        return result
+    except ImportError:
+        return {"status": "not_installed"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)} 
