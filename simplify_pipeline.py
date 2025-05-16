@@ -3,12 +3,13 @@
 Simple ML Pipeline for Social Media Trend Analysis
 
 This script defines a simple ML pipeline for topic modeling and sentiment analysis.
+Uses real data from PostgreSQL database when available.
 """
 
 import os
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -18,19 +19,270 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import NMF
 import joblib
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("simple_pipeline")
 
+# Hard-code the database URL for Railway PostgreSQL
+DATABASE_URL = "postgresql://postgres:postgres@containers-us-west-59.railway.app:5898/railway"
+
+def load_postgres_data():
+    """
+    Load real data from PostgreSQL database hosted on Railway
+    
+    Returns:
+        DataFrame containing combined social media data
+    """
+    logger.info("Attempting to load real data from PostgreSQL...")
+    
+    try:
+        # Connect to PostgreSQL
+        conn = psycopg2.connect(DATABASE_URL)
+        logger.info("Connected to PostgreSQL database")
+        
+        # Get data from each platform and combine
+        data_frames = []
+        
+        # Get Reddit data
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # Query excludes 'status_update' records which are just for logging
+            cur.execute("""
+                SELECT 
+                    'reddit' as platform,
+                    title,
+                    text as content,
+                    author,
+                    score as engagement,
+                    to_timestamp(created_utc) as timestamp,
+                    subreddit
+                FROM 
+                    reddit_data
+                WHERE
+                    id != 'status_update'
+                ORDER BY 
+                    created_utc DESC
+                LIMIT 500
+            """)
+            
+            reddit_data = pd.DataFrame(cur.fetchall())
+            if not reddit_data.empty:
+                logger.info(f"Loaded {len(reddit_data)} Reddit posts")
+                data_frames.append(reddit_data)
+        
+        # Get TikTok data
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                SELECT 
+                    'tiktok' as platform,
+                    description as content,
+                    author_username as author,
+                    (likes + shares + comments) as engagement,
+                    to_timestamp(created_time) as timestamp
+                FROM 
+                    tiktok_data
+                WHERE
+                    id != 'status_update'
+                ORDER BY 
+                    created_time DESC
+                LIMIT 500
+            """)
+            
+            tiktok_data = pd.DataFrame(cur.fetchall())
+            if not tiktok_data.empty:
+                logger.info(f"Loaded {len(tiktok_data)} TikTok videos")
+                data_frames.append(tiktok_data)
+                
+        # Get YouTube data
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                SELECT 
+                    'youtube' as platform,
+                    title,
+                    description as content,
+                    channel_title as author,
+                    (view_count + like_count + comment_count) as engagement,
+                    published_at as timestamp
+                FROM 
+                    youtube_data
+                WHERE
+                    video_id != 'status_update'
+                ORDER BY 
+                    published_at DESC
+                LIMIT 500
+            """)
+            
+            youtube_data = pd.DataFrame(cur.fetchall())
+            if not youtube_data.empty:
+                logger.info(f"Loaded {len(youtube_data)} YouTube videos")
+                data_frames.append(youtube_data)
+        
+        # Close the connection
+        conn.close()
+        
+        # Combine all data
+        if data_frames:
+            combined_df = pd.concat(data_frames, ignore_index=True)
+            logger.info(f"Combined data: {len(combined_df)} records from all platforms")
+            
+            # Clean and preprocess the data
+            combined_df = preprocess_data(combined_df)
+            
+            return combined_df
+        else:
+            logger.warning("No data retrieved from PostgreSQL")
+            return pd.DataFrame()
+    
+    except Exception as e:
+        logger.error(f"Error loading data from PostgreSQL: {str(e)}")
+        logger.exception("Detailed error:")
+        return pd.DataFrame()
+
+def preprocess_data(df):
+    """
+    Preprocess data from PostgreSQL for model training
+    
+    Args:
+        df: DataFrame with social media data
+        
+    Returns:
+        Preprocessed DataFrame
+    """
+    if df.empty:
+        return df
+        
+    # Clean up text content
+    if 'content' in df.columns:
+        # Fill missing content with title if available
+        if 'title' in df.columns:
+            df['content'] = df.apply(
+                lambda row: row['title'] if pd.isna(row['content']) or row['content'] == '' else row['content'],
+                axis=1
+            )
+        
+        # Fill remaining NaN content with empty string
+        df['content'] = df['content'].fillna('')
+        
+        # Remove very short content
+        df = df[df['content'].str.len() > 5]
+    
+    # Handle missing values in engagement
+    if 'engagement' in df.columns:
+        df['engagement'] = df['engagement'].fillna(0)
+    
+    # Add basic feature extraction for models
+    if 'content' in df.columns:
+        # Add text length
+        df['text_length'] = df['content'].str.len()
+        
+        # Add word count
+        df['word_count'] = df['content'].str.split().str.len()
+    
+    return df
+
+def label_data_for_topic_model(df):
+    """
+    Apply simple rule-based topic labeling for topic modeling
+    
+    Args:
+        df: DataFrame with preprocessed data
+        
+    Returns:
+        DataFrame with topic labels added
+    """
+    if df.empty or 'content' not in df.columns:
+        return df
+    
+    # Convert content to lowercase for case-insensitive matching
+    df['content_lower'] = df['content'].str.lower()
+    
+    # Define topic keywords
+    topics = {
+        'technology': ['tech', 'computer', 'ai', 'artificial intelligence', 'smartphone', 'software', 'hardware', 'app', 'digital'],
+        'politics': ['government', 'president', 'election', 'vote', 'democracy', 'congress', 'law', 'policy', 'political'],
+        'health': ['health', 'medical', 'doctor', 'hospital', 'medicine', 'disease', 'diet', 'exercise', 'fitness'],
+        'sports': ['sport', 'game', 'team', 'play', 'win', 'athlete', 'football', 'basketball', 'soccer', 'tennis'],
+        'entertainment': ['movie', 'film', 'music', 'celebrity', 'actor', 'actress', 'hollywood', 'tv', 'show', 'song']
+    }
+    
+    # Apply rule-based labeling
+    df['target'] = 'other'  # Default topic
+    
+    for topic, keywords in topics.items():
+        # Create regex pattern with word boundaries
+        pattern = '|'.join([r'\b' + keyword + r'\b' for keyword in keywords])
+        df.loc[df['content_lower'].str.contains(pattern, regex=True), 'target'] = topic
+    
+    # Drop the temporary lowercase column
+    df.drop('content_lower', axis=1, inplace=True)
+    
+    # Log topic distribution
+    topic_counts = df['target'].value_counts()
+    logger.info(f"Topic distribution: {topic_counts.to_dict()}")
+    
+    return df
+
+def label_data_for_sentiment(df):
+    """
+    Apply simple rule-based sentiment labeling for sentiment analysis
+    
+    Args:
+        df: DataFrame with preprocessed data
+        
+    Returns:
+        DataFrame with sentiment labels added
+    """
+    if df.empty or 'content' not in df.columns:
+        return df
+    
+    # Convert content to lowercase for case-insensitive matching
+    df['content_lower'] = df['content'].str.lower()
+    
+    # Define sentiment keywords
+    sentiments = {
+        'positive': ['good', 'great', 'awesome', 'excellent', 'amazing', 'love', 'best', 'happy', 'enjoy', 'wonderful'],
+        'negative': ['bad', 'terrible', 'awful', 'poor', 'worst', 'hate', 'disaster', 'disappointed', 'horrible', 'failed'],
+        'neutral': ['okay', 'fine', 'average', 'normal', 'moderate', 'ordinary', 'neutral', 'standard', 'common']
+    }
+    
+    # Apply rule-based labeling
+    df['target'] = 'neutral'  # Default sentiment
+    
+    for sentiment, keywords in sentiments.items():
+        # Create regex pattern with word boundaries
+        pattern = '|'.join([r'\b' + keyword + r'\b' for keyword in keywords])
+        df.loc[df['content_lower'].str.contains(pattern, regex=True), 'target'] = sentiment
+    
+    # Drop the temporary lowercase column
+    df.drop('content_lower', axis=1, inplace=True)
+    
+    # Log sentiment distribution
+    sentiment_counts = df['target'].value_counts()
+    logger.info(f"Sentiment distribution: {sentiment_counts.to_dict()}")
+    
+    return df
+
 def train_topic_model(data=None):
-    """Train a simple topic model and return statistics"""
+    """Train a topic model and return statistics"""
     logger.info("Training topic model...")
     
-    # Create synthetic data if none provided
+    # Try to load real data from PostgreSQL if no data provided
+    if data is None or len(data) == 0:
+        logger.info("Attempting to load real data for topic modeling")
+        data = load_postgres_data()
+        
+        # Label data for topics if we have real data
+        if not data.empty:
+            data = label_data_for_topic_model(data)
+    
+    # Create synthetic data if we still don't have data
     if data is None or len(data) == 0:
         logger.info("Creating synthetic data for topic modeling")
         data = create_synthetic_data("topic_model")
+    
+    logger.info(f"Training topic model on {len(data)} records")
     
     # Split data 
     X_train, X_test, y_train, y_test = train_test_split(
@@ -98,13 +350,24 @@ def train_topic_model(data=None):
     return metrics
 
 def train_sentiment_model(data=None):
-    """Train a simple sentiment model and return statistics"""
+    """Train a sentiment model and return statistics"""
     logger.info("Training sentiment model...")
     
-    # Create synthetic data if none provided
+    # Try to load real data from PostgreSQL if no data provided
+    if data is None or len(data) == 0:
+        logger.info("Attempting to load real data for sentiment analysis")
+        data = load_postgres_data()
+        
+        # Label data for sentiment if we have real data
+        if not data.empty:
+            data = label_data_for_sentiment(data)
+    
+    # Create synthetic data if we still don't have data
     if data is None or len(data) == 0:
         logger.info("Creating synthetic data for sentiment analysis")
         data = create_synthetic_data("sentiment_classifier")
+    
+    logger.info(f"Training sentiment model on {len(data)} records")
     
     # Split data 
     X_train, X_test, y_train, y_test = train_test_split(
