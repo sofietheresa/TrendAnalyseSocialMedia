@@ -16,15 +16,11 @@ module.exports = function(app) {
       changeOrigin: true,
       // Enable this to log API requests
       logLevel: 'debug',
-      // Fallback to mock server if backend is unavailable
+      // Disable fallback to mock server
       onError: (err, req, res) => {
-        console.log('Proxy error, falling back to mock API:', err);
-        // Redirect to mock API
-        const mockProxy = createProxyMiddleware({
-          target: mockApiUrl,
-          changeOrigin: true,
-        });
-        mockProxy(req, res);
+        console.error('API proxy error:', err);
+        res.statusCode = 500;
+        res.end(`Backend API unavailable: ${err.message}`);
       }
     })
   );

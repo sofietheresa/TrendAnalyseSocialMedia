@@ -32,6 +32,7 @@
     "start": "react-scripts start",
     "start:with-mock": "concurrently \"react-scripts start\" \"cd src/mock-api && node server.js\"",
     "start:auto": "node start-with-fallback.js",
+    "start:with-db": "node start-db-direct.js",
     "build": "npm install && set \"DISABLE_ESLINT_PLUGIN=true\" && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

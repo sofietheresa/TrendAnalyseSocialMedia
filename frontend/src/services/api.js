@@ -115,80 +115,101 @@ export const fetchDailyStats = async () => {
     }
 };
 
-// New function to fetch recent social media data with improved reliability
-export const fetchRecentData = async (platform = 'reddit', limit = 10) => {
+// Verbesserte Funktion zum Abrufen aktueller Social-Media-Daten aus der DB
+export const fetchRecentData = async (platform = 'all', limit = 10) => {
     console.log(`Fetching recent ${platform} data (limit: ${limit})...`);
     
     try {
         // Always reset mock data status at start of request
         setMockDataStatus(false);
         
-        // Try direct API call with proper retry mechanism
-        for (let retry = 0; retry < MAX_RETRIES; retry++) {
-            try {
-                console.log(`API attempt ${retry + 1}/${MAX_RETRIES} for ${platform} data`);
-                
-                // Make the API request
-                const response = await api.get(`/api/recent-data`, { 
-                    params: { platform, limit },
-                    // Increase timeout for this specific request
-                    timeout: 60000
-                });
-                
-                console.log(`Successfully fetched ${platform} data:`, response.status);
-                
-                // Process the response data
-                if (response.data) {
-                    // If response.data is an array, return it directly wrapped in an object
-                    if (Array.isArray(response.data)) {
-                        return { data: response.data };
-                    }
-                    // If response.data.data exists and is an array, return the response as is
-                    else if (response.data.data && Array.isArray(response.data.data)) {
-                        return response.data;
-                    }
-                    // Otherwise, try to parse the data intelligently
-                    else {
-                        console.log('Processing response data type:', typeof response.data);
-                        
-                        // If response.data contains any array property, use that
-                        for (const key in response.data) {
-                            if (Array.isArray(response.data[key]) && response.data[key].length > 0) {
-                                console.log(`Found array data in property "${key}"`);
-                                return { data: response.data[key] };
-                            }
-                        }
-                        
-                        // If no array property found but response.data is an object
-                        if (typeof response.data === 'object') {
-                            console.log('Response data is an object without arrays, returning as single item array');
-                            return { data: [response.data] };
-                        }
-                        
-                        return { data: [] };
-                    }
-                }
-                
-                // If we get here, we didn't find usable data
-                throw new Error('No usable data in API response');
-                
-            } catch (error) {
-                if (retry < MAX_RETRIES - 1) {
-                    console.log(`Retrying after ${RETRY_DELAY}ms, ${MAX_RETRIES - retry - 1} attempts left...`);
-                    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+        // Versuche direkten DB-Endpunkt zuerst
+        try {
+            console.log(`Direkter DB-Zugriffsversuch für ${platform}-Daten`);
+            
+            // Mache den API-Request
+            const response = await api.get(`/api/db/posts/recent`, { 
+                params: { 
+                    platform: platform !== 'all' ? platform : undefined, 
+                    limit 
+                },
+                timeout: 60000
+            });
+            
+            console.log(`Erfolgreich ${platform}-Daten aus DB abgerufen:`, response.status);
+            
+            // Verarbeite die Antwortdaten
+            if (response.data) {
+                if (Array.isArray(response.data)) {
+                    return { data: response.data };
+                } else if (response.data.data && Array.isArray(response.data.data)) {
+                    return response.data;
                 } else {
-                    console.error(`All ${MAX_RETRIES} attempts failed:`, error);
-                    throw error;
+                    // Versuche, die Daten intelligent zu parsen
+                    console.log('Verarbeite Antwortdatentyp:', typeof response.data);
+                    
+                    // Wenn response.data eine Array-Eigenschaft enthält, verwende diese
+                    for (const key in response.data) {
+                        if (Array.isArray(response.data[key]) && response.data[key].length > 0) {
+                            console.log(`Array-Daten in Eigenschaft "${key}" gefunden`);
+                            return { data: response.data[key] };
+                        }
+                    }
+                    
+                    // Wenn keine Array-Eigenschaft gefunden, aber response.data ein Objekt ist
+                    if (typeof response.data === 'object') {
+                        console.log('Antwortdaten sind ein Objekt ohne Arrays, gebe als einzelnes Element-Array zurück');
+                        return { data: [response.data] };
+                    }
+                    
+                    return { data: [] };
                 }
             }
+            
+            throw new Error('Keine verwertbaren Daten in der API-Antwort');
+        } catch (dbError) {
+            console.log(`DB-Endpunkt fehlgeschlagen: ${dbError.message}. Versuche Standard-API...`);
         }
         
-        // This should never be reached due to the loop and error handling above
-        throw new Error(`Failed to fetch ${platform} data after ${MAX_RETRIES} attempts`);
-        
+        // Standard-API-Endpunkt versuchen
+        try {
+            console.log(`API-Versuch für ${platform} Daten`);
+            const response = await api.get(`/api/recent-data`, { 
+                params: { platform, limit },
+                timeout: 60000
+            });
+            
+            console.log(`Erfolgreich ${platform}-Daten abgerufen:`, response.status);
+            
+            // Verarbeite Antwortdaten
+            if (response.data) {
+                if (Array.isArray(response.data)) {
+                    return { data: response.data };
+                } else if (response.data.data && Array.isArray(response.data.data)) {
+                    return response.data;
+                } else {
+                    for (const key in response.data) {
+                        if (Array.isArray(response.data[key]) && response.data[key].length > 0) {
+                            return { data: response.data[key] };
+                        }
+                    }
+                    
+                    if (typeof response.data === 'object') {
+                        return { data: [response.data] };
+                    }
+                    
+                    return { data: [] };
+                }
+            }
+            
+            throw new Error('Keine verwertbaren Daten in der API-Antwort');
+        } catch (error) {
+            console.error(`Fehler beim Abrufen von ${platform}-Daten:`, error);
+            throw new Error(`Fehler beim Abrufen von ${platform}-Daten: ${error.message}`);
+        }
     } catch (error) {
-        console.error(`Error fetching ${platform} data:`, error);
-        throw new Error(`Failed to fetch ${platform} data: ${error.message}`);
+        console.error(`Alle Versuche für ${platform}-Daten sind fehlgeschlagen:`, error);
+        throw error;
     }
 };
 
@@ -242,7 +263,7 @@ export const fetchTopics = async (startDate, endDate) => {
     }
 };
 
-// New function to fetch topic model data with BERT
+// Improved function to fetch topic model data with BERT from PostgreSQL database
 export const fetchTopicModel = async (startDate = null, endDate = null, platforms = ["reddit", "tiktok", "youtube"], numTopics = 5) => {
     try {
         // Always reset mock data status at start of request
@@ -255,10 +276,36 @@ export const fetchTopicModel = async (startDate = null, endDate = null, platform
             num_topics: numTopics 
         });
         
-        // Try POST first with improved error handling and explicit timeout
+        // Try direct DB endpoint first with explicit timeout
+        try {
+            console.log("Trying direct DB endpoint at /api/db/topic-model");
+            const response = await api.get('/api/db/topic-model', {
+                params: {
+                    start_date: startDate,
+                    end_date: endDate,
+                    platforms: platforms.join(','),
+                    num_topics: numTopics
+                },
+                timeout: 60000 // 60 second timeout
+            });
+            
+            console.log("DB Topic model response:", response.data);
+            
+            // Check if topics is actually an array to avoid rendering issues
+            if (response.data && !Array.isArray(response.data.topics)) {
+                console.warn("Invalid topics format in DB response:", response.data.topics);
+                response.data.topics = [];
+            }
+            
+            return response.data;
+        } catch (dbError) {
+            console.warn(`DB endpoint failed: ${dbError.message}. Trying alternative endpoints...`);
+        }
+        
+        // Try POST to /api/topic-model
         try {
             console.log("Trying POST method to /api/topic-model");
-            const response = await api.post('/api/topic-model', {
+            const postResponse = await api.post('/api/topic-model', {
                 start_date: startDate,
                 end_date: endDate,
                 platforms: platforms,
@@ -267,17 +314,16 @@ export const fetchTopicModel = async (startDate = null, endDate = null, platform
                 timeout: 60000 // 60 second timeout
             });
             
-            console.log("Topic model POST response:", response.data);
+            console.log("Topic model POST response:", postResponse.data);
             
             // Check if topics is actually an array to avoid rendering issues
-            if (response.data && !Array.isArray(response.data.topics)) {
-                console.warn("Invalid topics format in POST response:", response.data.topics);
-                response.data.topics = [];
+            if (postResponse.data && !Array.isArray(postResponse.data.topics)) {
+                console.warn("Invalid topics format in POST response:", postResponse.data.topics);
+                postResponse.data.topics = [];
             }
             
-            return response.data;
-        } 
-        catch (postError) {
+            return postResponse.data;
+        } catch (postError) {
             console.warn(`POST request failed: ${postError.message}. Trying GET method...`);
             
             // If POST fails, try GET method
@@ -305,10 +351,10 @@ export const fetchTopicModel = async (startDate = null, endDate = null, platform
     } catch (error) {
         console.error('All topic model API endpoints failed:', error);
         
-        // Try alternative endpoint if both main endpoints fail
+        // Try fallback endpoint if both main endpoints fail
         try {
-            console.log("Trying alternative endpoint for topic model data...");
-            const altResponse = await api.get('/api/db/topics', {
+            console.log("Trying fallback endpoint for topic model data...");
+            const fallbackResponse = await api.get('/api/db/topics', {
                 params: {
                     start_date: startDate,
                     end_date: endDate
@@ -316,17 +362,17 @@ export const fetchTopicModel = async (startDate = null, endDate = null, platform
                 timeout: 60000 // 60 second timeout
             });
             
-            console.log("Alternative topic model response:", altResponse.data);
+            console.log("Fallback topic model response:", fallbackResponse.data);
             
             // Check for valid data structure
-            if (altResponse.data && !Array.isArray(altResponse.data.topics)) {
-                console.warn("Invalid topics format in alternative response:", altResponse.data.topics);
-                altResponse.data.topics = [];
+            if (fallbackResponse.data && !Array.isArray(fallbackResponse.data.topics)) {
+                console.warn("Invalid topics format in fallback response:", fallbackResponse.data.topics);
+                fallbackResponse.data.topics = [];
             }
             
-            return altResponse.data;
-        } catch (altError) {
-            console.error('Error fetching from alternative endpoint:', altError);
+            return fallbackResponse.data;
+        } catch (fallbackError) {
+            console.error('Error fetching from fallback endpoint:', fallbackError);
             
             // Return an appropriate error response
             throw new Error("Failed to fetch topic model data from all available endpoints. Please try again later.");
@@ -457,20 +503,24 @@ export const fetchAnalysisData = async () => {
 
 export const fetchPredictions = async (startDate = null, endDate = null) => {
     try {
-        // Versuche zuerst, Vorhersagen von der Haupt-API zu holen
+        // Always reset mock data status at start of request
+        setMockDataStatus(false);
+        
+        // Versuche zuerst, Vorhersagen direkt aus der PostgreSQL-DB zu holen
         console.log("Fetching predictions with params:", { startDate, endDate });
         
         const response = await api.get('/api/db/predictions', {
             params: {
                 start_date: startDate,
                 end_date: endDate
-            }
+            },
+            timeout: 60000 // 60 second timeout
         });
         
-        console.log("Received predictions:", response.data);
+        console.log("Received predictions from DB:", response.data);
         return response.data;
     } catch (error) {
-        console.error('Error fetching predictions:', error);
+        console.error('Error fetching predictions from DB:', error);
         
         // Versuche alternative Endpunkte, falls der Hauptendpunkt fehlschlägt
         try {
@@ -479,7 +529,8 @@ export const fetchPredictions = async (startDate = null, endDate = null) => {
                 params: {
                     start_date: startDate,
                     end_date: endDate
-                }
+                },
+                timeout: 60000 // 60 second timeout
             });
             
             console.log("Alternative predictions response:", altResponse.data);
@@ -487,8 +538,19 @@ export const fetchPredictions = async (startDate = null, endDate = null) => {
         } catch (altError) {
             console.error('Error fetching from alternative endpoint:', altError);
             
-            // Throw an error instead of returning mock data
-            throw new Error("Failed to fetch prediction data from all available endpoints. Please try again later.");
+            // Last attempt at a more basic endpoint
+            try {
+                console.log("Trying basic predictions endpoint...");
+                const basicResponse = await api.get('/api/predictions/all', {
+                    timeout: 60000 // 60 second timeout
+                });
+                
+                console.log("Basic predictions response:", basicResponse.data);
+                return basicResponse.data;
+            } catch (basicError) {
+                console.error('Error fetching from basic endpoint:', basicError);
+                throw new Error("Failed to fetch prediction data from all available endpoints. Please try again later.");
+            }
         }
     }
 };
@@ -611,23 +673,45 @@ export const fetchPostsByTopic = async (topicId) => {
         // Always reset mock data status at start of request
         setMockDataStatus(false);
         
-        // Try to fetch from the main DB endpoint
-        const response = await api.get(`/api/db/topics/${topicId}/posts`);
-        console.log(`Posts for topic ${topicId} response:`, response.data);
-        return response.data;
-    } catch (error) {
-        console.error(`Error fetching posts for topic ${topicId}:`, error);
-        
-        // Try alternative endpoint
+        // Try PostgreSQL direct endpoint first 
         try {
-            console.log("Trying alternative endpoint for topic posts...");
+            console.log("Trying direct PostgreSQL endpoint");
+            const response = await api.get(`/api/db/posts/by-topic/${topicId}`);
+            console.log(`Direct DB posts response for topic ${topicId}:`, response.data);
+            if (response.data && response.data.length > 0) {
+                return response.data;
+            }
+            console.log("No posts found in direct PostgreSQL response");
+        } catch (directDbError) {
+            console.warn("Direct PostgreSQL endpoint failed:", directDbError);
+        }
+        
+        // Try alternative DB endpoint
+        try {
+            console.log("Trying DB topics endpoint");
+            const response = await api.get(`/api/db/topics/${topicId}/posts`);
+            console.log(`DB posts for topic ${topicId} response:`, response.data);
+            if (response.data && response.data.length > 0) {
+                return response.data;
+            }
+            console.log("No posts found in DB endpoint");
+        } catch (error) {
+            console.error(`Error fetching DB posts for topic ${topicId}:`, error);
+        }
+        
+        // Try basic API endpoint as last resort
+        try {
+            console.log("Trying basic API endpoint for topic posts");
             const altResponse = await api.get(`/api/topics/${topicId}/posts`);
-            console.log("Alternative topic posts response:", altResponse.data);
+            console.log("Basic API endpoint response:", altResponse.data);
             return altResponse.data;
         } catch (altError) {
-            console.error('Error fetching from alternative endpoint:', altError);
+            console.error('Error fetching from basic API endpoint:', altError);
             throw new Error(`Failed to fetch posts for topic ${topicId}. Please try again later.`);
         }
+    } catch (error) {
+        console.error(`All attempts to fetch posts for topic ${topicId} failed:`, error);
+        throw error;
     }
 };
 
