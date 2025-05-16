@@ -1541,3 +1541,14 @@ html, body, #root {
   white-space: nowrap;
 }
 
+.no-count-data {
+  text-align: center;
+  background-color: rgba(230, 230, 240, 0.5);
+  border-radius: 8px;
+  padding: 10px;
+  margin: 10px 0;
+  color: #64748B;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+

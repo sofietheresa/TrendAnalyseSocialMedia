@@ -115,10 +115,19 @@ const Homepage = () => {
               const basicSentiments = sortedTopics.reduce((acc, topic) => {
                 if (topic.id) {
                   // Default to neutral (0) if no sentiment is provided
-                  acc[topic.id] = topic.sentiment_score || "0";
+                  // Ensure each topic has a sentiment value, even if it's 0
+                  acc[topic.id] = topic.sentiment_score !== undefined ? topic.sentiment_score : "0";
                 }
                 return acc;
               }, {});
+              
+              // Ensure all topics have sentiment values
+              sortedTopics.forEach(topic => {
+                if (topic.id && !basicSentiments[topic.id]) {
+                  basicSentiments[topic.id] = "0";
+                }
+              });
+              
               setTopicSentiments(basicSentiments);
             }
           } else {
@@ -149,7 +158,7 @@ const Homepage = () => {
     console.log("Processing trends for topics:", topTopics);
     console.log("With counts by date:", countsByDate);
     
-    // Filter out low-quality topics and limit to top 5
+    // Always use exactly 5 topics for consistency, don't filter by count
     const filteredTopics = topTopics
       .filter(topic => 
         topic.id !== -1 && 
@@ -157,9 +166,9 @@ const Homepage = () => {
         topic.name !== "-1" && 
         topic.name && 
         topic.name.trim() !== '' &&
-        (countsByDate[topic.id] && Object.values(countsByDate[topic.id]).some(count => count > 0))
+        topic.name.length >= 3
       )
-      .slice(0, 5);
+      .slice(0, 5);  // Always take top 5
     
     // Get all unique dates across all topics
     const allDates = new Set();
@@ -181,10 +190,10 @@ const Homepage = () => {
       return;
     }
     
-    // Prepare chart data
+    // Prepare chart data - ensure we include all 5 topics
     const trendsData = {
       labels: sortedDates.map(date => new Date(date).toLocaleDateString('de-DE')),
-      datasets: filteredTopics.filter(topic => topic.id && countsByDate[topic.id]).map((topic, index) => {
+      datasets: filteredTopics.map((topic, index) => {
         // Generate colors based on index
         const colors = [
           '#232252', // dark blue
@@ -194,16 +203,7 @@ const Homepage = () => {
           '#f8986f'  // orange
         ];
         
-        // Check if this topic has any non-zero counts
-        const hasData = sortedDates.some(date => 
-          topic.id && 
-          countsByDate[topic.id] && 
-          countsByDate[topic.id][date] && 
-          countsByDate[topic.id][date] > 0
-        );
-        
-        console.log(`Topic ${topic.name || index} has data: ${hasData}`);
-        
+        // Provide data even if the topic has no counts
         return {
           label: topic.name || `Topic ${index + 1}`,
           data: sortedDates.map(date => {
@@ -386,58 +386,52 @@ const Homepage = () => {
                     ))}
                   </span>
                 )}
-                {topicSentiments[topic.id] && 
-                  <span className="sentiment-emoji" title={`Sentiment: ${topicSentiments[topic.id]}`}>
-                    {getSentimentEmoji(parseFloat(topicSentiments[topic.id]))}
-                  </span>
-                }
+                <span className="sentiment-emoji" title={`Sentiment: ${topicSentiments[topic.id] || "0"}`}>
+                  {getSentimentEmoji(parseFloat(topicSentiments[topic.id] || "0"))}
+                </span>
               </div>
             ))}
           </div>
           
           {/* Topic Trends Chart - New section */}
-          {topicTrends.datasets && topicTrends.datasets.length > 0 && (
-            <div className="topic-trends-chart" style={{ 
-              marginTop: '40px',
-              marginBottom: '40px',
-              width: '100%',
-              maxWidth: '1000px',
-              margin: '40px auto',
-              height: '400px',
-              backgroundColor: 'rgba(255, 255, 255, 0.85)',
-              padding: '20px',
-              borderRadius: '15px',
-              boxShadow: '0 4px 30px rgba(0, 0, 0, 0.05)'
-            }}>
-              <Line
-                data={topicTrends}
-                options={chartOptions}
-                height={350}
-              />
-              {dateFilter.startDate && dateFilter.endDate && (
-                <div className="selected-range-info" style={{
-                  textAlign: 'center',
-                  marginTop: '10px',
-                  fontSize: '0.9rem',
-                  color: '#64748B'
-                }}>
-                  Selected range: {new Date(dateFilter.startDate).toLocaleDateString('de-DE')} - {new Date(dateFilter.endDate).toLocaleDateString('de-DE')}
-                </div>
-              )}
-            </div>
-          )}
+          <div className="topic-trends-chart" style={{ 
+            marginTop: '40px',
+            marginBottom: '40px',
+            width: '100%',
+            maxWidth: '1000px',
+            margin: '40px auto',
+            height: '400px',
+            backgroundColor: 'rgba(255, 255, 255, 0.85)',
+            padding: '20px',
+            borderRadius: '15px',
+            boxShadow: '0 4px 30px rgba(0, 0, 0, 0.05)'
+          }}>
+            <Line
+              data={topicTrends}
+              options={chartOptions}
+              height={350}
+            />
+            {dateFilter.startDate && dateFilter.endDate && (
+              <div className="selected-range-info" style={{
+                textAlign: 'center',
+                marginTop: '10px',
+                fontSize: '0.9rem',
+                color: '#64748B'
+              }}>
+                Selected range: {new Date(dateFilter.startDate).toLocaleDateString('de-DE')} - {new Date(dateFilter.endDate).toLocaleDateString('de-DE')}
+              </div>
+            )}
+          </div>
           
           {/* Topic Post Counts */}
           <div className="topic-post-counts-section">
-            {topics.slice(0, 5).map((topic, index) => topic.id && topicCounts[topic.id] ? (
-              <div key={topic.id} className="topic-post-counts-card">
+            {topics.slice(0, 5).map((topic, index) => (
+              <div key={topic.id || index} className="topic-post-counts-card">
                 <h3 className={`topic-name topic-name-${index + 1}`}>
                   {topic.name || `Topic ${index + 1}`}
-                  {topicSentiments[topic.id] && 
-                    <span className="sentiment-emoji" style={{ marginLeft: '10px' }} title={`Sentiment: ${topicSentiments[topic.id]}`}>
-                      {getSentimentEmoji(parseFloat(topicSentiments[topic.id]))}
-                    </span>
-                  }
+                  <span className="sentiment-emoji" style={{ marginLeft: '10px' }} title={`Sentiment: ${topicSentiments[topic.id] || "0"}`}>
+                    {getSentimentEmoji(parseFloat(topicSentiments[topic.id] || "0"))}
+                  </span>
                 </h3>
                 {topic.keywords && topic.keywords.length > 0 && (
                   <div className="topic-keywords-small">
@@ -446,9 +440,13 @@ const Homepage = () => {
                     ))}
                   </div>
                 )}
-                {renderTopicPostCounts(topic.id)}
+                {topicCounts[topic.id] ? renderTopicPostCounts(topic.id) : (
+                  <div className="no-count-data">
+                    <p>No post count data available</p>
+                  </div>
+                )}
               </div>
-            ) : null)}
+            ))}
           </div>
         </div>
       ) : !loading && !error ? (

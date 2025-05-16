@@ -595,14 +595,14 @@ async def get_model_drift(model_name: str, version: Optional[str] = None):
 def generate_mock_predictions(start_date, end_date, num_topics=5):
     """Generate mock prediction data for topics."""
     topics = [
-        {"id": 1, "name": "Artificial Intelligence", "keywords": ["AI", "machine learning", "neural networks", "deep learning", "GPT"]},
-        {"id": 2, "name": "Climate Change", "keywords": ["environment", "global warming", "renewable energy", "sustainability", "carbon"]},
-        {"id": 3, "name": "Digital Privacy", "keywords": ["data protection", "encryption", "surveillance", "security", "GDPR"]},
-        {"id": 4, "name": "Quantum Computing", "keywords": ["qubits", "quantum supremacy", "superposition", "entanglement", "quantum algorithms"]},
-        {"id": 5, "name": "Space Exploration", "keywords": ["Mars", "NASA", "SpaceX", "astronomy", "satellites"]},
-        {"id": 6, "name": "Cryptocurrencies", "keywords": ["Bitcoin", "blockchain", "Ethereum", "NFT", "DeFi"]},
-        {"id": 7, "name": "Remote Work", "keywords": ["WFH", "hybrid work", "virtual collaboration", "digital nomad", "productivity"]},
-        {"id": 8, "name": "Mental Health", "keywords": ["wellness", "therapy", "mindfulness", "psychology", "self-care"]}
+        {"id": 1, "name": "Intelligence", "keywords": ["AI", "machine", "learning", "neural", "networks"]},
+        {"id": 2, "name": "Climate", "keywords": ["environment", "warming", "energy", "sustainability", "carbon"]},
+        {"id": 3, "name": "Privacy", "keywords": ["protection", "encryption", "surveillance", "security", "data"]},
+        {"id": 4, "name": "Computing", "keywords": ["qubits", "supremacy", "superposition", "entanglement", "algorithms"]},
+        {"id": 5, "name": "Exploration", "keywords": ["Mars", "NASA", "SpaceX", "astronomy", "satellites"]},
+        {"id": 6, "name": "Bitcoin", "keywords": ["cryptocurrency", "blockchain", "Ethereum", "NFT", "DeFi"]},
+        {"id": 7, "name": "Employment", "keywords": ["hybrid", "collaboration", "nomad", "productivity", "remote"]},
+        {"id": 8, "name": "Health", "keywords": ["wellness", "therapy", "mindfulness", "psychology", "care"]}
     ]
     
     # Randomly select topics for predictions

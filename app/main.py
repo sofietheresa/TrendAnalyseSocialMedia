@@ -12,6 +12,8 @@ import pandas as pd
 import json
 from pathlib import Path
 import random
+import nltk
+from nltk.tag import pos_tag
 
 # Logging-Konfiguration
 logging.basicConfig(
@@ -493,22 +495,17 @@ async def get_topic_model(request: TopicModelRequest):
         df['combined_text'] = df['combined_text'].str.strip()
         texts = df['combined_text'].dropna().tolist()
         
-        # Hier würde normalerweise das BERTopic-Modell initialisiert und trainiert
-        # Da dies rechenintensiv ist und externe Abhängigkeiten hat, simulieren wir die Ergebnisse für das API
-        
-        # In einer echten Implementierung:
-        # from bertopic import BERTopic
-        # from sentence_transformers import SentenceTransformer
-        # embedding_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
-        # topic_model = BERTopic(embedding_model=embedding_model)
-        # topics, probs = topic_model.fit_transform(texts)
-        # topic_info = topic_model.get_topic_info()
-        # topic_keywords = {topic_id: [word for word, _ in topic_model.get_topic(topic_id)] 
-        #                  for topic_id in topic_info['Topic'].unique() if topic_id != -1}
-        
         # Simulierte Ergebnisse basierend auf häufigen Wörtern für die Demo
         from collections import Counter
         import re
+        
+        # Lade benötigte NLTK-Komponenten, wenn sie nicht vorhanden sind
+        try:
+            nltk.data.find('tokenizers/punkt')
+            nltk.data.find('taggers/averaged_perceptron_tagger')
+        except LookupError:
+            nltk.download('punkt')
+            nltk.download('averaged_perceptron_tagger')
         
         # Einfache Textbereinigung
         def clean_text(text):
@@ -519,6 +516,15 @@ async def get_topic_model(request: TopicModelRequest):
             text = re.sub(r'\d+', '', text)
             return text
         
+        # Allgemeine Nomen, die ausgeschlossen werden sollen
+        generic_nouns = [
+            'community', 'subreddits', 'subreddit', 'people', 'person', 'thing', 'things', 
+            'user', 'users', 'post', 'posts', 'comment', 'comments', 'content', 'video', 
+            'videos', 'channel', 'channels', 'follower', 'followers', 'reddit', 'tiktok', 
+            'youtube', 'other', 'their', 'work', 'der', 'check', 'started', 'below', 'limited', 
+            'day', 'days', 'time', 'times', 'home', 'way', 'life', 'something', 'someone'
+        ]
+        
         # Stopwörter
         stopwords = ["the", "and", "a", "to", "of", "in", "i", "it", "is", "that", "this", 
                     "for", "with", "on", "you", "was", "be", "are", "have", "my", "at", "not", 
@@ -527,15 +533,34 @@ async def get_topic_model(request: TopicModelRequest):
                     "by", "how", "get", "amp", "im", "its", "http", "https", "com", "www", "youtube",
                     "tiktok", "reddit", "video", "watch", "follow", "post", "comment", "user", "channel"]
         
-        # Texte bereinigen und Wörter zählen
-        all_words = []
-        for text in texts:
-            clean = clean_text(text)
-            words = [w for w in clean.split() if w not in stopwords and len(w) > 2]
-            all_words.extend(words)
+        # Funktion, um nur Nomen zu extrahieren
+        def extract_nouns(text_list):
+            all_nouns = []
+            
+            for text in text_list:
+                # Text bereinigen
+                clean = clean_text(text)
+                # Wörter tokenisieren
+                words = clean.split()
+                # POS-Tagging durchführen
+                tagged_words = pos_tag(words)
+                # Nur Nomen extrahieren (NN, NNS, NNP, NNPS)
+                nouns = [word.lower() for word, tag in tagged_words 
+                         if tag.startswith('NN') 
+                         and word.lower() not in stopwords 
+                         and word.lower() not in generic_nouns
+                         and len(word) > 2]
+                
+                all_nouns.extend(nouns)
+            
+            return all_nouns
         
-        word_counts = Counter(all_words)
-        top_words = word_counts.most_common(100)
+        # Nomen aus Texten extrahieren
+        all_nouns = extract_nouns(texts)
+        
+        # Nomen zählen
+        noun_counts = Counter(all_nouns)
+        top_nouns = noun_counts.most_common(100)
         
         # Topic-Gruppen erzeugen (simuliert)
         num_topics = min(request.num_topics, 5)  # Maximal 5 Topics
@@ -545,19 +570,23 @@ async def get_topic_model(request: TopicModelRequest):
         topic_coherence = random.uniform(0.35, 0.6)
         topic_diversity = random.uniform(0.7, 0.9)
         
-        # Wörter in Topic-Gruppen aufteilen
-        words_per_topic = 10
+        # Nomen in Topic-Gruppen aufteilen
+        nouns_per_topic = 10
         for i in range(num_topics):
-            start_idx = i * words_per_topic
-            end_idx = start_idx + words_per_topic
-            if start_idx < len(top_words):
-                words = [word for word, count in top_words[start_idx:end_idx]]
+            start_idx = i * nouns_per_topic
+            end_idx = start_idx + nouns_per_topic
+            if start_idx < len(top_nouns):
+                words = [word for word, count in top_nouns[start_idx:end_idx]]
                 topic_keywords[i] = words
         
-        # Topic-Namen generieren
+        # Topic-Namen generieren - nur einzelne Nomen verwenden
         topic_names = {}
         for topic_id, words in topic_keywords.items():
-            topic_names[topic_id] = " & ".join(words[:2])
+            if len(words) > 0:
+                # Verwende nur das erste Nomen als Themenname
+                topic_names[topic_id] = words[0].capitalize()
+            else:
+                topic_names[topic_id] = f"Topic {topic_id}"
         
         # Ergebnisse formatieren
         topics_result = []
