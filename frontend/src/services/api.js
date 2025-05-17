@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useAlertStore } from "../app/alertStore";
 
 // API URL configuration - directly setting Railway API URL to ensure consistent data source
 const API_URL = "https://trendanalysesocialmedia-production.up.railway.app"; // Railway API server
@@ -313,32 +314,66 @@ export const fetchTopicModel = async (
       num_topics: numTopics,
     });
 
-    // Der Standard-Endpunkt für das Topic-Modell funktioniert laut Tests
-    console.log("Accessing Railway topic-model endpoint");
-    const response = await api.get("/api/topic-model", {
-      params: {
-        start_date: startDate,
-        end_date: endDate,
-        platforms: platforms.join(","),
-        num_topics: numTopics,
-      },
-      timeout: 60000, // 60 second timeout
-    });
+    // First try the direct topic-model endpoint
+    try {
+      // Der Standard-Endpunkt für das Topic-Modell funktioniert laut Tests
+      console.log("Accessing Railway topic-model endpoint");
+      const response = await api.get("/api/topic-model", {
+        params: {
+          start_date: startDate,
+          end_date: endDate,
+          platforms: platforms.join(","),
+          num_topics: numTopics,
+        },
+        timeout: 60000, // 60 second timeout
+      });
 
-    console.log("Railway API Topic model response:", response.data);
+      console.log("Railway API Topic model response:", response.data);
 
-    // Check if topics is actually an array to avoid rendering issues
-    if (response.data && !Array.isArray(response.data.topics)) {
-      console.warn(
-        "Invalid topics format in Railway API response:",
-        response.data.topics,
-      );
-      throw new Error("Invalid topic format returned from Railway API");
+      // Check if topics is actually an array to avoid rendering issues
+      if (response.data && Array.isArray(response.data.topics) && response.data.topics.length > 0) {
+        return response.data;
+      } else {
+        console.warn(
+          "Invalid or empty topics format in Railway API response:",
+          response.data.topics,
+        );
+        throw new Error("Invalid or empty topic format returned from Railway API");
+      }
+    } catch (frontendApiError) {
+      console.warn("Frontend API call failed, trying backend API:", frontendApiError);
+      
+      // Try fetching from backend API as fallback
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+      console.log(`Trying backend API at ${backendUrl}/api/topic-model`);
+      
+      const backendResponse = await axios.get(`${backendUrl}/api/topic-model`, {
+        params: {
+          start_date: startDate,
+          end_date: endDate,
+          platforms: platforms.join(","),
+          num_topics: numTopics,
+        },
+        timeout: 60000,
+      });
+      
+      console.log("Backend API response:", backendResponse.data);
+      
+      // Check if topics is actually an array to avoid rendering issues
+      if (backendResponse.data && Array.isArray(backendResponse.data.topics) && backendResponse.data.topics.length > 0) {
+        // Add a flag indicating this came from the backend API
+        backendResponse.data.source = "backend_api";
+        return backendResponse.data;
+      } else {
+        console.warn(
+          "Invalid or empty topics format in backend API response",
+          backendResponse.data
+        );
+        throw new Error("Invalid or empty topic format returned from both APIs");
+      }
     }
-
-    return response.data;
   } catch (error) {
-    console.error("Error fetching topic model data from Railway API:", error);
+    console.error("Error fetching topic model data from all available APIs:", error);
     throw error;
   }
 };

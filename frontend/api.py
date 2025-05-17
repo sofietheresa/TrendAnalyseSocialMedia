@@ -280,7 +280,7 @@ async def get_predictions(start_date: Optional[str] = None, end_date: Optional[s
     - start_date: (optional) Start date for the prediction period (YYYY-MM-DD)
     - end_date: (optional) End date for the prediction period (YYYY-MM-DD)
     
-    Returns prediction data for future trends based on ML models.
+    Returns prediction data for future trends based on real data from backend or fallback to ML models.
     """
     try:
         # Use default dates if not provided
@@ -289,23 +289,65 @@ async def get_predictions(start_date: Optional[str] = None, end_date: Optional[s
         if not end_date:
             end_date = (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')
             
-        # Convert to datetime objects
-        start_dt = datetime.strptime(start_date, '%Y-%m-%d')
-        end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+        print(f"Fetching predictions for date range: {start_date} to {end_date}")
         
-        # Generate prediction data (mock data for now)
-        predictions = generate_mock_predictions(start_dt, end_dt, num_topics=5)
-        
-        response = {
-            'predictions': predictions,
-            'time_range': {
-                'start_date': start_date,
-                'end_date': end_date
-            },
-            'prediction_trends': generate_mock_prediction_trends(predictions, start_dt, end_dt)
-        }
-        
-        return response
+        # Try to fetch real data from backend API
+        try:
+            backend_url = os.environ.get('BACKEND_URL', 'http://localhost:8000')
+            predictions_url = f"{backend_url}/api/db/predictions"
+            params = {}
+            
+            if start_date:
+                params['start_date'] = start_date
+            if end_date:
+                params['end_date'] = end_date
+                
+            print(f"Calling backend API at: {predictions_url} with params: {params}")
+            
+            response = requests.get(
+                predictions_url, 
+                params=params, 
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                print(f"Successfully retrieved real prediction data from backend API")
+                
+                # Check if response contains needed data
+                if 'predictions' in data and isinstance(data['predictions'], list) and len(data['predictions']) > 0:
+                    return data
+                else:
+                    print("Backend API returned incomplete or empty data")
+                    raise ValueError("Incomplete data from backend API")
+            else:
+                print(f"Backend API returned status code: {response.status_code}")
+                raise ValueError(f"Backend API error: {response.status_code}")
+                
+        except Exception as e:
+            print(f"Error fetching predictions from backend API: {str(e)}")
+            print("Falling back to mock data")
+            
+            # Convert to datetime objects for mock data generation
+            start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+            end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+            
+            # Generate fallback mock data
+            predictions = generate_mock_predictions(start_dt, end_dt, num_topics=5)
+            
+            response = {
+                'predictions': predictions,
+                'time_range': {
+                    'start_date': start_date,
+                    'end_date': end_date
+                },
+                'prediction_trends': generate_mock_prediction_trends(predictions, start_dt, end_dt),
+                'is_mock_data': True,
+                'warning': "Using mock data because real data could not be retrieved from backend"
+            }
+            
+            return response
+            
     except Exception as e:
         print(f"Error in get_predictions: {str(e)}")
         import traceback
