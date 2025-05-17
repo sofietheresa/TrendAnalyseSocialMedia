@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useAlertStore } from "../app/alertStore";
 
 // API URL configuration - directly setting Railway API URL to ensure consistent data source
 const API_URL = "https://trendanalysesocialmedia-production.up.railway.app"; // Railway API server
