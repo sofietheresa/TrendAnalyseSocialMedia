@@ -1502,72 +1502,58 @@ async def get_model_metrics(
     """
     logger.info(f"Request for metrics of model: {model_name}, version: {version}")
     
-    # Set default version if not provided
-    if not version:
-        version = "v1.0.2"  # Default to latest version
-        logger.info(f"No version specified, using default: {version}")
-    
     # Define model registry path
     model_registry_path = Path("models/registry").resolve()
     model_registry_path.mkdir(parents=True, exist_ok=True)
     
-    # Check for actual metrics in model registry
-    metrics_path = model_registry_path / model_name / version / "metrics.json"
-    logger.info(f"Checking for metrics at: {metrics_path}")
+    # Get registry index to find the latest or specified version
+    registry_index_path = model_registry_path / "registry_index.json"
     
     try:
-        if metrics_path.exists():
-            logger.info(f"Found metrics at {metrics_path}")
-            with open(metrics_path, "r") as f:
-                metrics = json.load(f)
-                logger.info(f"Returning metrics: {metrics}")
-                return metrics
+        # Check if registry index exists
+        if registry_index_path.exists():
+            with open(registry_index_path, "r") as f:
+                registry_index = json.load(f)
+            
+            # If model exists in registry
+            if model_name in registry_index.get("models", {}):
+                model_info = registry_index["models"][model_name]
+                
+                # If no version specified, use production or latest version
+                if not version:
+                    version = model_info.get("production_version") or model_info.get("latest_version")
+                    logger.info(f"No version specified, using {version}")
+                
+                # Check multiple possible paths for evaluation results
+                metrics_paths = [
+                    model_registry_path / model_name / version / "evaluation_results.json",
+                    model_registry_path / model_name / version / "metrics.json",
+                    model_registry_path / model_name / version / "model_evaluation.json"
+                ]
+                
+                for metrics_path in metrics_paths:
+                    if metrics_path.exists():
+                        logger.info(f"Found metrics at {metrics_path}")
+                        with open(metrics_path, "r") as f:
+                            metrics = json.load(f)
+                            # Mark as real data
+                            metrics["is_mock_data"] = False
+                            logger.info(f"Returning real metrics for {model_name} v{version}")
+                            return metrics
+                
+                logger.warning(f"No metrics found for model {model_name} version {version}")
+            else:
+                logger.warning(f"Model {model_name} not found in registry")
         else:
-            logger.warning(f"No metrics found at {metrics_path}, using mock data")
+            logger.warning("Registry index not found")
     except Exception as e:
-        logger.error(f"Error reading metrics: {e}")
+        logger.error(f"Error reading metrics: {str(e)}")
     
-    # Return mock metrics if no actual metrics found
-    if model_name == "topic_model":
-        return {
-            "coherence_score": 0.78,
-            "diversity_score": 0.65,
-            "document_coverage": 0.92,
-            "total_documents": 15764,
-            "uniqueness_score": 0.81,
-            "silhouette_score": 0.72,
-            "topic_separation": 0.68,
-            "avg_topic_similarity": 0.43,
-            "execution_time": 183.4,
-            "topic_quality": 0.75,
-            "is_mock_data": True
-        }
-    elif model_name == "sentiment_analysis":
-        return {
-            "accuracy": 0.89,
-            "precision": 0.83,
-            "recall": 0.86,
-            "f1_score": 0.85,
-            "total_documents": 12500,
-            "execution_time": 162.7,
-            "uniqueness_score": 0.79,
-            "silhouette_score": 0.67,
-            "topic_separation": 0.72,
-            "is_mock_data": True
-        }
-    else:
-        return {
-            "mean_absolute_error": 0.12,
-            "mean_squared_error": 0.05,
-            "r2_score": 0.87,
-            "total_predictions": 8742,
-            "execution_time": 97.3,
-            "accuracy": 0.91,
-            "precision": 0.88,
-            "recall": 0.85,
-            "f1_score": 0.86,
-            "is_mock_data": True
-        }
+    logger.error(f"Could not find real metrics data for {model_name}, returning 404")
+    raise HTTPException(
+        status_code=404, 
+        detail=f"No metrics found for model {model_name} version {version}"
+    )
 
 @app.get("/api/mlops/models/{model_name}/versions")
 async def get_model_versions(model_name: str):

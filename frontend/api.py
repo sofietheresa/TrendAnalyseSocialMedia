@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import urllib.parse
 import random
 import json
+import requests
 
 app = FastAPI(title="Social Media Trend Analysis API")
 
@@ -457,91 +458,156 @@ async def get_models():
 
 @app.get("/api/mlops/models/{model_name}/versions")
 async def get_model_versions(model_name: str):
-    """Get all versions of a specific model."""
+    """Get available versions for a specific model."""
     try:
-        # Generate mock version data based on model name
-        versions = []
-        model_info = {
-            "topic-model": {"base_version": "v1.0.0", "num_versions": 4},
-            "sentiment-model": {"base_version": "v2.0.0", "num_versions": 2}, 
-            "trend-prediction-model": {"base_version": "v0.9.0", "num_versions": 6}
+        # Map frontend model names to backend model names
+        model_name_mapping = {
+            "topic-model": "topic_model",
+            "sentiment-model": "sentiment_classifier",
+            "trend-prediction-model": "anomaly_detector"
         }
         
-        if model_name not in model_info:
-            raise HTTPException(status_code=404, detail="Model not found")
+        backend_model_name = model_name_mapping.get(model_name, model_name)
         
-        info = model_info[model_name]
+        # Define model registry path
+        model_registry_path = Path("../models/registry").resolve()
+        if not model_registry_path.exists():
+            model_registry_path = Path("models/registry").resolve()
         
-        for i in range(info["num_versions"]):
-            version_date = datetime.now() - timedelta(days=i*10)
-            accuracy = 0.8 + (i * 0.02) if i < 3 else 0.8 + (3 * 0.02) - ((i-3) * 0.01)
+        # Check if registry exists
+        if not model_registry_path.exists():
+            print(f"Model registry not found at {model_registry_path}")
+            raise HTTPException(status_code=404, detail="Model registry not found")
+        
+        # Get registry index
+        registry_index_path = model_registry_path / "registry_index.json"
+        versions = []
+        
+        if registry_index_path.exists():
+            with open(registry_index_path, "r") as f:
+                registry_index = json.load(f)
             
-            version = {
-                "version": f"{info['base_version'][:-1]}{int(info['base_version'][-1]) + i}",
-                "model_name": model_name,
-                "created_at": version_date.isoformat(),
-                "accuracy": round(accuracy, 2),
-                "is_production": i == 0,  # Most recent version is in production
-                "trained_on": f"{random.randint(5000, 15000)} samples",
-                "parameters": {
-                    "learning_rate": round(random.uniform(0.01, 0.1), 3),
-                    "batch_size": random.choice([32, 64, 128]),
-                    "epochs": random.randint(10, 50)
-                }
-            }
-            versions.append(version)
+            # If model exists in registry
+            if backend_model_name in registry_index.get("models", {}):
+                model_info = registry_index["models"][backend_model_name]
+                production_version = model_info.get("production_version")
+                
+                # Process each version in the registry
+                for version_info in model_info.get("versions", []):
+                    version = {
+                        "version": version_info.get("version"),
+                        "model_name": model_name,
+                        "created_at": version_info.get("created_at"),
+                        "accuracy": version_info.get("accuracy", 0.0),
+                        "is_production": version_info.get("version") == production_version,
+                        "status": version_info.get("status", "unknown")
+                    }
+                    versions.append(version)
+        
+        # If no versions found locally, try to fetch from backend API
+        if not versions:
+            print(f"No versions found locally for model {model_name}, trying backend API")
+            try:
+                backend_url = os.environ.get('BACKEND_URL', 'http://localhost:8000')
+                versions_url = f"{backend_url}/api/mlops/models/{backend_model_name}/versions"
+                    
+                response = requests.get(versions_url, timeout=5)
+                if response.status_code == 200:
+                    return response.json()
+                else:
+                    print(f"Backend API returned status {response.status_code}")
+                    # If backend fails, return empty list rather than raising an exception
+                    return []
+            except Exception as backend_error:
+                print(f"Error fetching from backend: {str(backend_error)}")
         
         return versions
+        
     except Exception as e:
         print(f"Error in get_model_versions: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Return empty list instead of raising an exception
+        return []
 
 @app.get("/api/mlops/models/{model_name}/metrics")
 async def get_model_metrics(model_name: str, version: Optional[str] = None):
     """Get performance metrics for a specific model version."""
     try:
-        # Generate mock metrics data
-        if model_name == "topic-model":
-            metrics = {
-                "coherence_score": round(random.uniform(0.4, 0.7), 2),
-                "topic_diversity": round(random.uniform(0.6, 0.9), 2),
-                "perplexity": round(random.uniform(35, 60), 1),
-                "training_time": f"{random.randint(5, 15)} minutes",
-                "topics_extracted": random.randint(5, 15),
-                "avg_topic_size": random.randint(10, 30),
-                "version": version or "latest",
-                "evaluation_date": datetime.now().isoformat()
-            }
-        elif model_name == "sentiment-model":
-            metrics = {
-                "accuracy": round(random.uniform(0.82, 0.92), 2),
-                "precision": round(random.uniform(0.80, 0.90), 2),
-                "recall": round(random.uniform(0.78, 0.88), 2),
-                "f1_score": round(random.uniform(0.80, 0.90), 2),
-                "roc_auc": round(random.uniform(0.85, 0.95), 2),
-                "confusion_matrix": {
-                    "true_positive": random.randint(800, 1200),
-                    "false_positive": random.randint(100, 200),
-                    "true_negative": random.randint(800, 1200),
-                    "false_negative": random.randint(100, 200)
-                },
-                "version": version or "latest",
-                "evaluation_date": datetime.now().isoformat()
-            }
-        elif model_name == "trend-prediction-model":
-            metrics = {
-                "mse": round(random.uniform(10, 30), 2),
-                "rmse": round(random.uniform(3, 5.5), 2),
-                "mae": round(random.uniform(2.5, 4.5), 2),
-                "r2_score": round(random.uniform(0.6, 0.8), 2),
-                "forecast_horizon": f"{random.randint(3, 14)} days",
-                "version": version or "latest",
-                "evaluation_date": datetime.now().isoformat()
-            }
-        else:
-            raise HTTPException(status_code=404, detail="Model not found")
+        # Map frontend model names to backend model names
+        model_name_mapping = {
+            "topic-model": "topic_model",
+            "sentiment-model": "sentiment_classifier",
+            "trend-prediction-model": "anomaly_detector"
+        }
         
-        return metrics
+        backend_model_name = model_name_mapping.get(model_name, model_name)
+        
+        # Define model registry path
+        model_registry_path = Path("../models/registry").resolve()
+        if not model_registry_path.exists():
+            model_registry_path = Path("models/registry").resolve()
+        
+        # Check if registry exists
+        if not model_registry_path.exists():
+            print(f"Model registry not found at {model_registry_path}")
+            raise HTTPException(status_code=404, detail="Model registry not found")
+        
+        # Get registry index to find the latest or specified version
+        registry_index_path = model_registry_path / "registry_index.json"
+        
+        if registry_index_path.exists():
+            with open(registry_index_path, "r") as f:
+                registry_index = json.load(f)
+            
+            # If model exists in registry
+            if backend_model_name in registry_index.get("models", {}):
+                model_info = registry_index["models"][backend_model_name]
+                
+                # If no version specified, use production or latest version
+                if not version:
+                    version = model_info.get("production_version") or model_info.get("latest_version")
+                    print(f"No version specified, using {version}")
+                
+                # Check for evaluation results
+                metrics_paths = [
+                    model_registry_path / backend_model_name / version / "evaluation_results.json",
+                    model_registry_path / backend_model_name / version / "metrics.json",
+                    model_registry_path / backend_model_name / version / "model_evaluation.json"
+                ]
+                
+                for metrics_path in metrics_paths:
+                    if metrics_path.exists():
+                        print(f"Found metrics at {metrics_path}")
+                        with open(metrics_path, "r") as f:
+                            metrics = json.load(f)
+                            # Add version and evaluation date if missing
+                            if "version" not in metrics:
+                                metrics["version"] = version
+                            if "evaluation_date" not in metrics:
+                                metrics["evaluation_date"] = datetime.now().isoformat()
+                            
+                            print(f"Returning real metrics for {model_name} v{version}")
+                            return metrics
+        
+        print(f"No metrics found for model {model_name} version {version}, trying backend API")
+        
+        # If we couldn't find metrics locally, try to fetch from backend API
+        try:
+            backend_url = os.environ.get('BACKEND_URL', 'http://localhost:8000')
+            metrics_url = f"{backend_url}/api/mlops/models/{backend_model_name}/metrics"
+            if version:
+                metrics_url += f"?version={version}"
+                
+            response = requests.get(metrics_url, timeout=5)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                print(f"Backend API returned status {response.status_code}")
+        except Exception as backend_error:
+            print(f"Error fetching from backend: {str(backend_error)}")
+            
+        # As a last resort, return a 404
+        raise HTTPException(status_code=404, detail=f"No metrics found for {model_name}")
+            
     except Exception as e:
         print(f"Error in get_model_metrics: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
